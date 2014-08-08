@@ -11,21 +11,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\VectorFieldsUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FieldedMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PathFinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\VectorFieldsView.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\VectorFieldsViewer.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\PathFinder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\VectorFieldsViewer.h">
+    <ClInclude Include="src\FieldedMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VectorFieldsUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\PathFinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VectorFieldsViewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

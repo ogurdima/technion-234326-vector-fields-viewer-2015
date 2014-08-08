@@ -1,24 +1,23 @@
 #pragma once
 
-#include "MeshViewer.h"
+#include "VectorFieldsUtils.h"
+#include "FieldedMesh.h"
 
-
-typedef OpenMesh::TriMesh_ArrayKernelT<> Mesh;
-typedef OpenMesh::FPropHandleT<Vec3f> VfieldFProp;
 
 class PathFinder
 {
 public:
-	PathFinder(Mesh mesh_, VfieldFProp vf_fprop);
+	PathFinder(const FieldedMesh& fieldedMesh);
 
 	std::vector<std::vector<Vec3f>> getParticlePaths();
 
+	
+
 protected:
 
-	Mesh mesh;
-	VfieldFProp vfield;
+	const FieldedMesh& fieldedMesh;
 	double dt;
-	std::vector<Vec3f> getParticlePath(Mesh::FaceHandle face);
+	std::vector<Vec3f> getParticlePath(const Mesh::FaceHandle& face);
 
 };
 

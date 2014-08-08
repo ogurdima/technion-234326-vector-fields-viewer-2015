@@ -11,12 +11,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\FieldedMesh.cpp" />
     <ClCompile Include="src\PathFinder.cpp" />
+    <ClCompile Include="src\VectorFieldsUtils.cpp" />
     <ClCompile Include="src\VectorFieldsView.cc" />
     <ClCompile Include="src\VectorFieldsViewer.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\FieldedMesh.h" />
     <ClInclude Include="src\PathFinder.h" />
+    <ClInclude Include="src\VectorFieldsUtils.h" />
     <ClInclude Include="src\VectorFieldsViewer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -39,12 +39,17 @@
 #ifndef VECTORFIELDSVIEWERWIDGET_H
 #define VECTORFIELDSVIEWERWIDGET_H
 
+#include "VectorFieldsUtils.h"
 #include "MeshViewer.h"
 #include "PathFinder.h"
+#include "FieldedMesh.h"
 
-class VectorFieldsViewer : public MeshViewer
+
+class VectorFieldsViewer : public GlutExaminer
 {
+
 public:
+
 	/// default constructor
 	VectorFieldsViewer(const char* _title, int _width, int _height);
 	// destructor
@@ -52,32 +57,23 @@ public:
 	/// open mesh
 	virtual bool open_mesh(const char* _filename);
 	virtual void processmenu(int i);
-	static const int LOAD_GEOMETRY = 6001;
+	int LOAD_GEOMETRY_KEY;
+	
 
 protected:
+
 	virtual void draw(const std::string& _draw_mode);
-	/// calculate vertex valences
-	void calc_valences();
-	/// set vertex color from vertex valence
-	void color_coding();
-	OpenMesh::VPropHandleT<int> valence_vprop;
-	int maxValence;
-	int minValence;
-
-	OpenMesh::FPropHandleT<Vec3f> vfield_fprop;
-	void assign_vector_field();
-
-	void compute_vf_lines();
-
 	
+	/// set vertex color from vertex valence
+	void colorCoding();
+
 	std::vector<std::vector<Vec3f>> particlePaths;
 
-	//Vec3f** particlePathsArray;
-
-
-
+	FieldedMesh fieldedMesh;
 
 private:
+
+	void computeVectorFieldLines();
 };
 
 #endif

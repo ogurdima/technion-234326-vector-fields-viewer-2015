@@ -69,20 +69,6 @@ public:
 
 public:
 
-	struct MyTraits : public OpenMesh::DefaultTraits 
-	{
-		VertexAttributes(	OpenMesh::Attributes::Normal	|
-			OpenMesh::Attributes::Color		| 
-			OpenMesh::Attributes::Status	
-			);
-		FaceAttributes(		OpenMesh::Attributes::Normal	|
-			OpenMesh::Attributes::Status
-			);
-		EdgeAttributes(		OpenMesh::Attributes::Status
-			);
-	};
-
-
 	typedef OpenMesh::TriMesh_ArrayKernelT<>  Mesh;
 
 
