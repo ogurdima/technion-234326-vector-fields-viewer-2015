@@ -40,6 +40,7 @@
 #define VECTORFIELDSVIEWERWIDGET_H
 
 #include "MeshViewer.h"
+#include "PathFinder.h"
 
 class VectorFieldsViewer : public MeshViewer
 {
@@ -63,9 +64,14 @@ protected:
 	int maxValence;
 	int minValence;
 
-	OpenMesh::FPropHandleT<Vec3d> vfield_fprop;
+	OpenMesh::FPropHandleT<Vec3f> vfield_fprop;
 	void assign_vector_field();
+
+	void compute_vf_lines();
+
 	
+	std::vector<std::vector<Vec3f>> particlePaths;
+
 
 
 private:

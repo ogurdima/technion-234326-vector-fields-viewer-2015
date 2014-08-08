@@ -93,13 +93,14 @@ bool VectorFieldsViewer::open_mesh(const char* _filename)
 	if (MeshViewer::open_mesh(_filename))
 	{
 		assign_vector_field();
+		compute_vf_lines();
 		glutPostRedisplay();
 		return true;
 	}
 	return false;
 }
 
-// Add random normalized Vec3d as vfield_fprop property for each face
+// Add random normalized Vec3f as vfield_fprop property for each face
 // Color all certices appropriately
 void VectorFieldsViewer::assign_vector_field()
 {
@@ -107,7 +108,7 @@ void VectorFieldsViewer::assign_vector_field()
 		double x = rand();
 		double y = rand();
 		double z = rand();
-		Vec3d field = Vec3d(x,y,z).normalized();
+		Vec3f field = Vec3f(x,y,z).normalized();
 		mesh_.property(vfield_fprop, fit.handle()) = field;
 
 		for(Mesh::FaceVertexIter fvit = mesh_.fv_begin(fit.handle()); fvit != mesh_.fv_end(fit.handle()); ++fvit) {
@@ -117,6 +118,13 @@ void VectorFieldsViewer::assign_vector_field()
 			mesh_.set_color(fvit, Mesh::Color(r,g,b));
 		}
 	}
+}
+
+void VectorFieldsViewer::compute_vf_lines()
+{
+	PathFinder pathFinder = PathFinder(mesh_, vfield_fprop);
+	particlePaths = pathFinder.getParticlePaths();
+	bool ok = true;
 }
 
 void VectorFieldsViewer::draw(const std::string& _draw_mode)
@@ -130,7 +138,7 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 	{
 		glDisable(GL_LIGHTING);
 		glShadeModel(GL_SMOOTH);
-		glEnableClientState(GL_VERTEX_ARRAY);
+		/*glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glEnableClientState(GL_COLOR_ARRAY);
 		GL::glVertexPointer(mesh_.points());
@@ -140,9 +148,9 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, &indices_[0]);
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_NORMAL_ARRAY);
-		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableClientState(GL_COLOR_ARRAY);*/
 
-		glColor3f(0.1, 0.1, 0.1);
+	/*	glColor3f(0.1, 0.1, 0.1);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		GL::glVertexPointer(mesh_.points());
 		glDrawBuffer(GL_BACK);
@@ -152,7 +160,34 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, &indices_[0]);
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glDepthFunc(GL_LESS);*/
+
+		int stamIndexes[2] = {0,1};
+		Vec3f aLine[2] = {Vec3f(0,0,0), Vec3f(10,0,0)};
+
+	/*	glColor3f(1, 0.1, 0.1);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glDrawBuffer(GL_BACK);
+		glDepthRange(0.0, 1.0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glDepthFunc(GL_LEQUAL);
+		for (int i = 0; i < particlePaths.size(); i++) {
+			GL::glVertexPointer(&particlePaths[i][0]);
+			glDrawElements(GL_LINE, 2, GL_UNSIGNED_INT, stamIndexes);
+		}
+		glDisableClientState(GL_VERTEX_ARRAY);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDepthFunc(GL_LESS);
+*/
+
+
+		glColor3f(1, 0.1, 0.1);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		GL::glVertexPointer(aLine);
+		glDepthRange(0.01, 1.0);
+		glDrawElements(GL_TRIANGLES, 2, GL_UNSIGNED_INT, stamIndexes);
+		glDisableClientState(GL_VERTEX_ARRAY);
+
 	}
 	// call parent method
 	else 
