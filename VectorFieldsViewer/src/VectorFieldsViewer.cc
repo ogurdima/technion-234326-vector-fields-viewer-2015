@@ -86,6 +86,7 @@ VectorFieldsViewer::~VectorFieldsViewer()
 {
 }
 
+
 bool VectorFieldsViewer::open_mesh(const char* _filename)
 {
 	// load mesh
