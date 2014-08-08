@@ -72,6 +72,9 @@ protected:
 	
 	std::vector<std::vector<Vec3f>> particlePaths;
 
+	//Vec3f** particlePathsArray;
+
+
 
 
 private:
