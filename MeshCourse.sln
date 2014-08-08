@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01-ValenceViewer", "01-Vale
 		{90CEDDB6-32C4-49BD-AAC5-CE03E533BFDD} = {90CEDDB6-32C4-49BD-AAC5-CE03E533BFDD}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VectorFieldsViewer", "VectorFieldsViewer\VectorFieldsViewer.vcxproj", "{C9349948-C638-4913-BF63-4936861CB04C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -30,6 +32,10 @@ Global
 		{FB4BF1C8-6B72-4ED1-A437-8F7EA139831E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{FB4BF1C8-6B72-4ED1-A437-8F7EA139831E}.Debug|Win32.Build.0 = Debug|Win32
 		{FB4BF1C8-6B72-4ED1-A437-8F7EA139831E}.Release|Win32.ActiveCfg = Release|Win32
+		{C9349948-C638-4913-BF63-4936861CB04C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C9349948-C638-4913-BF63-4936861CB04C}.Debug|Win32.Build.0 = Debug|Win32
+		{C9349948-C638-4913-BF63-4936861CB04C}.Release|Win32.ActiveCfg = Release|Win32
+		{C9349948-C638-4913-BF63-4936861CB04C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

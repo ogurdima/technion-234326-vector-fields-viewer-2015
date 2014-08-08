@@ -31,19 +31,19 @@
 //=============================================================================
 //=============================================================================
 //
-//  CLASS ValenceViewer - IMPLEMENTATION
+//  CLASS VectorFieldsViewer - IMPLEMENTATION
 //
 //=============================================================================
 
 
 #include <windows.h>
-#include "ValenceViewer.h"
+#include "VectorFieldsViewer.h"
 #include <vector>
 #include <float.h>
 
 #define MAX_VALENCE 10000
 
-ValenceViewer::ValenceViewer(const char* _title, int _width, int _height) : MeshViewer(_title, _width, _height), 
+VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : MeshViewer(_title, _width, _height), 
 	maxValence(1),
 	minValence(0)
 { 
@@ -56,7 +56,7 @@ ValenceViewer::ValenceViewer(const char* _title, int _width, int _height) : Mesh
 }
 
 // Overriden virtual method - fetch class specific IDs here
-void ValenceViewer::processmenu(int i) 
+void VectorFieldsViewer::processmenu(int i) 
 {
 	switch (i) 
 	{
@@ -82,11 +82,11 @@ void ValenceViewer::processmenu(int i)
 	}
 }
 
-ValenceViewer::~ValenceViewer()
+VectorFieldsViewer::~VectorFieldsViewer()
 {
 }
 
-bool ValenceViewer::open_mesh(const char* _filename)
+bool VectorFieldsViewer::open_mesh(const char* _filename)
 {
 	// load mesh
 	if (MeshViewer::open_mesh(_filename))
@@ -103,7 +103,7 @@ bool ValenceViewer::open_mesh(const char* _filename)
 	return false;
 }
 
-void ValenceViewer::calc_valences()
+void VectorFieldsViewer::calc_valences()
 {
 	// Dont want to do it, so let's leave it linear as it is now
 	int valenceBucket[MAX_VALENCE] = {};
@@ -126,7 +126,7 @@ void ValenceViewer::calc_valences()
 	}
 }
 
-void ValenceViewer::color_coding()
+void VectorFieldsViewer::color_coding()
 {
 	int dValence = maxValence - minValence;
 	for(Mesh::VertexIter vit = mesh_.vertices_begin(); vit != mesh_.vertices_end(); ++vit) {
@@ -140,7 +140,7 @@ void ValenceViewer::color_coding()
 	}
 }
 
-void ValenceViewer::draw(const std::string& _draw_mode)
+void VectorFieldsViewer::draw(const std::string& _draw_mode)
 {
 	if (indices_.empty())
 	{

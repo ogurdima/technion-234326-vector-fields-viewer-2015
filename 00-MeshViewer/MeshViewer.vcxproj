@@ -11,10 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\gl.hh" />
-    <None Include="src\GlutExaminer.hh" />
-    <None Include="src\GlutViewer.hh" />
-    <None Include="src\MeshViewer.hh" />
+    <None Include="src\gl.h" />
+    <None Include="src\GlutExaminer.h" />
+    <None Include="src\GlutViewer.h" />
+    <None Include="src\MeshViewer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GlutExaminer.cc" />

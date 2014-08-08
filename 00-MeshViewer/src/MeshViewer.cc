@@ -40,8 +40,8 @@
 
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
-#include "MeshViewer.hh"
-#include "gl.hh"
+#include "MeshViewer.h"
+#include "gl.h"
 #include <iostream>
 #include <fstream>
 

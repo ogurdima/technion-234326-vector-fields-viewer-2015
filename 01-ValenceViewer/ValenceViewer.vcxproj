@@ -11,11 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\ValenceViewer.hh" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="src\valenceview.cc" />
     <ClCompile Include="src\ValenceViewer.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\ValenceViewer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>01-ValenceViewer</ProjectName>

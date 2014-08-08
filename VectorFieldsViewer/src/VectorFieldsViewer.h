@@ -31,23 +31,23 @@
 //=============================================================================
 //=============================================================================
 //
-//  CLASS ValenceViewer
+//  CLASS VectorFieldsViewer
 //
 //=============================================================================
 
 
-#ifndef VALENCEVIEWERWIDGET_HH
-#define VALENCEVIEWERWIDGET_HH
+#ifndef VECTORFIELDSVIEWERWIDGET_H
+#define VECTORFIELDSVIEWERWIDGET_H
 
-#include "MeshViewer.hh"
+#include "MeshViewer.h"
 
-class ValenceViewer : public MeshViewer
+class VectorFieldsViewer : public MeshViewer
 {
 public:
 	/// default constructor
-	ValenceViewer(const char* _title, int _width, int _height);
+	VectorFieldsViewer(const char* _title, int _width, int _height);
 	// destructor
-	~ValenceViewer();
+	~VectorFieldsViewer();
 	/// open mesh
 	virtual bool open_mesh(const char* _filename);
 	virtual void processmenu(int i);

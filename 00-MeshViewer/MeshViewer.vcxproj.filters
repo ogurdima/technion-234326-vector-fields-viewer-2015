@@ -11,16 +11,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\gl.hh">
+    <None Include="src\GlutViewer.h">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="src\GlutExaminer.hh">
+    <None Include="src\GlutExaminer.h">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="src\GlutViewer.hh">
+    <None Include="src\MeshViewer.h">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="src\MeshViewer.hh">
+    <None Include="src\gl.h">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

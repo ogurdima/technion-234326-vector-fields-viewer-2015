@@ -37,8 +37,8 @@
 
 //== INCLUDES =================================================================
 
-#include "gl.hh"
-#include "GlutViewer.hh"
+#include "gl.h"
+#include "GlutViewer.h"
 
 
 //== IMPLEMENTATION ========================================================== 

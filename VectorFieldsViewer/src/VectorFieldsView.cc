@@ -31,7 +31,7 @@
 //=============================================================================
 //#include <afx.h>
 //#include <afxdb.h>
-#include "ValenceViewer.h"
+#include "VectorFieldsViewer.h"
 
 
 
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}*/
 	glutInit(&argc, argv);
-	ValenceViewer window("Valence Viewer", 512, 512);
+	VectorFieldsViewer window("Valence Viewer", 512, 512);
 	if (argc>1) {
 		window.open_mesh(argv[1]);
 	}

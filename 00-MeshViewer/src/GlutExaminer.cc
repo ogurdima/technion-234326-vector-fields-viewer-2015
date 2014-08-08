@@ -38,8 +38,8 @@
 //== INCLUDES =================================================================
 
 
-#include "GlutExaminer.hh"
-#include "gl.hh"
+#include "GlutExaminer.h"
+#include "gl.h"
 #include <OpenMesh/Tools/Utils/Timer.hh>
 
 
