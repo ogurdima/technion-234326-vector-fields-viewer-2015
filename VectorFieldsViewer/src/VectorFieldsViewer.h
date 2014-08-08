@@ -63,6 +63,10 @@ protected:
 	int maxValence;
 	int minValence;
 
+	OpenMesh::FPropHandleT<Vec3d> vfield_fprop;
+	
+
+
 private:
 };
 

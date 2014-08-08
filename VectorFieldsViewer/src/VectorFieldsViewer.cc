@@ -48,11 +48,12 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	minValence(0)
 { 
 	mesh_.request_vertex_colors();
-	add_draw_mode("Vertex Valences");
+	add_draw_mode("Vector Field");
 	// Add custom menu entries here
 	glutAddMenuEntry("Load Geometry", LOAD_GEOMETRY);
 	// Adding custom property: 
 	mesh_.add_property(valence_vprop);
+	mesh_.add_property(vfield_fprop);
 }
 
 // Overriden virtual method - fetch class specific IDs here
@@ -103,6 +104,52 @@ bool VectorFieldsViewer::open_mesh(const char* _filename)
 	return false;
 }
 
+
+void VectorFieldsViewer::draw(const std::string& _draw_mode)
+{
+	if (indices_.empty())
+	{
+		MeshViewer::draw(_draw_mode);
+		return;
+	}
+	if (_draw_mode == "Vector Field")
+	{
+		glDisable(GL_LIGHTING);
+		glShadeModel(GL_SMOOTH);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_NORMAL_ARRAY);
+		glEnableClientState(GL_COLOR_ARRAY);
+		GL::glVertexPointer(mesh_.points());
+		GL::glNormalPointer(mesh_.vertex_normals());
+		GL::glColorPointer(mesh_.vertex_colors());
+		glDepthRange(0.01, 1.0);
+		glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, &indices_[0]);
+		glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableClientState(GL_NORMAL_ARRAY);
+		glDisableClientState(GL_COLOR_ARRAY);
+
+		glColor3f(0.1, 0.1, 0.1);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		GL::glVertexPointer(mesh_.points());
+		glDrawBuffer(GL_BACK);
+		glDepthRange(0.0, 1.0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glDepthFunc(GL_LEQUAL);
+		glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, &indices_[0]);
+		glDisableClientState(GL_VERTEX_ARRAY);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glDepthFunc(GL_LESS);
+	}
+	// call parent method
+	else 
+	{
+		MeshViewer::draw(_draw_mode);
+	}
+}
+
+
+// Legacy
+
 void VectorFieldsViewer::calc_valences()
 {
 	// Dont want to do it, so let's leave it linear as it is now
@@ -137,46 +184,5 @@ void VectorFieldsViewer::color_coding()
 		// Looks a bit weird on allmost-regular models with a singular high-valence vertex.
 		// Can be fixed using lerp until median valence value but I am too lazy to do it.
 		mesh_.set_color(vit, Mesh::Color(r, g, 0));
-	}
-}
-
-void VectorFieldsViewer::draw(const std::string& _draw_mode)
-{
-	if (indices_.empty())
-	{
-		MeshViewer::draw(_draw_mode);
-		return;
-	}
-	if (_draw_mode == "Vertex Valences")
-	{
-		glDisable(GL_LIGHTING);
-		glShadeModel(GL_SMOOTH);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glEnableClientState(GL_COLOR_ARRAY);
-		GL::glVertexPointer(mesh_.points());
-		GL::glNormalPointer(mesh_.vertex_normals());
-		GL::glColorPointer(mesh_.vertex_colors());
-		glDepthRange(0.01, 1.0);
-		glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, &indices_[0]);
-		glDisableClientState(GL_VERTEX_ARRAY);
-		glDisableClientState(GL_NORMAL_ARRAY);
-		glDisableClientState(GL_COLOR_ARRAY);
-		glColor3f(0.1, 0.1, 0.1);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		GL::glVertexPointer(mesh_.points());
-		glDrawBuffer(GL_BACK);
-		glDepthRange(0.0, 1.0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glDepthFunc(GL_LEQUAL);
-		glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, &indices_[0]);
-		glDisableClientState(GL_VERTEX_ARRAY);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDepthFunc(GL_LESS);
-	}
-	// call parent method
-	else 
-	{
-		MeshViewer::draw(_draw_mode);
 	}
 }
