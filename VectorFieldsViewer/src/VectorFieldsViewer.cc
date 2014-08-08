@@ -92,18 +92,32 @@ bool VectorFieldsViewer::open_mesh(const char* _filename)
 	// load mesh
 	if (MeshViewer::open_mesh(_filename))
 	{
-		// reset extreme valence values
-		maxValence = 1;
-		minValence = 0;
-		// compute vertex valence and color coding
-		calc_valences();
-		color_coding();
+		assign_vector_field();
 		glutPostRedisplay();
 		return true;
 	}
 	return false;
 }
 
+// Add random normalized Vec3d as vfield_fprop property for each face
+// Color all certices appropriately
+void VectorFieldsViewer::assign_vector_field()
+{
+	for(Mesh::FaceIter fit = mesh_.faces_begin(); fit != mesh_.faces_end(); ++fit) {
+		double x = rand();
+		double y = rand();
+		double z = rand();
+		Vec3d field = Vec3d(x,y,z).normalized();
+		mesh_.property(vfield_fprop, fit.handle()) = field;
+
+		for(Mesh::FaceVertexIter fvit = mesh_.fv_begin(fit.handle()); fvit != mesh_.fv_end(fit.handle()); ++fvit) {
+			unsigned char r = floor((255 * field[0]));
+			unsigned char g = floor((255 * field[1]));
+			unsigned char b = floor((255 * field[2]));
+			mesh_.set_color(fvit, Mesh::Color(r,g,b));
+		}
+	}
+}
 
 void VectorFieldsViewer::draw(const std::string& _draw_mode)
 {

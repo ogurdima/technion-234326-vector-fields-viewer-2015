@@ -64,6 +64,7 @@ protected:
 	int minValence;
 
 	OpenMesh::FPropHandleT<Vec3d> vfield_fprop;
+	void assign_vector_field();
 	
 
 
