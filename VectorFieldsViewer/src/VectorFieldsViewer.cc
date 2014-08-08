@@ -49,6 +49,7 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 { 
 	mesh_.request_vertex_colors();
 	add_draw_mode("Vector Field");
+	add_draw_mode("Only Lines");
 	// Add custom menu entries here
 	glutAddMenuEntry("Load Geometry", LOAD_GEOMETRY);
 	// Adding custom property: 
@@ -136,21 +137,21 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 	}
 	if (_draw_mode == "Vector Field")
 	{
-		glDisable(GL_LIGHTING);
-		glShadeModel(GL_SMOOTH);
-		/*glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glEnableClientState(GL_COLOR_ARRAY);
-		GL::glVertexPointer(mesh_.points());
-		GL::glNormalPointer(mesh_.vertex_normals());
-		GL::glColorPointer(mesh_.vertex_colors());
-		glDepthRange(0.01, 1.0);
-		glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, &indices_[0]);
-		glDisableClientState(GL_VERTEX_ARRAY);
-		glDisableClientState(GL_NORMAL_ARRAY);
-		glDisableClientState(GL_COLOR_ARRAY);*/
+		//glDisable(GL_LIGHTING);
+		//glShadeModel(GL_SMOOTH);
+		//glEnableClientState(GL_VERTEX_ARRAY);
+		//glEnableClientState(GL_NORMAL_ARRAY);
+		//glEnableClientState(GL_COLOR_ARRAY);
+		//GL::glVertexPointer(mesh_.points());
+		//GL::glNormalPointer(mesh_.vertex_normals());
+		//GL::glColorPointer(mesh_.vertex_colors());
+		//glDepthRange(0.01, 1.0);
+		//glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, &indices_[0]);
+		//glDisableClientState(GL_VERTEX_ARRAY);
+		//glDisableClientState(GL_NORMAL_ARRAY);
+		//glDisableClientState(GL_COLOR_ARRAY);
 
-	/*	glColor3f(0.1, 0.1, 0.1);
+		glColor3f(0.1, 0.1, 0.1);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		GL::glVertexPointer(mesh_.points());
 		glDrawBuffer(GL_BACK);
@@ -158,36 +159,42 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glDepthFunc(GL_LEQUAL);
 		glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, &indices_[0]);
-		glDisableClientState(GL_VERTEX_ARRAY);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDepthFunc(GL_LESS);*/
-
-		int stamIndexes[2] = {0,1};
-		Vec3f aLine[2] = {Vec3f(0,0,0), Vec3f(10,0,0)};
-
-	/*	glColor3f(1, 0.1, 0.1);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glDrawBuffer(GL_BACK);
-		glDepthRange(0.0, 1.0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glDepthFunc(GL_LEQUAL);
-		for (int i = 0; i < particlePaths.size(); i++) {
-			GL::glVertexPointer(&particlePaths[i][0]);
-			glDrawElements(GL_LINE, 2, GL_UNSIGNED_INT, stamIndexes);
-		}
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDepthFunc(GL_LESS);
-*/
 
+		unsigned int stamIndexes[2] = {0,1};
+		glDisable(GL_LIGHTING);
+		glColor3f(1.0, 1.0, 1.0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		glColor3f(1, 0.1, 0.1);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		GL::glVertexPointer(aLine);
-		glDepthRange(0.01, 1.0);
-		glDrawElements(GL_TRIANGLES, 2, GL_UNSIGNED_INT, stamIndexes);
-		glDisableClientState(GL_VERTEX_ARRAY);
+		for (int i = 0; i < particlePaths.size(); i++) 
+		{
+			glEnableClientState(GL_VERTEX_ARRAY);
+			GL::glVertexPointer(&(particlePaths[i][0]));
+			glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, stamIndexes);
+			glDisableClientState(GL_VERTEX_ARRAY);
+		}
 
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	
+	}
+	if (_draw_mode == "Only Lines")
+	{
+		unsigned int stamIndexes[2] = {0,1};
+		glDisable(GL_LIGHTING);
+		glColor3f(1.0, 1.0, 1.0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+		for (int i = 0; i < particlePaths.size(); i++) 
+		{
+			glEnableClientState(GL_VERTEX_ARRAY);
+			GL::glVertexPointer(&(particlePaths[i][0]));
+			glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, stamIndexes);
+			glDisableClientState(GL_VERTEX_ARRAY);
+		}
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	// call parent method
 	else 

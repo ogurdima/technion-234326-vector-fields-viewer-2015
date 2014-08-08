@@ -5,7 +5,7 @@ PathFinder::PathFinder(Mesh mesh_, VfieldFProp vf_fprop)
 {
 	mesh = mesh_;
 	vfield = vf_fprop;
-	dt = 100;
+	dt = 0.005;
 }
 
 
