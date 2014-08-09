@@ -57,7 +57,7 @@ fieldSimulationMaxTime(5)
 	
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
 
-	const char initPath[] = "..\\Data\\triangle.off";
+	const char initPath[] = "..\\Data\\Horse.off";
 	open_mesh(initPath);
 	set_draw_mode(4);
 }
@@ -208,6 +208,11 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 	{
 		glDisable(GL_LIGHTING);
 
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable( GL_BLEND );
+
+		glClearColor(0.0,0.0,0.0,0.0);
+
 		if (_draw_mode == "Vector Field")
 		{
 			glDisable(GL_LIGHTING);
@@ -238,10 +243,9 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 
 		vector<unsigned int> vIndexes;
 		unsigned int stamIndexes[2] = {0,1};
-		
-		glColor4f(1.0, 1.0, 1.0, 0.5);
+		glClearColor(0.0,0.0,0.0,0.0);
+		glColor4f(1.0, 1.0, 1.0, 0.1);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glEnable(GL_ALPHA);
 		for (int i = 0; i < particlePaths.size(); i++) 
 		{
 			vIndexes.clear();
