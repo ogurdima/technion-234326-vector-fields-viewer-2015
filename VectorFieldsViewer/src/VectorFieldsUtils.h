@@ -22,11 +22,21 @@ typedef Mesh::Point Point;
 
 #pragma endregion
 
+#define NUMERICAL_ERROR_THRESH				0.000001
 
 class VectorFieldsUtils
 {
 public:
 	static Point stdToBarycentric(const Point& original, const Point& v1, const Point& v2, const Point& v3);
 	static Point barycentricToStd(const Point& barycentric, const Point& v1, const Point& v2, const Point& v3);
+
+	static bool isCloseToZero(double val);
+	static float fRand(float fMin, float fMax);
 };
 
+
+typedef struct 
+{
+	Vec3f	f;
+	double	t;
+} VectiorFieldTimeVal;

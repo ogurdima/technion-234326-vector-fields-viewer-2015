@@ -56,7 +56,7 @@ width_(_width),
 height_(_height)
 {
 	// create window
-	glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE | GLUT_ALPHA);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE | GLUT_ALPHA);
 	glutInitWindowSize(_width, _height);
 	windowID_ = glutCreateWindow(_title);
 	windows__[windowID_] = this;

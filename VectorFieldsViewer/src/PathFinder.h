@@ -7,17 +7,20 @@
 class PathFinder
 {
 public:
-	PathFinder(const FieldedMesh& fieldedMesh);
-
+	PathFinder();
+	bool configure(const FieldedMesh& aMesh_, double dt_, double tmin_, double tmax_); 
 	vector<vector<Vec3f>> getParticlePaths();
 
 	
 
 protected:
 
-	const FieldedMesh& fieldedMesh;
-	double dt;
-	vector<Vec3f> getParticlePath(const Mesh::FaceHandle& face);
+	FieldedMesh		fieldedMesh;
+	double			dt;
+	double			tmin;
+	double			tmax;
+	bool			hasValidConfig;
 
+	vector<Vec3f> getParticlePath(const Mesh::FaceHandle& face);
 };
 

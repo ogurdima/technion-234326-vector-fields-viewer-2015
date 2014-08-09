@@ -41,7 +41,11 @@
 #include <vector>
 #include <float.h>
 
-VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : GlutExaminer(_title, _width, _height)
+VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
+GlutExaminer(_title, _width, _height),
+fieldSimulationTimeInterval(0.5),
+fieldSimulationMinTime(0),
+fieldSimulationMaxTime(5)
 {
 	clear_draw_modes();
 	add_draw_mode("Wireframe");
@@ -53,11 +57,9 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
 
-	const char initPath[] = "..\\Data\\Horse.off";
+	const char initPath[] = "..\\Data\\triangle.off";
 	open_mesh(initPath);
-
-	set_draw_mode(5);
-
+	set_draw_mode(4);
 }
 
 // Overriden virtual method - fetch class specific IDs here
@@ -91,6 +93,7 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 	if (fieldedMesh.load(fileName))
 	{
 		computeVectorFieldLines();
+
 		set_scene( (Vec3f)(fieldedMesh.boundingBoxMin() + fieldedMesh.boundingBoxMax())*0.5,
 			0.5*(fieldedMesh.boundingBoxMin() - fieldedMesh.boundingBoxMax()).norm());
 		glutPostRedisplay();
@@ -104,9 +107,14 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 
 void VectorFieldsViewer::computeVectorFieldLines()
 {
-	PathFinder pathFinder(fieldedMesh);
-	particlePaths = pathFinder.getParticlePaths();
-	bool ok = true;
+	bool success = pathFinder.configure(fieldedMesh, fieldSimulationTimeInterval, fieldSimulationMinTime, fieldSimulationMaxTime);
+	if (success) {
+		particlePaths = pathFinder.getParticlePaths();
+	}
+	else {
+		std::cerr << "Failed to properly configure PathFinder" << std::endl;
+		particlePaths = vector<vector<Vec3f>>();
+	}
 }
 
 void VectorFieldsViewer::draw(const std::string& _draw_mode)
@@ -202,7 +210,20 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 
 		if (_draw_mode == "Vector Field")
 		{
-			glColor3f(0.1, 0.1, 0.1);
+			glDisable(GL_LIGHTING);
+			glShadeModel(GL_SMOOTH);
+			glColor3f(0.3, 0.3, 0.3);
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_NORMAL_ARRAY);
+			GL::glVertexPointer(fieldedMesh.points());
+			GL::glNormalPointer(fieldedMesh.vertex_normals());
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDepthRange(0.01, 1.0);
+			glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
+			glDisableClientState(GL_VERTEX_ARRAY);
+			glDisableClientState(GL_NORMAL_ARRAY);
+
+			glColor3f(0.5, 0.2, 0.2);
 			glEnableClientState(GL_VERTEX_ARRAY);
 			GL::glVertexPointer(fieldedMesh.points());
 			glDrawBuffer(GL_BACK);
@@ -215,17 +236,21 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 			glDepthFunc(GL_LESS);
 		}
 
-		
+		vector<unsigned int> vIndexes;
 		unsigned int stamIndexes[2] = {0,1};
 		
-		glColor3f(1.0, 1.0, 1.0);
+		glColor4f(1.0, 1.0, 1.0, 0.5);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+		glEnable(GL_ALPHA);
 		for (int i = 0; i < particlePaths.size(); i++) 
 		{
+			vIndexes.clear();
+			for (int j = 0; j < particlePaths[i].size(); j++) {
+				vIndexes.push_back(j);
+			}
 			glEnableClientState(GL_VERTEX_ARRAY);
 			GL::glVertexPointer(&(particlePaths[i][0]));
-			glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, stamIndexes);
+			glDrawElements(GL_LINE_STRIP, particlePaths[i].size(), GL_UNSIGNED_INT, &vIndexes[0]);
 			glDisableClientState(GL_VERTEX_ARRAY);
 		}
 

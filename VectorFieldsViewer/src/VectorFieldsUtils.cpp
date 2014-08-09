@@ -24,5 +24,14 @@ Point VectorFieldsUtils::barycentricToStd(const Point& barycentric, const Point&
 {
 	return v1 * barycentric[0] + v2 * barycentric[1] + v3 * barycentric[2];
 }
-	
 
+bool VectorFieldsUtils::isCloseToZero(double val)
+{
+	return abs(val) < NUMERICAL_ERROR_THRESH;
+}
+
+float VectorFieldsUtils::fRand(float fMin, float fMax)
+{
+    float f = (float)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
+}

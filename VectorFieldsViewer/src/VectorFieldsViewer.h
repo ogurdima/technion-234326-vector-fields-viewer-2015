@@ -69,7 +69,13 @@ protected:
 
 	vector<vector<Vec3f>> particlePaths;
 
-	FieldedMesh fieldedMesh;
+	FieldedMesh		fieldedMesh;
+	PathFinder		pathFinder;
+
+	double			fieldSimulationTimeInterval;
+	double			fieldSimulationMinTime;
+	double			fieldSimulationMaxTime;
+
 
 private:
 

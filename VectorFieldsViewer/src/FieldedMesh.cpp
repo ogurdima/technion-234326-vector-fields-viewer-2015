@@ -59,25 +59,41 @@ void FieldedMesh::updateFaceIndices()
 // Color all certices appropriately
 void FieldedMesh::assignVectorField()
 {
-	ConstFaceVertexIter cvit;
 	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
 	{
-		cvit = cfv_iter(cfit.handle());
+		ConstFaceVertexIter cvit = cfv_iter(cfit.handle());
 		
-		float x = (float)rand();
-		float y = (float)rand();
-		float z = (float)rand();
+		float x = VectorFieldsUtils::fRand(0,1);
+		float y = VectorFieldsUtils::fRand(0,(1-x));
+		float z = 1 - x - y;
+		Point inBarycentric = Vec3f(x,y,z);
 
-		property(vectorFieldFaceProperty, cfit.handle()) = 
-			VectorFieldsUtils::barycentricToStd(Point(x,y,z).normalized(), point(cvit), point(++cvit), point(++cvit));
+		// For now we make this vector field constant in time
 
+		Point v1 = point(cvit);
+		Point v2 = point(++cvit);
+		Point v3 = point(++cvit);
 
-		/*for(Mesh::FaceVertexIter fvit = mesh_.fv_begin(fit.handle()); fvit != mesh_.fv_end(fit.handle()); ++fvit) {
-		unsigned char r = floor((255 * field[0]));
-		unsigned char g = floor((255 * field[1]));
-		unsigned char b = floor((255 * field[2]));
-		mesh_.set_color(fvit, Mesh::Color(r,g,b));
-		}*/
+		Point inStd = VectorFieldsUtils::barycentricToStd(inBarycentric, v1, v2, v3);
+		Point center = VectorFieldsUtils::barycentricToStd(Vec3f(1/3.,1/3.,1/3.), v1, v2, v3);
+
+		vector<VectiorFieldTimeVal> faceVectorField;
+		VectiorFieldTimeVal vfield;
+		
+		vfield.f = (inStd - center);
+		vfield.t = 0;
+		faceVectorField.push_back(vfield);
+		vfield.t = 1;
+		faceVectorField.push_back(vfield);
+
+		Vec3f nrm = normal(cfit.handle());
+		double mustbezero = vfield.f | nrm;
+		if (!VectorFieldsUtils::isCloseToZero(mustbezero)) {
+			bool ok = false;
+		}
+
+		property(vectorFieldFaceProperty, cfit.handle()) = faceVectorField;
+
 	}
 }
 
@@ -104,9 +120,34 @@ void FieldedMesh::surroundBoundingBox()
 	}
 }
 
-inline const Vec3f& FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle) const
+Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, double time) const
 {
-	return property(vectorFieldFaceProperty,faceHandle);
+	vector<VectiorFieldTimeVal> fieldSamples = property(vectorFieldFaceProperty, faceHandle);
+	if (fieldSamples.size() == 0) {
+		return Vec3f(0,0,0);
+	}
+
+	// assuming samples are listed in increasing time order
+	double	prevTime = fieldSamples[0].t;
+	double	nextTime = fieldSamples[0].t;
+	Vec3f	prevField = fieldSamples[0].f;
+	Vec3f	nextField = fieldSamples[0].f;
+
+	for (int i = 0; i < fieldSamples.size(); i++) {
+		nextTime = fieldSamples[i].t;
+		nextField = fieldSamples[i].f;
+		if (nextTime >= time) {
+			break;
+		}
+		prevTime = fieldSamples[i].t;
+		prevField = fieldSamples[i].f;
+	}
+
+	if (abs(nextTime - prevTime) < NUMERICAL_ERROR_THRESH) {
+		return (nextField + prevField) / 2.0;
+	}
+	return (prevField * (time - prevTime) + nextField * (nextTime - time)) / (nextTime - prevTime);
+
 }
 
 bool FieldedMesh::isLoaded()

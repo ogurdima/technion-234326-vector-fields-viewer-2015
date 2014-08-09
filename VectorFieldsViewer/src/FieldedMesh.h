@@ -2,6 +2,8 @@
 
 #include "VectorFieldsUtils.h"
 
+typedef OpenMesh::FPropHandleT<vector<VectiorFieldTimeVal>> FaceFieldPropT;
+
 class FieldedMesh : public Mesh
 {
 
@@ -16,7 +18,7 @@ public:
 	const Point& boundingBoxMin();
 	const Point& boundingBoxMax();
 
-	inline const Vec3f& faceVectorField(const Mesh::FaceHandle& face) const;
+	Vec3f faceVectorField(const Mesh::FaceHandle& face, double time) const;
 
 	const vector<unsigned int>& getIndices() const;
 
@@ -25,7 +27,7 @@ protected:
 	Point									bbMax;
 	Point									bbMin;
 	vector<unsigned int>					faceIndices;
-	OpenMesh::FPropHandleT<Vec3f>			vectorFieldFaceProperty;
+	FaceFieldPropT							vectorFieldFaceProperty;
 
 private:
 	void surroundBoundingBox();
