@@ -5,6 +5,7 @@ FieldedMesh::FieldedMesh(void) :
 	bbMin(.0f), 
 	bbMax(.0f)
 {
+	request_vertex_colors();
 	add_property(vectorFieldFaceProperty);
 }
 
