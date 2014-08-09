@@ -9,22 +9,23 @@ PathFinder::PathFinder(const FieldedMesh& fieldedMesh_) :
 	
 }
 
-std::vector<std::vector<Vec3f>> PathFinder::getParticlePaths()
+vector<vector<Vec3f>> PathFinder::getParticlePaths()
 {
-	std::vector<std::vector<Vec3f>> allPaths;
-	for(Mesh::FaceIter fit = fieldedMesh.faces_begin(); fit != fieldedMesh.faces_end(); ++fit) 
+	vector<vector<Vec3f>> allPaths;
+	
+	for(Mesh::ConstFaceIter fit(fieldedMesh.faces_begin()), fitEnd(fieldedMesh.faces_end()); fit != fitEnd; ++fit ) 
 	{
-		std::vector<Vec3f> facePath = getParticlePath(fit.handle());
+		vector<Vec3f> facePath = getParticlePath(fit.handle());
 		allPaths.push_back(facePath);
 	}
 
 	return allPaths;
 }
 
-std::vector<Vec3f> PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
+vector<Vec3f> PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 {
-	std::vector<Vec3f> vertexPos;
-	std::vector<Vec3f> particlePath;
+	vector<Vec3f> vertexPos;
+	vector<Vec3f> particlePath;
 
 	Mesh::ConstFaceVertexIter	cfv_it(fieldedMesh.cfv_begin(faceHandle)), cfv_end(fieldedMesh.cfv_end(faceHandle));
 

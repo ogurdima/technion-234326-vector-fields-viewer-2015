@@ -16,16 +16,15 @@ public:
 	const Point& boundingBoxMin();
 	const Point& boundingBoxMax();
 
-	void computeVectorFieldLines();
 	void assignVectorField();
 
-	Point vectorFieldOf(const Mesh::FaceHandle& face);
+	inline const Point& faceVectorField(const Mesh::FaceHandle& face) const;
 
-	const std::vector<unsigned int>& getIndices() const;
+	const vector<unsigned int>& getIndices() const;
 
 protected:
 	bool isLoaded_;
-	std::vector<unsigned int>  faceIndices;
+	vector<unsigned int>  faceIndices;
 	Point            bbMin, bbMax;
 
 	OpenMesh::FPropHandleT<Vec3f> vectorFieldFaceProperty;

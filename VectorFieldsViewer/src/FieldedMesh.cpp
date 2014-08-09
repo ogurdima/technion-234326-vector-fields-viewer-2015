@@ -28,22 +28,11 @@ bool FieldedMesh::load(const char* path)
 		// update face indices for faster rendering
 		updateFaceIndices();
 
+		assignVectorField();
+
 		isLoaded_ = true;
 	}
 	return isLoaded_;
-}
-
-void FieldedMesh::surroundBoundingBox()
-{
-	// set center and radius
-	Mesh::ConstVertexIter  v_it(vertices_begin()), v_end(vertices_end());
-
-	bbMin = bbMax = point(v_it);
-	for (; v_it!=v_end; ++v_it)
-	{
-		bbMin.minimize(point(v_it));
-		bbMax.maximize(point(v_it));
-	}
 }
 
 void FieldedMesh::updateFaceIndices()
@@ -67,13 +56,13 @@ void FieldedMesh::updateFaceIndices()
 // Color all certices appropriately
 void FieldedMesh::assignVectorField()
 {
-	for(Mesh::FaceIter fit = faces_begin(); fit != faces_end(); ++fit) {
-		double x = rand();
-		double y = rand();
-		double z = rand();
+	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) {
+		float x = (float)rand();
+		float y = (float)rand();
+		float z = (float)rand();
 		Vec3f field = Vec3f(x,y,z).normalized();
 
-		property(vectorFieldFaceProperty, fit.handle()) = field;
+		property(vectorFieldFaceProperty, cfit.handle()) = field;
 
 
 		/*for(Mesh::FaceVertexIter fvit = mesh_.fv_begin(fit.handle()); fvit != mesh_.fv_end(fit.handle()); ++fvit) {
@@ -95,9 +84,22 @@ const Point& FieldedMesh::boundingBoxMax()
 	return bbMax;
 }
 
-Point FieldedMesh::vectorFieldOf(const Mesh::FaceHandle& faceHandle)
+void FieldedMesh::surroundBoundingBox()
 {
-	return Point(1,0,0);
+	// set center and radius
+	Mesh::ConstVertexIter  v_it(vertices_begin()), v_end(vertices_end());
+
+	bbMin = bbMax = point(v_it);
+	for (; v_it!=v_end; ++v_it)
+	{
+		bbMin.minimize(point(v_it));
+		bbMax.maximize(point(v_it));
+	}
+}
+
+inline const Point& FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle) const
+{
+	return property(vectorFieldFaceProperty,faceHandle);
 }
 
 bool FieldedMesh::isLoaded()
@@ -105,7 +107,7 @@ bool FieldedMesh::isLoaded()
 	return isLoaded_;
 }
 
-const std::vector<unsigned int>& FieldedMesh::getIndices() const
+const vector<unsigned int>& FieldedMesh::getIndices() const
 {
 	return faceIndices;
 }

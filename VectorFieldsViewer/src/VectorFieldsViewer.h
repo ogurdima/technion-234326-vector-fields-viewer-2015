@@ -67,7 +67,7 @@ protected:
 	/// set vertex color from vertex valence
 	void colorCoding();
 
-	std::vector<std::vector<Vec3f>> particlePaths;
+	vector<vector<Vec3f>> particlePaths;
 
 	FieldedMesh fieldedMesh;
 

@@ -9,7 +9,7 @@ class PathFinder
 public:
 	PathFinder(const FieldedMesh& fieldedMesh);
 
-	std::vector<std::vector<Vec3f>> getParticlePaths();
+	vector<vector<Vec3f>> getParticlePaths();
 
 	
 
@@ -17,7 +17,7 @@ protected:
 
 	const FieldedMesh& fieldedMesh;
 	double dt;
-	std::vector<Vec3f> getParticlePath(const Mesh::FaceHandle& face);
+	vector<Vec3f> getParticlePath(const Mesh::FaceHandle& face);
 
 };
 

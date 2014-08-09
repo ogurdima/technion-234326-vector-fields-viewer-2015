@@ -57,7 +57,7 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	open_mesh(initPath);
 
 	set_draw_mode(5);
-	
+
 }
 
 // Overriden virtual method - fetch class specific IDs here
@@ -116,6 +116,7 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		GlutExaminer::draw(_draw_mode);
 		return;
 	}
+
 	if (_draw_mode == "Wireframe")
 	{
 		glDisable(GL_LIGHTING);
@@ -161,8 +162,7 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 	}
 	else if (_draw_mode == "Solid Flat")
 	{
-		Mesh::ConstFaceIter        f_it(fieldedMesh.faces_begin()), 
-			f_end(fieldedMesh.faces_end());
+		Mesh::ConstFaceIter        f_it(fieldedMesh.faces_begin()),  f_end(fieldedMesh.faces_end());
 		Mesh::ConstFaceVertexIter  fv_it;
 
 		glEnable(GL_LIGHTING);
@@ -195,56 +195,29 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_NORMAL_ARRAY);
-	}
-#pragma endregion
-	else if (_draw_mode == "Vector Field")
+	} else
+	if (_draw_mode == "Only Lines" || _draw_mode == "Vector Field")
 	{
-		//glDisable(GL_LIGHTING);
-		//glShadeModel(GL_SMOOTH);
-		//glEnableClientState(GL_VERTEX_ARRAY);
-		//glEnableClientState(GL_NORMAL_ARRAY);
-		//glEnableClientState(GL_COLOR_ARRAY);
-		//GL::glVertexPointer(fieldedMesh.points());
-		//GL::glNormalPointer(fieldedMesh.vertex_normals());
-		//GL::glColorPointer(fieldedMesh.vertex_colors());
-		//glDepthRange(0.01, 1.0);
-		//glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, &indices_[0]);
-		//glDisableClientState(GL_VERTEX_ARRAY);
-		//glDisableClientState(GL_NORMAL_ARRAY);
-		//glDisableClientState(GL_COLOR_ARRAY);
-
-		glColor3f(0.1, 0.1, 0.1);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		GL::glVertexPointer(fieldedMesh.points());
-		glDrawBuffer(GL_BACK);
-		glDepthRange(0.0, 1.0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glDepthFunc(GL_LEQUAL);
-		glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
-		glDisableClientState(GL_VERTEX_ARRAY);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDepthFunc(GL_LESS);
-
-		unsigned int stamIndexes[2] = {0,1};
 		glDisable(GL_LIGHTING);
-		glColor3f(1.0, 1.0, 1.0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		for (int i = 0; i < particlePaths.size(); i++) 
+		if (_draw_mode == "Vector Field")
 		{
+			glColor3f(0.1, 0.1, 0.1);
 			glEnableClientState(GL_VERTEX_ARRAY);
-			GL::glVertexPointer(&(particlePaths[i][0]));
-			glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, stamIndexes);
+			GL::glVertexPointer(fieldedMesh.points());
+			glDrawBuffer(GL_BACK);
+			glDepthRange(0.0, 1.0);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glDepthFunc(GL_LEQUAL);
+			glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
 			glDisableClientState(GL_VERTEX_ARRAY);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDepthFunc(GL_LESS);
 		}
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	} else
-	if (_draw_mode == "Only Lines")
-	{
+		computeVectorFieldLines();
 		unsigned int stamIndexes[2] = {0,1};
-		glDisable(GL_LIGHTING);
+		
 		glColor3f(1.0, 1.0, 1.0);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
