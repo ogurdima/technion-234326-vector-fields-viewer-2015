@@ -2,7 +2,7 @@
 
 
 
-Point VectorFieldsUtils::stdToBarycentric(Point original, Point v1, Point v2, Point v3)
+Point VectorFieldsUtils::stdToBarycentric(const Point& original, const Point& v1, const Point& v2, const Point& v3) 
 {
     Vec3f e1 = v2 - v1 , e2 = v3 - v1, v1ToOriginal = original - v1;
 
@@ -20,7 +20,7 @@ Point VectorFieldsUtils::stdToBarycentric(Point original, Point v1, Point v2, Po
 }
 
 
-Point VectorFieldsUtils::barycentricToStd(Point barycentric, Point v1, Point v2, Point v3)
+Point VectorFieldsUtils::barycentricToStd(const Point& barycentric, const Point& v1, const Point& v2, const Point& v3) 
 {
 	return v1 * barycentric[0] + v2 * barycentric[1] + v3 * barycentric[2];
 }

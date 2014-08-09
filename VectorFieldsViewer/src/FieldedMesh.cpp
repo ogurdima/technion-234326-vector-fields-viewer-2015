@@ -5,6 +5,8 @@ FieldedMesh::FieldedMesh(void) :
 	bbMin(.0f), 
 	bbMax(.0f)
 {
+	request_face_normals();
+	request_vertex_normals();
 	request_vertex_colors();
 	add_property(vectorFieldFaceProperty);
 }
@@ -21,13 +23,14 @@ bool FieldedMesh::load(const char* path)
 	if (OpenMesh::IO::read_mesh(*this, path))
 	{
 		surroundBoundingBox();
-		
+
 		// compute face & vertex normals
 		update_normals();
 
 		// update face indices for faster rendering
 		updateFaceIndices();
 
+		// compute and assign random vector field
 		assignVectorField();
 
 		isLoaded_ = true;
@@ -56,13 +59,17 @@ void FieldedMesh::updateFaceIndices()
 // Color all certices appropriately
 void FieldedMesh::assignVectorField()
 {
-	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) {
+	ConstFaceVertexIter cvit;
+	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
+	{
+		cvit = cfv_iter(cfit.handle());
+		
 		float x = (float)rand();
 		float y = (float)rand();
 		float z = (float)rand();
-		Vec3f field = Vec3f(x,y,z).normalized();
 
-		property(vectorFieldFaceProperty, cfit.handle()) = field;
+		property(vectorFieldFaceProperty, cfit.handle()) = 
+			VectorFieldsUtils::barycentricToStd(Point(x,y,z).normalized(), point(cvit), point(++cvit), point(++cvit));
 
 
 		/*for(Mesh::FaceVertexIter fvit = mesh_.fv_begin(fit.handle()); fvit != mesh_.fv_end(fit.handle()); ++fvit) {
@@ -87,8 +94,8 @@ const Point& FieldedMesh::boundingBoxMax()
 void FieldedMesh::surroundBoundingBox()
 {
 	// set center and radius
-	Mesh::ConstVertexIter  v_it(vertices_begin()), v_end(vertices_end());
-
+	ConstVertexIter  v_it(vertices_begin()), v_end(vertices_end());
+	
 	bbMin = bbMax = point(v_it);
 	for (; v_it!=v_end; ++v_it)
 	{
@@ -97,7 +104,7 @@ void FieldedMesh::surroundBoundingBox()
 	}
 }
 
-inline const Point& FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle) const
+inline const Vec3f& FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle) const
 {
 	return property(vectorFieldFaceProperty,faceHandle);
 }

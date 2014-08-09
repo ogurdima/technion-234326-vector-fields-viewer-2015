@@ -50,7 +50,7 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	add_draw_mode("Solid Smooth");
 	add_draw_mode("Vector Field");
 	add_draw_mode("Only Lines");
-
+	
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
 
 	const char initPath[] = "..\\Data\\Horse.off";
@@ -77,8 +77,7 @@ void VectorFieldsViewer::processmenu(int i)
 		ofn.lpstrFile=szFileName;
 		ofn.nMaxFile=MAX_PATH;
 		if(GetOpenFileName(&ofn)) {
-			if( open_mesh(szFileName))
-				glutPostRedisplay();
+			open_mesh(szFileName);
 		}
 	}
 }
@@ -91,6 +90,7 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 {
 	if (fieldedMesh.load(fileName))
 	{
+		computeVectorFieldLines();
 		set_scene( (Vec3f)(fieldedMesh.boundingBoxMin() + fieldedMesh.boundingBoxMax())*0.5,
 			0.5*(fieldedMesh.boundingBoxMin() - fieldedMesh.boundingBoxMax()).norm());
 		glutPostRedisplay();
@@ -215,7 +215,7 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 			glDepthFunc(GL_LESS);
 		}
 
-		computeVectorFieldLines();
+		
 		unsigned int stamIndexes[2] = {0,1};
 		
 		glColor3f(1.0, 1.0, 1.0);

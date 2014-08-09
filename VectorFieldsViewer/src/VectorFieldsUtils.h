@@ -1,12 +1,8 @@
 #pragma once
 
-#pragma region include
-
 #include <OpenMesh/Core/Geometry/VectorT.hh>
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
-
-#pragma endregion
 
 #pragma region using
 
@@ -30,7 +26,7 @@ typedef Mesh::Point Point;
 class VectorFieldsUtils
 {
 public:
-	static Point stdToBarycentric(Point original, Point v1, Point v2, Point v3);
-	static Point barycentricToStd(Point barycentric, Point v1, Point v2, Point v3);
+	static Point stdToBarycentric(const Point& original, const Point& v1, const Point& v2, const Point& v3);
+	static Point barycentricToStd(const Point& barycentric, const Point& v1, const Point& v2, const Point& v3);
 };
 

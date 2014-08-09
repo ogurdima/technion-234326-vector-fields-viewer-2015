@@ -16,22 +16,20 @@ public:
 	const Point& boundingBoxMin();
 	const Point& boundingBoxMax();
 
-	void assignVectorField();
-
-	inline const Point& faceVectorField(const Mesh::FaceHandle& face) const;
+	inline const Vec3f& faceVectorField(const Mesh::FaceHandle& face) const;
 
 	const vector<unsigned int>& getIndices() const;
 
 protected:
-	bool isLoaded_;
-	vector<unsigned int>  faceIndices;
-	Point            bbMin, bbMax;
-
-	OpenMesh::FPropHandleT<Vec3f> vectorFieldFaceProperty;
+	bool									isLoaded_;
+	Point									bbMax;
+	Point									bbMin;
+	vector<unsigned int>					faceIndices;
+	OpenMesh::FPropHandleT<Vec3f>			vectorFieldFaceProperty;
 
 private:
 	void surroundBoundingBox();
 	void updateFaceIndices();
-
+	void assignVectorField();
 };
 
