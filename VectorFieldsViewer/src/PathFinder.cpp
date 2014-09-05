@@ -31,6 +31,7 @@ vector<vector<Vec3f>> PathFinder::getParticlePaths()
 	if (!hasValidConfig) {
 		throw std::exception("Calling getParticlePaths with badly configured PathFinder");
 	}
+
 	vector<vector<Vec3f>> allPaths;
 	for(Mesh::ConstFaceIter fit(fieldedMesh.faces_begin()), fitEnd(fieldedMesh.faces_end()); fit != fitEnd; ++fit ) 
 	{

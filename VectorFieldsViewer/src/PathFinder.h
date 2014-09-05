@@ -8,8 +8,10 @@ class PathFinder
 {
 public:
 	PathFinder();
-	bool configure(const FieldedMesh& aMesh_, double dt_, double tmin_, double tmax_); 
-	vector<vector<Vec3f>> getParticlePaths();
+
+	bool					configure(const FieldedMesh& aMesh_, double dt_, double tmin_, double tmax_);
+
+	vector<vector<Vec3f>>	getParticlePaths();
 
 	
 

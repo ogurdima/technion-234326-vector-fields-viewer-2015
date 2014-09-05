@@ -37,6 +37,6 @@ public:
 
 typedef struct 
 {
-	Vec3f	f;
-	double	t;
-} VectiorFieldTimeVal;
+	Vec3f	f; 
+	float	t;
+} VectorFieldTimeVal;

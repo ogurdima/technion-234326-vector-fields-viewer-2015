@@ -75,10 +75,10 @@ void FieldedMesh::assignVectorField()
 		Point v3 = point(++cvit);
 
 		Point inStd = VectorFieldsUtils::barycentricToStd(inBarycentric, v1, v2, v3);
-		Point center = VectorFieldsUtils::barycentricToStd(Vec3f(1/3.,1/3.,1/3.), v1, v2, v3);
+		Point center = VectorFieldsUtils::barycentricToStd(Vec3f(float(1/3.)), v1, v2, v3);
 
-		vector<VectiorFieldTimeVal> faceVectorField;
-		VectiorFieldTimeVal vfield;
+		vector<VectorFieldTimeVal> faceVectorField;
+		VectorFieldTimeVal vfield;
 		
 		vfield.f = (inStd - center);
 		vfield.t = 0;
@@ -120,20 +120,20 @@ void FieldedMesh::surroundBoundingBox()
 	}
 }
 
-Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, double time) const
+Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, float time) const
 {
-	vector<VectiorFieldTimeVal> fieldSamples = property(vectorFieldFaceProperty, faceHandle);
+	vector<VectorFieldTimeVal> fieldSamples = property(vectorFieldFaceProperty, faceHandle);
 	if (fieldSamples.size() == 0) {
 		return Vec3f(0,0,0);
 	}
 
 	// assuming samples are listed in increasing time order
-	double	prevTime = fieldSamples[0].t;
-	double	nextTime = fieldSamples[0].t;
+	float	prevTime = fieldSamples[0].t;
+	float	nextTime = fieldSamples[0].t;
 	Vec3f	prevField = fieldSamples[0].f;
 	Vec3f	nextField = fieldSamples[0].f;
 
-	for (int i = 0; i < fieldSamples.size(); i++) {
+	for (uint i = 0; i < fieldSamples.size(); i++) {
 		nextTime = fieldSamples[i].t;
 		nextField = fieldSamples[i].f;
 		if (nextTime >= time) {
