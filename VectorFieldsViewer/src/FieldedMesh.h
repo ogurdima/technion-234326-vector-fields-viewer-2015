@@ -4,6 +4,26 @@
 
 typedef OpenMesh::FPropHandleT<vector<VectorFieldTimeVal>> FaceFieldPropT;
 
+//typedef OpenMesh::VectorT<Vec3f,3> TriVerteces;
+//
+//typedef struct 
+//{
+//	OpenMesh::ArrayItems::Halfedge		halfEdge;
+//	Point								from;
+//	Point								to;
+//
+//	bool								isWindward(Vec3f field);
+//} TriHalfEdge;
+//
+//typedef OpenMesh::VectorT<TriHalfEdge,3> TriHalfEdges;
+//
+//class FaceWrapper
+//{
+//public:
+//	TriHalfEdges halfEdges;
+//};
+
+
 class FieldedMesh : public Mesh
 {
 
@@ -18,9 +38,9 @@ public:
 	const Point&							boundingBoxMax();
 
 	Vec3f									faceVectorField(const FaceHandle& face, float time) const;
-
+				
 	const vector<uint>&						getIndices() const;
-
+	Triangle								getFacePoints(OpenMesh::ArrayKernel::FaceHandle faceHandle);
 protected:
 	bool									isLoaded_;
 	Point									bbMax;

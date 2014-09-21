@@ -61,25 +61,20 @@ void FieldedMesh::assignVectorField()
 {
 	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
 	{
-		ConstFaceVertexIter cvit = cfv_iter(cfit.handle());
-		
 		float x = VectorFieldsUtils::fRand(0,1);
 		float y = VectorFieldsUtils::fRand(0,(1-x));
 		float z = 1 - x - y;
 		Point inBarycentric = Vec3f(x,y,z);
 
 		// For now we make this vector field constant in time
-
-		Point v1 = point(cvit);
-		Point v2 = point(++cvit);
-		Point v3 = point(++cvit);
-
-		Point inStd = VectorFieldsUtils::barycentricToStd(inBarycentric, v1, v2, v3);
-		Point center = VectorFieldsUtils::barycentricToStd(Vec3f(float(1/3.)), v1, v2, v3);
+		Triangle triangle = getFacePoints(cfit);
+		
+		Point inStd = VectorFieldsUtils::barycentricToStd(inBarycentric, triangle);
+		Point center = VectorFieldsUtils::barycentricToStd(Vec3f(float(1/3.)), triangle);
 
 		vector<VectorFieldTimeVal> faceVectorField;
 		VectorFieldTimeVal vfield;
-		
+
 		vfield.f = (inStd - center);
 		vfield.t = 0;
 		faceVectorField.push_back(vfield);
@@ -97,6 +92,12 @@ void FieldedMesh::assignVectorField()
 	}
 }
 
+Triangle FieldedMesh::getFacePoints(OpenMesh::ArrayKernel::FaceHandle faceHandle)
+{
+	ConstFaceVertexIter cvit(cfv_iter(faceHandle));
+	return Triangle(point(cvit), point(++cvit), point(++cvit));
+}
+
 const Point& FieldedMesh::boundingBoxMin()
 {
 	return bbMin;
@@ -111,7 +112,7 @@ void FieldedMesh::surroundBoundingBox()
 {
 	// set center and radius
 	ConstVertexIter  v_it(vertices_begin()), v_end(vertices_end());
-	
+
 	bbMin = bbMax = point(v_it);
 	for (; v_it!=v_end; ++v_it)
 	{

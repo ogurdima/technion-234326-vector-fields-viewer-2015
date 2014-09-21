@@ -3,12 +3,12 @@
 
 
 PathFinder::PathFinder() : 
-dt(0.1),
-tmin(0),
-tmax(1),
-hasValidConfig(false)
+	dt(0.1),
+	tmin(0),
+	tmax(1),
+	hasValidConfig(false)
 {
-	
+
 }
 
 bool PathFinder::configure(const FieldedMesh& aMesh_, double dt_, double tmin_, double tmax_)
@@ -44,35 +44,40 @@ vector<vector<Vec3f>> PathFinder::getParticlePaths()
 
 vector<Vec3f> PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 {
-	vector<Vec3f> vertexPos;
-	vector<Vec3f> particlePath;
-
-	Mesh::ConstFaceVertexIter	cfv_it(fieldedMesh.cfv_begin(faceHandle)), cfv_end(fieldedMesh.cfv_end(faceHandle));
-	for(; cfv_it != cfv_end; cfv_it++)  {
-		vertexPos.push_back(fieldedMesh.point(cfv_it.handle()));
-	}
-	assert(vertexPos.size() == 3);
-
-	Vec3f pstart = (vertexPos[0] + vertexPos[1] + vertexPos[2]) / 3.0;
+	vector<Point> particlePath;
+	Triangle pts(fieldedMesh.getFacePoints(faceHandle));
+	Vec3f field = fieldedMesh.faceVectorField(faceHandle, 0);
+	Point pstart = VectorFieldsUtils::barycentricToStd(Point(1./3.),pts);
 	particlePath.push_back(pstart);
-	Vec3f plast = pstart;
-
-	
-
-	for (double t = tmin; t <= tmax; t++) {
-
-		float x = VectorFieldsUtils::fRand(-0.1,0.1);
-		float y = VectorFieldsUtils::fRand(-0.1,0.1);
-		float z = VectorFieldsUtils::fRand(-0.1,0.1);
-		Vec3f randVariation = Vec3f(x,y,z);
-
-		Vec3f field = fieldedMesh.faceVectorField(faceHandle, t);
-		Vec3f pnext = plast + (randVariation+field) * dt;
-		plast = pnext;
-		particlePath.push_back(pnext);
-
-		// Add face toggle
+	Point plast = pstart;
+	bool found(false);
+	for(int i = 0; i < 3; ++i)
+	{
+		if(VectorFieldsUtils::intersectionRaySegment(pstart, field , pts[i], pts[(i + 1) % 2], plast))
+		{
+			found = true;
+			break;
+		}
 	}
+	if(found)
+	{
+		particlePath.push_back(plast);
+	}
+
+	//for (double t = tmin; t <= tmax; t++) {
+
+	//	float x = VectorFieldsUtils::fRand(-0.1,0.1);
+	//	float y = VectorFieldsUtils::fRand(-0.1,0.1);
+	//	float z = VectorFieldsUtils::fRand(-0.1,0.1);
+	//	Vec3f randVariation = Vec3f(x,y,z);
+
+	//	Vec3f field = fieldedMesh.faceVectorField(faceHandle, t);
+	//	Vec3f pnext = plast + (randVariation+field) * dt;
+	//	plast = pnext;
+	//	particlePath.push_back(pnext);
+
+	//	// Add face toggle
+	//}
 
 	return particlePath;
 }

@@ -13,8 +13,6 @@ public:
 
 	vector<vector<Vec3f>>	getParticlePaths();
 
-	
-
 protected:
 
 	FieldedMesh		fieldedMesh;

@@ -244,7 +244,7 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		vector<unsigned int> vIndexes;
 		unsigned int stamIndexes[2] = {0,1};
 		glClearColor(0.0,0.0,0.0,0.0);
-		glColor4f(1.0, 1.0, 1.0, 0.1);
+		glColor4f(1.0, 1.0, 1.0, 0.5);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		for (int i = 0; i < particlePaths.size(); i++) 
 		{

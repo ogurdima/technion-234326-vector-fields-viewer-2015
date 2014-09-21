@@ -15,5 +15,5 @@ int main(int argc, char **argv)
 	if (argc>1) {
 		window.open_mesh(argv[1]);
 	}
-	glutMainLoop();
+	glutMainLoop(); 
 }
