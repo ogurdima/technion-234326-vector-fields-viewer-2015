@@ -21,6 +21,8 @@ protected:
 	double			tmax;
 	bool			hasValidConfig;
 
-	vector<Vec3f> getParticlePath(const Mesh::FaceHandle& face);
+	int				pathDepth;
+
+	vector<Vec3f> getParticlePath(const Mesh::FaceHandle& face_);
 };
 

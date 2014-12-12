@@ -44,16 +44,19 @@ vector<vector<Vec3f>> PathFinder::getParticlePaths()
 
 vector<Vec3f> PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 {
+	static int count = 0;
 	vector<Point> particlePath;
 	Triangle pts(fieldedMesh.getFacePoints(faceHandle));
 	Vec3f field = fieldedMesh.faceVectorField(faceHandle, 0);
-	Point pstart = VectorFieldsUtils::barycentricToStd(Point(1./3.),pts);
+	Point pstart = VectorFieldsUtils::barycentricToStd(Point(1./3.), pts);
 	particlePath.push_back(pstart);
 	Point plast = pstart;
 	bool found(false);
+	Mesh::HalfedgeHandle halfEdge;
+	
 	for(int i = 0; i < 3; ++i)
 	{
-		if(VectorFieldsUtils::intersectionRaySegment(pstart, field , pts[i], pts[(i + 1) % 2], plast))
+		if(VectorFieldsUtils::intersectionRaySegmentDima(pstart, field , pts[i], pts[(i + 1) % 3], plast))
 		{
 			found = true;
 			break;
@@ -63,22 +66,10 @@ vector<Vec3f> PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	{
 		particlePath.push_back(plast);
 	}
-
-	//for (double t = tmin; t <= tmax; t++) {
-
-	//	float x = VectorFieldsUtils::fRand(-0.1,0.1);
-	//	float y = VectorFieldsUtils::fRand(-0.1,0.1);
-	//	float z = VectorFieldsUtils::fRand(-0.1,0.1);
-	//	Vec3f randVariation = Vec3f(x,y,z);
-
-	//	Vec3f field = fieldedMesh.faceVectorField(faceHandle, t);
-	//	Vec3f pnext = plast + (randVariation+field) * dt;
-	//	plast = pnext;
-	//	particlePath.push_back(pnext);
-
-	//	// Add face toggle
-	//}
-
+	else
+	{
+		throw new std::exception("Intersection wasn't found!!! AAAA");
+	}
 	return particlePath;
 }
 

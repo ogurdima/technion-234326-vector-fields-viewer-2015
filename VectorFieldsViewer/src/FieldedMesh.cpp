@@ -59,13 +59,13 @@ void FieldedMesh::updateFaceIndices()
 // Color all certices appropriately
 void FieldedMesh::assignVectorField()
 {
+	srand(time(0));
 	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
 	{
 		float x = VectorFieldsUtils::fRand(0,1);
 		float y = VectorFieldsUtils::fRand(0,(1-x));
 		float z = 1 - x - y;
 		Point inBarycentric = Vec3f(x,y,z);
-
 		// For now we make this vector field constant in time
 		Triangle triangle = getFacePoints(cfit);
 		

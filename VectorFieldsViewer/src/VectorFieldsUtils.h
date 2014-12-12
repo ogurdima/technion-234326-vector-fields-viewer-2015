@@ -40,23 +40,25 @@ public:
 
 	static bool intersectionRaySegment(const Point& start, const Vec3f& field, const Point& v1, const Point& v2, Point& intersection)
 	{
-		// field 21 
+		// field 21 (end - start)
 		if(field.length() < NUMERICAL_ERROR_THRESH)
 			return false;
 
 		Vec3f segmentRay = v2 - v1; // 43 
-		
-		if(segmentRay.length() < NUMERICAL_ERROR_THRESH)
+		float segmentRayLength = segmentRay.length();
+
+		if(segmentRayLength < NUMERICAL_ERROR_THRESH)
 			return false;
+
+		
 
 		Vec3f v1Start = v1 - start; // 13 
 
-
-		float dotV1StartSegmentRay = dot(v1Start, segmentRay);	   // d1343
-		float dotSegmentRayField = dot(segmentRay, field);		   // d4321
-		float dotV1StartField = dot(v1Start, field);		   // d1321
-		float segmentRayLengthSqr = dot(segmentRay, segmentRay);		   // d4343
-		float fieldLengthSqr = dot(field, field);			   // d2121
+		float dotV1StartSegmentRay = dot(v1Start, segmentRay);			// d1343
+		float dotSegmentRayField = dot(segmentRay, field);				// d4321
+		float dotV1StartField = dot(v1Start, field);					// d1321
+		float segmentRayLengthSqr = segmentRayLength * segmentRayLength;		// d4343
+		float fieldLengthSqr = dot(field, field);						// d2121
 
 		float denom = fieldLengthSqr * segmentRayLengthSqr - dotSegmentRayField * dotSegmentRayField;
 		if(abs(denom) < NUMERICAL_ERROR_THRESH)
@@ -69,35 +71,51 @@ public:
 		if(fieldTime < 0) 
 			return false;
 
-		float segmentTime = (dotV1StartSegmentRay + dotSegmentRayField * fieldTime) / segmentRayLengthSqr;
+		float segmentTime = (dotV1StartSegmentRay + dotSegmentRayField * fieldTime) / (segmentRayLength * segmentRayLength);
 
 		if(segmentTime < 0 || segmentTime > 1) 
 			return false;
 		
-
 		intersection = start + field * fieldTime;
 		return true;
-		/*
-		p21 = field;
-		p13 = vs
+	}
+
+	static bool intersectionRaySegmentDima(const Point& start, const Vec3f& field, const Point& v1, const Point& v2, Point& intersection)
+	{
+		if(field.length() < NUMERICAL_ERROR_THRESH)
+			return false;
+
+		Vec3f segment = v2 - v1;
+		float segmentLength = segment.length();
+
+		if(segmentLength < NUMERICAL_ERROR_THRESH)
+			return false;
+
+		Vec3f a = start - v1;
+
+		Vec3f normal = segment % a;
+		Vec3f u = segment % normal;
 
 
-		denom = d2121 * d4343 - d4321 * d4321;
-		if (ABS(denom) < EPS)
-		return(FALSE);
-		numer = d1343 * d4321 - d1321 * d4343;
+		float denom = dot(field, u);
 
-		*mua = numer / denom;
-		*mub = (d1343 + d4321 * (*mua)) / d4343;
+		if(abs(denom) < NUMERICAL_ERROR_THRESH)
+			return false;
 
-		pa->x = p1.x + *mua * p21.x;
-		pa->y = p1.y + *mua * p21.y;
-		pa->z = p1.z + *mua * p21.z;
-		pb->x = p3.x + *mub * p43.x;
-		pb->y = p3.y + *mub * p43.y;
-		pb->z = p3.z + *mub * p43.z;
+		assert(dot(a,u) < 0);
 
-		return(TRUE);*/
+		float fieldTime = - dot(a,u) / dot(field, u);
+
+		if(fieldTime < 0) 
+			return false;
+		
+		float segmentTime = (fieldTime * dot(field, segment) + dot(a, segment)) / (segmentLength * segmentLength);
+
+		if(segmentTime < 0 || segmentTime > 1) 
+			return false;
+
+		intersection = v1 + segment * segmentTime;
+		return true;
 
 	}
 };
