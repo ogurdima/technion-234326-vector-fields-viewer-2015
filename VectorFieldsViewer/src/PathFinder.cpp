@@ -6,7 +6,8 @@ PathFinder::PathFinder() :
 	dt(0.1),
 	tmin(0),
 	tmax(1),
-	hasValidConfig(false)
+	hasValidConfig(false),
+	pathDepth(10)
 {
 
 }
@@ -54,22 +55,55 @@ vector<Vec3f> PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	bool found(false);
 	Mesh::HalfedgeHandle halfEdge;
 	
-	for(int i = 0; i < 3; ++i)
+		// find first intersection
+	
+	for(Mesh::ConstFaceHalfedgeIter cfhei(fieldedMesh.cfh_begin(faceHandle)),  cfheEnd(fieldedMesh.cfh_end(faceHandle)); 
+		cfhei != cfheEnd; ++cfhei)
 	{
-		if(VectorFieldsUtils::intersectionRaySegmentDima(pstart, field , pts[i], pts[(i + 1) % 3], plast))
+		Mesh::VertexHandle from = fieldedMesh.from_vertex_handle(cfhei);
+		Mesh::VertexHandle to = fieldedMesh.to_vertex_handle(cfhei);
+ 
+		if(VectorFieldsUtils::intersectionRaySegmentDima(pstart, field , fieldedMesh.point(from), fieldedMesh.point(to), plast))
 		{
 			found = true;
+			particlePath.push_back(plast);
+			halfEdge = cfhei.handle();
 			break;
 		}
 	}
-	if(found)
+
+	if(!found)
 	{
-		particlePath.push_back(plast);
+		throw new std::exception("First intersection wasn't found");
 	}
-	else
+
+
+	for(int depth = pathDepth;depth > 0; --depth)
 	{
-		throw new std::exception("Intersection wasn't found!!! AAAA");
+		found = false;
+		pstart = plast;
+		halfEdge = fieldedMesh.opposite_halfedge_handle(halfEdge);
+		Mesh::FaceHandle& oppositeFace = fieldedMesh.face_handle(halfEdge);
+		field = fieldedMesh.faceVectorField(oppositeFace, 0);
+		
+
+		for(int i = 2; i > 0; --i)
+		{
+			halfEdge = fieldedMesh.next_halfedge_handle(halfEdge);
+			Mesh::VertexHandle from = fieldedMesh.from_vertex_handle(halfEdge);
+			Mesh::VertexHandle to = fieldedMesh.to_vertex_handle(halfEdge);
+			if(VectorFieldsUtils::intersectionRaySegmentDima(pstart, field , fieldedMesh.point(from), fieldedMesh.point(to), plast))
+			{
+				found = true;
+				particlePath.push_back(plast);
+				break;
+			}
+		}
+
+		if(!found)
+			break;
 	}
+
 	return particlePath;
 }
 
