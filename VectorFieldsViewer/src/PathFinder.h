@@ -24,5 +24,8 @@ protected:
 	int				pathDepth;
 
 	vector<Vec3f> getParticlePath(const Mesh::FaceHandle& face_);
+
+	Point getNextParticlePosition(const Point p, const Mesh::FaceHandle& ownerFace);
+	Vec3f getOneRingLerpField(const Point p, const Mesh::FaceHandle& ownerFace);
 };
 

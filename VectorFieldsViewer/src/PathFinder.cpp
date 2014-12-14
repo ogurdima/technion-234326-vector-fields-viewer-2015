@@ -108,3 +108,26 @@ vector<Vec3f> PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 }
 
 
+Point PathFinder::getNextParticlePosition(const Point p, const Mesh::FaceHandle& ownerFace)
+{
+	Vec3f field = getOneRingLerpField(p, ownerFace);
+	Point next = p + field * dt;
+	// TODO add face owner change if needed
+	return next;
+}
+
+Vec3f PathFinder::getOneRingLerpField(const Point p, const Mesh::FaceHandle& ownerFace)
+{
+	Vec3f totalField = Vec3f(0,0,0);
+	double totalDist = 0;
+	Point faceCentroid = VectorFieldsUtils::getTriangleCentroid(fieldedMesh.getFacePoints(ownerFace));
+	totalDist = (p - faceCentroid).length();
+	for(Mesh::FFIter curFace = fieldedMesh.ff_begin(ownerFace); curFace != fieldedMesh.ff_end(ownerFace); curFace++) {
+		Vec3f faceField = fieldedMesh.faceVectorField(curFace.handle(), 0);
+		Point faceCentroid = VectorFieldsUtils::getTriangleCentroid(fieldedMesh.getFacePoints(curFace.handle()));
+		double dist = (p - faceCentroid).length();
+		totalField = VectorFieldsUtils::lerp(totalField, faceField, dist / (totalDist + dist));
+		totalDist += dist;
+	}
+	return totalField;
+}

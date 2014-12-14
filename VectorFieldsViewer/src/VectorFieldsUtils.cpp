@@ -55,3 +55,14 @@ float VectorFieldsUtils::fRand(float fMin, float fMax)
     float f = (float)rand() / RAND_MAX;
     return fMin + f * (fMax - fMin);
 }
+
+
+Vec3f VectorFieldsUtils::lerp(Vec3f first, Vec3f second, double time) {
+	assert(time <= 1.0);
+	return (first * (1.0 - time)) + (second * time);
+}
+
+Point VectorFieldsUtils::getTriangleCentroid(Triangle t)
+{
+	return (t[0] + t[1] + t[2]) / 3.0;
+}

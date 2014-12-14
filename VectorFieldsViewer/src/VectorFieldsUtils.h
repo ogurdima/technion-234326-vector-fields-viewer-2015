@@ -118,6 +118,12 @@ public:
 		return true;
 
 	}
+
+
+	
+	static Vec3f lerp(Vec3f first, Vec3f second, double time);
+
+	static Point getTriangleCentroid(Triangle t);
 };
 
 
