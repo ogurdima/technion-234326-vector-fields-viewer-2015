@@ -22,9 +22,18 @@ typedef Mesh::Point Point;
 
 typedef OpenMesh::VectorT<Point,3> Triangle;
 
+typedef struct
+{
+	bool found;
+	Point p;
+	int edgeIndex;
+} TriIntersectionDataT;
+
 #pragma endregion
 
 #define NUMERICAL_ERROR_THRESH				DBL_EPSILON * 10
+
+
 
 class VectorFieldsUtils
 {
@@ -124,6 +133,8 @@ public:
 	static Vec3f lerp(Vec3f first, Vec3f second, double time);
 
 	static Point getTriangleCentroid(Triangle t);
+
+	static TriIntersectionDataT segmentTriangleIntersect(const Point& segA, const Point& segB, const Triangle& tri);
 };
 
 

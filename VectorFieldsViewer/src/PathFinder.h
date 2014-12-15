@@ -3,6 +3,12 @@
 #include "VectorFieldsUtils.h"
 #include "FieldedMesh.h"
 
+typedef struct
+{
+	double t;
+	Point p;
+	Mesh::FaceHandle ownerFace;
+}  ParticleSimStateT;
 
 class PathFinder
 {
@@ -25,7 +31,8 @@ protected:
 
 	vector<Vec3f> getParticlePath(const Mesh::FaceHandle& face_);
 
-	Point getNextParticlePosition(const Point p, const Mesh::FaceHandle& ownerFace);
+	ParticleSimStateT particleSimulationStep(const ParticleSimStateT prevState, double timeInterval);
 	Vec3f getOneRingLerpField(const Point p, const Mesh::FaceHandle& ownerFace);
+	Mesh::FaceHandle getNextOwnerFace(const Point& prevPoint, const Point& nextPoint, const Mesh::FaceHandle& ownerFace);
 };
 

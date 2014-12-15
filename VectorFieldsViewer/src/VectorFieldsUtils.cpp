@@ -66,3 +66,32 @@ Point VectorFieldsUtils::getTriangleCentroid(Triangle t)
 {
 	return (t[0] + t[1] + t[2]) / 3.0;
 }
+
+TriIntersectionDataT VectorFieldsUtils::segmentTriangleIntersect(const Point& segA, const Point& segB, const Triangle& tri)
+{
+	Vec3f ray = (segB - segA); // from A to B
+	Point intersectionPoint;
+	bool foundRayEdgeIntersect = false;
+	TriIntersectionDataT theIntersection;
+	theIntersection.found = false;
+	for (int fromIndex = 0; fromIndex < 3; fromIndex++)
+	{
+		int toIndex = (fromIndex + 1)%3;
+		Point from = tri[fromIndex];
+		Point to = tri[toIndex];
+		if(intersectionRaySegmentDima(segA, ray , from, to, intersectionPoint))
+		{
+			foundRayEdgeIntersect = true;
+			if (ray.length() >= (intersectionPoint - segA).length()) {
+				// This means segment segA,segB intersects triangle edge, not just ray				
+				theIntersection.edgeIndex = fromIndex;
+				theIntersection.p = intersectionPoint;
+				theIntersection.found = true;
+				return theIntersection;
+			}
+		}
+	}
+	//assert(foundRayEdgeIntersect);
+	return theIntersection;
+}
+
