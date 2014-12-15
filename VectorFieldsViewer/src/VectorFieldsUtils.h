@@ -135,6 +135,10 @@ public:
 	static Point getTriangleCentroid(Triangle t);
 
 	static TriIntersectionDataT segmentTriangleIntersect(const Point& segA, const Point& segB, const Triangle& tri);
+
+	static Vec3f getTriangleNormal(Triangle t);
+
+	static Vec3f projectVectorOntoTriangle(Vec3f v, Triangle t);
 };
 
 

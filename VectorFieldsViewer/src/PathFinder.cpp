@@ -101,7 +101,7 @@ ParticleSimStateT PathFinder::particleSimulationStep(const ParticleSimStateT pre
 	// Here we know ownerFace changed
 	double actualTimeInterval = timeInterval * ( (theIntersection.p - prevState.p).length() / (next - prevState.p).length() );
 	nextState.ownerFace = nextOwnerFace;
-	nextState.p = prevState.p + field * actualTimeInterval;
+	nextState.p = theIntersection.p;
 	nextState.t = prevState.t + actualTimeInterval;
 	return nextState;
 }
@@ -119,6 +119,8 @@ Vec3f PathFinder::getOneRingLerpField(const Point p, const Mesh::FaceHandle& own
 		totalField = VectorFieldsUtils::lerp(totalField, faceField, dist / (totalDist + dist));
 		totalDist += dist;
 	}
+	// now we cheat by projecting totalField onto ownerFace's plane
+	totalField = VectorFieldsUtils::projectVectorOntoTriangle(totalField, fieldedMesh.getFacePoints(ownerFace));
 	return totalField;
 }
 

@@ -92,6 +92,21 @@ TriIntersectionDataT VectorFieldsUtils::segmentTriangleIntersect(const Point& se
 		}
 	}
 	//assert(foundRayEdgeIntersect);
+	if (!foundRayEdgeIntersect) {
+		bool OK = false;
+	}
 	return theIntersection;
 }
 
+Vec3f VectorFieldsUtils::getTriangleNormal(Triangle t)
+{
+	return ((t[1] - t[0]) % (t[2] - t[1])).normalized();
+}
+
+Vec3f VectorFieldsUtils::projectVectorOntoTriangle(Vec3f v, Triangle t)
+{
+	Vec3f n = getTriangleNormal(t);
+	Vec3f onPlanePerpToV = v % n;
+	Vec3f onPlaneClosestToV = n % onPlanePerpToV;
+	return onPlaneClosestToV; // TODO: check lengths, maybe need to normalize one step
+}
