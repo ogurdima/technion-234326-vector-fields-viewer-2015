@@ -47,7 +47,7 @@ vector<Vec3f> PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 {
 	vector<Point> particlePath;
 	Triangle pts(fieldedMesh.getFacePoints(faceHandle));
-	Vec3f field = fieldedMesh.faceVectorField(faceHandle, 0);
+	Vec3f field = fieldedMesh.faceVectorField(faceHandle, tmin);
 	Point pstart = VectorFieldsUtils::barycentricToStd(Point(1./3.), pts);
 	particlePath.push_back(pstart);
 	Point last = pstart;
@@ -66,8 +66,7 @@ vector<Vec3f> PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	return particlePath;
 }
 
-
-ParticleSimStateT PathFinder::particleSimulationStep(const ParticleSimStateT prevState, double timeInterval)
+ParticleSimStateT PathFinder::particleSimulationStep(const ParticleSimStateT prevState, const double& timeInterval)
 {
 	Vec3f field = getOneRingLerpField(prevState.p, prevState.ownerFace);
 	Point next = prevState.p + field * timeInterval;
@@ -76,10 +75,12 @@ ParticleSimStateT PathFinder::particleSimulationStep(const ParticleSimStateT pre
 	// Next we find next owner face. If owner face changed then we need to change next particle point to be on the
 	// edge of the new owner face
 	TriIntersectionDataT theIntersection = VectorFieldsUtils::segmentTriangleIntersect(prevState.p, next, fieldedMesh.getFacePoints(prevState.ownerFace));
-	if(!theIntersection.found) {
+	if(!theIntersection.found) 
+	{
 		nextOwnerFace = prevState.ownerFace;
 	}
-	else {
+	else 
+	{
 		int i = 0;
 		for(Mesh::ConstFaceHalfedgeIter cfhei(fieldedMesh.cfh_begin(prevState.ownerFace)); cfhei != fieldedMesh.cfh_end(prevState.ownerFace); ++cfhei, ++i)
 		{
@@ -108,20 +109,34 @@ ParticleSimStateT PathFinder::particleSimulationStep(const ParticleSimStateT pre
 
 Vec3f PathFinder::getOneRingLerpField(const Point p, const Mesh::FaceHandle& ownerFace)
 {
-	Vec3f totalField = Vec3f(0,0,0);
-	double totalDist = 0;
-	Point faceCentroid = VectorFieldsUtils::getTriangleCentroid(fieldedMesh.getFacePoints(ownerFace));
-	totalDist = (p - faceCentroid).length();
-	for(Mesh::FFIter curFace = fieldedMesh.ff_begin(ownerFace); curFace != fieldedMesh.ff_end(ownerFace); curFace++) {
-		Vec3f faceField = fieldedMesh.faceVectorField(curFace.handle(), 0);
-		Point faceCentroid = VectorFieldsUtils::getTriangleCentroid(fieldedMesh.getFacePoints(curFace.handle()));
-		double dist = (p - faceCentroid).length();
-		totalField = VectorFieldsUtils::lerp(totalField, faceField, dist / (totalDist + dist));
-		totalDist += dist;
+	vector<std::pair<double, Vec3f>> distanceAndFields;
+	double totalDist(0);
+
+	addDistanceAndField(p, ownerFace, distanceAndFields, totalDist);
+
+	for(Mesh::FFIter curFace = fieldedMesh.ff_begin(ownerFace); curFace != fieldedMesh.ff_end(ownerFace); curFace++) 
+	{
+		addDistanceAndField(p, curFace.handle(), distanceAndFields, totalDist);
 	}
+
+	Vec3f totalField(0.f);
+	for(int i = 0, size = distanceAndFields.size(); i < size; ++i)
+	{
+		std::pair<double, Vec3f>& current = distanceAndFields[i];
+		totalField += current.second * (totalDist - current.first) / totalDist;
+	}
+
 	// now we cheat by projecting totalField onto ownerFace's plane
-	totalField = VectorFieldsUtils::projectVectorOntoTriangle(totalField, fieldedMesh.getFacePoints(ownerFace));
+	return VectorFieldsUtils::projectVectorOntoTriangle(totalField, fieldedMesh.getFacePoints(ownerFace));
 	return totalField;
+}
+
+void PathFinder::addDistanceAndField(const Point& p, const Mesh::FaceHandle & face, vector<std::pair<double, Vec3f>>& outDistanceAndFields, double& outTotalDistance)
+{
+	Point faceCentroid = VectorFieldsUtils::getTriangleCentroid(fieldedMesh.getFacePoints(face));
+	double currentDistance = (p - faceCentroid).length();
+	outTotalDistance += currentDistance;
+	outDistanceAndFields.push_back(std::pair<double, Vec3f>(currentDistance, fieldedMesh.faceVectorField(face, 0)));
 }
 
 Mesh::FaceHandle PathFinder::getNextOwnerFace(const Point& prevPoint, const Point& nextPoint, const Mesh::FaceHandle& ownerFace)
