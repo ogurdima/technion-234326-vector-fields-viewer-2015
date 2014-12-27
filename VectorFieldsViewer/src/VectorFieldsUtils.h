@@ -16,6 +16,9 @@ using std::vector;
 
 #pragma region typedef
 
+#define BEGINNING_OF_TIME -DBL_MAX
+typedef double Time;
+
 typedef TriMesh_ArrayKernelT<> Mesh;
 typedef FPropHandleT<Vec3f> VfieldFProp;
 typedef Mesh::Point Point;
@@ -43,6 +46,7 @@ public:
 
 	static Point stdToBarycentric(const Point& original, const Triangle& triangle);
 	static Point barycentricToStd(const Point& original, const Triangle& triangle);
+	static bool isInnerPoint(const Point& original, const Triangle& triangle);
 
 	static bool isCloseToZero(double val);
 	static float fRand(float fMin, float fMax);

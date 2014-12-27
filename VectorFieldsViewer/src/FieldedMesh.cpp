@@ -59,7 +59,7 @@ void FieldedMesh::updateFaceIndices()
 // Color all certices appropriately
 void FieldedMesh::assignVectorField()
 {
-	srand(time(0));
+	srand((uint)time(0));
 	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
 	{
 		float x = VectorFieldsUtils::fRand(0,1);
@@ -121,7 +121,7 @@ void FieldedMesh::surroundBoundingBox()
 	}
 }
 
-Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, float time) const
+Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, const Time& time) const
 {
 	vector<VectorFieldTimeVal> fieldSamples = property(vectorFieldFaceProperty, faceHandle);
 	if (fieldSamples.size() == 0) {
@@ -129,8 +129,8 @@ Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, float tim
 	}
 
 	// assuming samples are listed in increasing time order
-	float	prevTime = fieldSamples[0].t;
-	float	nextTime = fieldSamples[0].t;
+	Time	prevTime = fieldSamples[0].t;
+	Time	nextTime = fieldSamples[0].t;
 	Vec3f	prevField = fieldSamples[0].f;
 	Vec3f	nextField = fieldSamples[0].f;
 

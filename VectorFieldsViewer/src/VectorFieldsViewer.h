@@ -43,6 +43,7 @@
 #include "MeshViewer.h"
 #include "PathFinder.h"
 #include "FieldedMesh.h"
+#include "ParticlePath.h"
 
 
 class VectorFieldsViewer : public GlutExaminer
@@ -67,7 +68,7 @@ protected:
 	/// set vertex color from vertex valence
 	void colorCoding();
 
-	vector<vector<Vec3f>> particlePaths;
+	vector<ParticlePath> particlePaths;
 
 	FieldedMesh		fieldedMesh;
 	PathFinder		pathFinder;

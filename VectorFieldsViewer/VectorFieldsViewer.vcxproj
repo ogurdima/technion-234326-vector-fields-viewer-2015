@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\FieldedMesh.cpp" />
+    <ClCompile Include="src\ParticlePath.cpp" />
     <ClCompile Include="src\PathFinder.cpp" />
     <ClCompile Include="src\VectorFieldsUtils.cpp" />
     <ClCompile Include="src\VectorFieldsView.cc" />
@@ -19,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\FieldedMesh.h" />
+    <ClInclude Include="src\ParticlePath.h" />
     <ClInclude Include="src\PathFinder.h" />
     <ClInclude Include="src\VectorFieldsUtils.h" />
     <ClInclude Include="src\VectorFieldsViewer.h" />
@@ -67,7 +69,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OpenMeshD.lib;MeshViewerD.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

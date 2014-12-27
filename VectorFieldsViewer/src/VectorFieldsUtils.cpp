@@ -45,6 +45,14 @@ Point VectorFieldsUtils::barycentricToStd(const Point& barycentric, const Triang
 	return triangle[0] * barycentric[0] + triangle[1] * barycentric[1] + triangle[2] * barycentric[2];
 }
 
+bool VectorFieldsUtils::isInnerPoint(const Point& point, const Triangle& triangle) 
+{
+	Point& barycentric = stdToBarycentric(point, triangle);
+	return (barycentric[0] >= 0) && (barycentric[1] >= 0) && (barycentric[2] >= 0);
+	
+}
+
+
 bool VectorFieldsUtils::isCloseToZero(double val)
 {
 	return abs(val) < NUMERICAL_ERROR_THRESH;

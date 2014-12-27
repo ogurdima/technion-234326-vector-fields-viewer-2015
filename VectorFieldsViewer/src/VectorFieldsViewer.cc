@@ -113,7 +113,7 @@ void VectorFieldsViewer::computeVectorFieldLines()
 	}
 	else {
 		std::cerr << "Failed to properly configure PathFinder" << std::endl;
-		particlePaths = vector<vector<Vec3f>>();
+		particlePaths = vector<ParticlePath>();
 	}
 }
 
@@ -246,14 +246,14 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		glClearColor(0.0,0.0,0.0,0.0);
 		glColor4f(1.0, 1.0, 1.0, 0.5);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		for (int i = 0; i < particlePaths.size(); i++) 
+		for (uint i = 0; i < particlePaths.size(); i++) 
 		{
 			vIndexes.clear();
-			for (int j = 0; j < particlePaths[i].size(); j++) {
+			for (uint j = 0; j < particlePaths[i].size(); j++) {
 				vIndexes.push_back(j);
 			}
 			glEnableClientState(GL_VERTEX_ARRAY);
-			GL::glVertexPointer(&(particlePaths[i][0]));
+			GL::glVertexPointer(&(particlePaths[i].getPoints()[0]));
 			glDrawElements(GL_LINE_STRIP, particlePaths[i].size(), GL_UNSIGNED_INT, &vIndexes[0]);
 			glDisableClientState(GL_VERTEX_ARRAY);
 		}

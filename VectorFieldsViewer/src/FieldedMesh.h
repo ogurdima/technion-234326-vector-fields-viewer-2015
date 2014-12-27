@@ -37,7 +37,7 @@ public:
 	const Point&							boundingBoxMin();
 	const Point&							boundingBoxMax();
 
-	Vec3f									faceVectorField(const FaceHandle& face, float time) const;
+	Vec3f									faceVectorField(const FaceHandle& face, const Time& time) const;
 				
 	const vector<uint>&						getIndices() const;
 	Triangle								getFacePoints(OpenMesh::ArrayKernel::FaceHandle faceHandle);
