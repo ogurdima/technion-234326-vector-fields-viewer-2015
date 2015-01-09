@@ -51,6 +51,7 @@ protected:
 private:
 	void									surroundBoundingBox();
 	void									updateFaceIndices();
-	void									assignVectorField();
+	void									assignRandVectorField();
+	void									assignRotatingVectorField(const Vec3f& rotationAxis = Vec3f(0,0,1));
 };
 

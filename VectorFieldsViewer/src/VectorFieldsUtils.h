@@ -114,8 +114,14 @@ public:
 
 		if(abs(denom) < NUMERICAL_ERROR_THRESH)
 			return false;
+		
+		double d = dot(a,u);
+		if(dot(a,u) < 0)
+		{
+			bool t = false;
+		}
 
-		assert(dot(a,u) < 0);
+		//assert(dot(a,u) < 0);
 
 		float fieldTime = - dot(a,u) / dot(field, u);
 
@@ -146,8 +152,12 @@ public:
 };
 
 
-typedef struct 
+class VectorFieldTimeVal 
 {
-	Vec3f	f; 
-	float	t;
-} VectorFieldTimeVal;
+public:
+	VectorFieldTimeVal(const Vec3f& _field, const Time& _time) :
+		field(_field), time(_time)
+	{}
+	Vec3f	field;
+	Time	time;
+};

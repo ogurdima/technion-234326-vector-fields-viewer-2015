@@ -62,12 +62,12 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	curState.ownerFace = faceHandle;
 	curState.p = pstart;
 	curState.t = tmin;
-
-	while (curState.t <= tmax)
+	//double stepThreshold = dt / 500;
+	while (curState.t <= tmax && particlePath.size() < 1000)
 	{
 		ParticleSimStateT nextState = particleSimulationStep(curState, dt);
 		particlePath.pushBack(nextState.p,nextState.t);
-		if(nextState.t == curState.t)
+		if((nextState.t == curState.t) ) //< stepThreshold)
 			break;
 		curState = nextState;
 
