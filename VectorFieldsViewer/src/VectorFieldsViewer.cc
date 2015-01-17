@@ -59,7 +59,7 @@ fieldSimulationMaxTime(0.2)
 	
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
 
-	const char initPath[] = "..\\Data\\bunny.off";
+	const char initPath[] = "..\\Data\\models\\goblet.off";
 	open_mesh(initPath);
 	set_draw_mode(4);
 	VectorFieldsViewer::activeInstance = this;
