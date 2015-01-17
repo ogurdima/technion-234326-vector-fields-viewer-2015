@@ -30,8 +30,9 @@ bool FieldedMesh::load(const char* path)
 		// update face indices for faster rendering
 		updateFaceIndices();
 
-		// compute and assign random vector field
-		assignVectorField();
+		// compute and assign vector field
+		assignRotatingVectorField();
+		//assignRandVectorField();
 
 		isLoaded_ = true;
 	}
@@ -57,7 +58,25 @@ void FieldedMesh::updateFaceIndices()
 
 // Add random normalized Vec3f as vfield_fprop property for each face
 // Color all certices appropriately
-void FieldedMesh::assignVectorField()
+void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
+{
+	Point center = (boundingBoxMax() + boundingBoxMin()) / 2;
+
+	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
+	{
+		Normal n = normal(cfit.handle());
+		Vec3f field(VectorFieldsUtils::projectVectorOntoTriangle(n % rotationAxis, getFacePoints(cfit)));
+
+		vector<VectorFieldTimeVal> faceVectorField;
+		faceVectorField.push_back(VectorFieldTimeVal(field, 0));
+		faceVectorField.push_back(VectorFieldTimeVal(field, 1));
+
+		property(vectorFieldFaceProperty, cfit.handle()) = faceVectorField;
+
+	}
+}
+
+void FieldedMesh::assignRandVectorField()
 {
 	srand((uint)time(0));
 	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
@@ -73,19 +92,10 @@ void FieldedMesh::assignVectorField()
 		Point center = VectorFieldsUtils::barycentricToStd(Vec3f(float(1/3.)), triangle);
 
 		vector<VectorFieldTimeVal> faceVectorField;
-		VectorFieldTimeVal vfield;
+		Vec3f field = inStd - center;
 
-		vfield.f = (inStd - center);
-		vfield.t = 0;
-		faceVectorField.push_back(vfield);
-		vfield.t = 1;
-		faceVectorField.push_back(vfield);
-
-		Vec3f nrm = normal(cfit.handle());
-		double mustbezero = vfield.f | nrm;
-		if (!VectorFieldsUtils::isCloseToZero(mustbezero)) {
-			bool ok = false;
-		}
+		faceVectorField.push_back(VectorFieldTimeVal(field,0));
+		faceVectorField.push_back(VectorFieldTimeVal(field,1));
 
 		property(vectorFieldFaceProperty, cfit.handle()) = faceVectorField;
 
@@ -129,19 +139,19 @@ Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, const Tim
 	}
 
 	// assuming samples are listed in increasing time order
-	Time	prevTime = fieldSamples[0].t;
-	Time	nextTime = fieldSamples[0].t;
-	Vec3f	prevField = fieldSamples[0].f;
-	Vec3f	nextField = fieldSamples[0].f;
+	Time	prevTime = fieldSamples[0].time;
+	Time	nextTime = fieldSamples[0].time;
+	Vec3f	prevField = fieldSamples[0].field;
+	Vec3f	nextField = fieldSamples[0].field;
 
 	for (uint i = 0; i < fieldSamples.size(); i++) {
-		nextTime = fieldSamples[i].t;
-		nextField = fieldSamples[i].f;
+		nextTime = fieldSamples[i].time;
+		nextField = fieldSamples[i].field;
 		if (nextTime >= time) {
 			break;
 		}
-		prevTime = fieldSamples[i].t;
-		prevField = fieldSamples[i].f;
+		prevTime = fieldSamples[i].time;
+		prevField = fieldSamples[i].field;
 	}
 
 	if (abs(nextTime - prevTime) < NUMERICAL_ERROR_THRESH) {

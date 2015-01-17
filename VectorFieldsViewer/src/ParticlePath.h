@@ -8,7 +8,14 @@ class ParticlePath
 private:
 	vector<Point> points;
 	vector<Time> times;
+	int particleLoc;
 public:
+
+	ParticlePath():
+		particleLoc(0)
+	{
+
+	}
 
 	inline const vector<Point>& getPoints()
 	{
@@ -38,6 +45,50 @@ public:
 	{
 		points.clear();
 		times.clear();
+	}
+
+	const Point* getActivePathPoints(int requestedLength, int* actualLength)
+	{
+		int firstIndex = particleLoc - requestedLength;
+		if (firstIndex < 0) 
+		{
+			firstIndex = 0;
+		}
+		*actualLength = particleLoc - firstIndex + 1;
+		assert(*actualLength > 0);
+		return &points[firstIndex];
+	}
+	const Time* getActivePathTimes(int requestedLength, int* actualLength)
+	{
+		int firstIndex = particleLoc - requestedLength;
+		if (firstIndex < 0) 
+		{
+			firstIndex = 0;
+		}
+		*actualLength = particleLoc - firstIndex + 1;
+		assert(*actualLength > 0);
+		return &times[firstIndex];
+	}
+
+
+	void evolveParticleLoc(double dt)
+	{
+		double currentTime = times[particleLoc];
+		if (particleLoc == times.size() - 1)
+		{
+			particleLoc = rand() % times.size();
+			return;
+		}
+		for (int nextLoc = particleLoc; nextLoc < times.size(); nextLoc++)
+		{
+			if (times[nextLoc] >= currentTime + dt)
+			{
+				particleLoc = nextLoc;
+				assert(particleLoc >= 0);
+				return;
+			}
+		}
+		particleLoc = times.size() - 1;
 	}
 };
 
