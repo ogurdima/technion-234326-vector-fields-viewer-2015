@@ -9,6 +9,7 @@
 using OpenMesh::Vec3f;
 using OpenMesh::TriMesh_ArrayKernelT;
 using OpenMesh::FPropHandleT;
+using OpenMesh::AttribKernelT;
 
 using std::vector;
 
@@ -22,6 +23,7 @@ typedef double Time;
 typedef TriMesh_ArrayKernelT<> Mesh;
 typedef FPropHandleT<Vec3f> VfieldFProp;
 typedef Mesh::Point Point;
+typedef Mesh::Normal Normal;
 
 typedef OpenMesh::VectorT<Point,3> Triangle;
 
@@ -93,7 +95,13 @@ public:
 		return true;
 	}
 
-	static bool intersectionRaySegmentDima(const Point& start, const Vec3f& field, const Point& v1, const Point& v2, Point& intersection)
+	static bool intersectionRaySegmentDima(
+		const Point& start, 
+		const Vec3f& field, 
+		const Point& v1, 
+		const Point& v2, 
+		const Normal& normal, 
+		Point& intersection)
 	{
 		if(field.length() < NUMERICAL_ERROR_THRESH)
 			return false;
@@ -106,24 +114,18 @@ public:
 
 		Vec3f a = start - v1;
 
-		Vec3f normal = segment % a;
-		Vec3f u = segment % normal;
-
+		Vec3f u = (segment % normal).normalize();
+		
 
 		float denom = dot(field, u);
 
 		if(abs(denom) < NUMERICAL_ERROR_THRESH)
 			return false;
 		
-		double d = dot(a,u);
-		if(dot(a,u) < 0)
-		{
-			bool t = false;
-		}
 
 		//assert(dot(a,u) < 0);
 
-		float fieldTime = - dot(a,u) / dot(field, u);
+		float fieldTime = - dot(a,u) / denom;
 
 		if(fieldTime < 0) 
 			return false;
@@ -144,7 +146,7 @@ public:
 
 	static Point getTriangleCentroid(Triangle t);
 
-	static TriIntersectionDataT segmentTriangleIntersect(const Point& segA, const Point& segB, const Triangle& tri);
+	//static TriIntersectionDataT segmentTriangleIntersect(const Point& segA, const Point& segB, const Triangle& tri);
 
 	static Vec3f getTriangleNormal(Triangle t);
 

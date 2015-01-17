@@ -43,9 +43,9 @@
 
 VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
 GlutExaminer(_title, _width, _height),
-fieldSimulationTimeInterval(0.5),
+fieldSimulationTimeInterval(0.0001),
 fieldSimulationMinTime(0),
-fieldSimulationMaxTime(10)
+fieldSimulationMaxTime(0.1)
 {
 	clear_draw_modes();
 	add_draw_mode("Wireframe");
