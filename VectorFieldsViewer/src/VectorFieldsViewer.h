@@ -64,6 +64,9 @@ public:
 protected:
 
 	virtual void draw(const std::string& _draw_mode);
+
+	static VectorFieldsViewer* activeInstance;
+	static void onTimer(int val);
 	
 	/// set vertex color from vertex valence
 	void colorCoding();
