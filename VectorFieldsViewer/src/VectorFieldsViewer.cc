@@ -41,11 +41,13 @@
 #include <vector>
 #include <float.h>
 
+VectorFieldsViewer* VectorFieldsViewer::activeInstance = NULL;
+
 VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
 GlutExaminer(_title, _width, _height),
-fieldSimulationTimeInterval(0.5),
+fieldSimulationTimeInterval(0.0005),
 fieldSimulationMinTime(0),
-fieldSimulationMaxTime(10)
+fieldSimulationMaxTime(0.2)
 {
 	clear_draw_modes();
 	add_draw_mode("Wireframe");
@@ -57,9 +59,22 @@ fieldSimulationMaxTime(10)
 	
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
 
-	const char initPath[] = "..\\Data\\Horse.off";
+	const char initPath[] = "..\\Data\\cow.off";
 	open_mesh(initPath);
 	set_draw_mode(4);
+	VectorFieldsViewer::activeInstance = this;
+	glutTimerFunc(60, &VectorFieldsViewer::onTimer, 0);
+}
+
+void VectorFieldsViewer::onTimer(int val)
+{
+	for (uint i = 0; i < VectorFieldsViewer::activeInstance->particlePaths.size(); i++) 
+	{
+		double dt = (VectorFieldsViewer::activeInstance->fieldSimulationMaxTime -  VectorFieldsViewer::activeInstance->fieldSimulationMinTime) / (60.0 * 10);
+		VectorFieldsViewer::activeInstance->particlePaths[i].evolveParticleLoc(dt);
+	}
+	glutPostRedisplay();
+	glutTimerFunc(60, &VectorFieldsViewer::onTimer, 0);
 }
 
 // Overriden virtual method - fetch class specific IDs here
@@ -242,21 +257,44 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		}
 
 		vector<unsigned int> vIndexes;
+		vector<float> cArray;
 		unsigned int stamIndexes[2] = {0,1};
 		glClearColor(0.0,0.0,0.0,0.0);
 		glColor4f(1.0, 1.0, 1.0, 0.5);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_COLOR_ARRAY);
 		for (uint i = 0; i < particlePaths.size(); i++) 
 		{
+			int visiblePathLen = 0;
+			const Point* first = particlePaths[i].getActivePathPoints(50, &visiblePathLen);
+			const Time* pathTimes = particlePaths[i].getActivePathTimes(50, &visiblePathLen);
+			double maxPathTime = pathTimes[visiblePathLen-1];
+			double minPathTime = pathTimes[0];
+
 			vIndexes.clear();
-			for (uint j = 0; j < particlePaths[i].size(); j++) {
+			vIndexes.reserve(visiblePathLen);
+			cArray.clear();
+			cArray.reserve(visiblePathLen);
+			for (uint j = 0; j < visiblePathLen; j++) {
 				vIndexes.push_back(j);
+				cArray.push_back(0);
+				cArray.push_back(1);
+				cArray.push_back(0);
+				//cArray.push_back(1);
+				//cArray.push_back((float)j/((float)visiblePathLen));
+				double curTime = pathTimes[j];
+				cArray.push_back((curTime-minPathTime)/(maxPathTime-minPathTime));
 			}
-			glEnableClientState(GL_VERTEX_ARRAY);
-			GL::glVertexPointer(&(particlePaths[i].getPoints()[0]));
-			glDrawElements(GL_LINE_STRIP, particlePaths[i].size(), GL_UNSIGNED_INT, &vIndexes[0]);
-			glDisableClientState(GL_VERTEX_ARRAY);
+			
+			GL::glVertexPointer(first);
+			GL::glColorPointer(4, GL_FLOAT, 0, &cArray[0]);
+			glDrawElements(GL_LINE_STRIP, visiblePathLen, GL_UNSIGNED_INT, &vIndexes[0]);
+			
 		}
+		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}

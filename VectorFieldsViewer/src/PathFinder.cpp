@@ -132,13 +132,18 @@ Vec3f PathFinder::getOneRingLerpField(const Point p, const Mesh::FaceHandle& own
 		addDistanceAndField(p, curFace.handle(), distanceAndFields, totalDist);
 	}
 
+	if (distanceAndFields.size() == 1)
+	{
+		return distanceAndFields[0].second;
+	}
+
 	Vec3f totalField(0.f);
 	for(int i = 0, size = distanceAndFields.size(); i < size; ++i)
 	{
 		std::pair<double, Vec3f>& current = distanceAndFields[i];
 		totalField += current.second * (totalDist - current.first) / totalDist;
 	}
-
+	
 	// now we cheat by projecting totalField onto ownerFace's plane
 	return VectorFieldsUtils::projectVectorOntoTriangle(totalField, fieldedMesh.getFacePoints(ownerFace));
 }
