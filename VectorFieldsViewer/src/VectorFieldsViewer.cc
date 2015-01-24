@@ -5,6 +5,16 @@
 
 VectorFieldsViewer* VectorFieldsViewer::activeInstance = NULL;
 
+void callback(int i)
+{
+	std::cout << i << " call" << std::endl;
+}
+
+_declspec(dllexport) void ShowMessageBox(int *value);
+_declspec(dllexport) void RegisterAndCall(void (*cb)(int));
+
+
+
 VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
 GlutExaminer(_title, _width, _height),
 	fieldSimulationTimeInterval(0.002),
@@ -13,6 +23,7 @@ fieldSimulationMinTime(0),
 maxActivePathLength(10),
 timeout(200)
 {
+	RegisterAndCall(callback);
 	float r = 1;
 	float g = 1;
 	float b = 1;
@@ -44,6 +55,9 @@ timeout(200)
 	set_draw_mode(vfDrawModeId);
 	VectorFieldsViewer::activeInstance = this;
 	resetTimer();
+
+	
+
 }
 
 void VectorFieldsViewer::resetTimer()
@@ -85,7 +99,7 @@ void VectorFieldsViewer::processmenu(int i)
 			bool success = open_mesh(szFileName);
 			if (!success) {
 				std::cout << "Failed to read mesh" << std::endl;
-			}
+	}
 		}
 	}
 	else if (LOAD_FIELD_KEY == i)
@@ -102,10 +116,10 @@ void VectorFieldsViewer::processmenu(int i)
 			bool success = fieldedMesh.assignVectorField(szFileName);
 			if (!success) {
 				std::cout << "Failed to read field" << std::endl;
-			}
+		}
 			else {
 				computeVectorFieldLines();
-			}
+	}
 		}
 	}
 	else 
