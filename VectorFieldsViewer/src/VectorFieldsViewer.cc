@@ -1,41 +1,3 @@
-//=============================================================================
-//                                                
-//   Code framework for the lecture
-//
-//   "Surface Representation and Geometric Modeling"
-//
-//   Mark Pauly, Mario Botsch, Balint Miklos, and Hao Li
-//
-//   Copyright (C) 2007 by  Applied Geometry Group and 
-//							Computer Graphics Laboratory, ETH Zurich
-//                                                                         
-//-----------------------------------------------------------------------------
-//                                                                            
-//                                License                                     
-//                                                                            
-//   This program is free software; you can redistribute it and/or
-//   modify it under the terms of the GNU General Public License
-//   as published by the Free Software Foundation; either version 2
-//   of the License, or (at your option) any later version.
-//   
-//   This program is distributed in the hope that it will be useful,
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//   GNU General Public License for more details.
-//   
-//   You should have received a copy of the GNU General Public License
-//   along with this program; if not, write to the Free Software
-//   Foundation, Inc., 51 Franklin Street, Fifth Floor, 
-//   Boston, MA  02110-1301, USA.
-//                                                                            
-//=============================================================================
-//=============================================================================
-//
-//  CLASS VectorFieldsViewer - IMPLEMENTATION
-//
-//=============================================================================
-
-
 #include <windows.h>
 #include "VectorFieldsViewer.h"
 #include <vector>
@@ -45,10 +7,25 @@ VectorFieldsViewer* VectorFieldsViewer::activeInstance = NULL;
 
 VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
 GlutExaminer(_title, _width, _height),
-fieldSimulationTimeInterval(0.0005),
+fieldSimulationTimeInterval(0.0001),
 fieldSimulationMinTime(0),
-fieldSimulationMaxTime(0.2)
+fieldSimulationMaxTime(0.01),
+maxActivePathLength(20)
 {
+	float r = 1;
+	float g = 1;
+	float b = 1;
+	colors.reserve(maxActivePathLength * 4);
+	indices.reserve(maxActivePathLength);
+	for(uint i = 0; i < maxActivePathLength; ++i)
+	{
+		indices.push_back(i);
+		colors.push_back(r);
+		colors.push_back(g);
+		colors.push_back(b);
+		colors.push_back( std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 2);
+	}
+
 	clear_draw_modes();
 	add_draw_mode("Wireframe");
 	add_draw_mode("Hidden Line");
@@ -59,7 +36,7 @@ fieldSimulationMaxTime(0.2)
 	
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
 
-	const char initPath[] = "..\\Data\\models\\goblet.off";
+	const char initPath[] = "..\\Data\\old\\horse.off";
 	open_mesh(initPath);
 	set_draw_mode(4);
 	VectorFieldsViewer::activeInstance = this;
@@ -74,7 +51,7 @@ void VectorFieldsViewer::onTimer(int val)
 		VectorFieldsViewer::activeInstance->particlePaths[i].evolveParticleLoc(dt);
 	}
 	glutPostRedisplay();
-	glutTimerFunc(60, &VectorFieldsViewer::onTimer, 0);
+	glutTimerFunc(200, &VectorFieldsViewer::onTimer, 0);
 }
 
 // Overriden virtual method - fetch class specific IDs here
@@ -256,11 +233,6 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 			glDepthFunc(GL_LESS);
 		}
 
-		vector<unsigned int> vIndexes;
-		vector<float> cArray;
-		unsigned int stamIndexes[2] = {0,1};
-		glClearColor(0.0,0.0,0.0,0.0);
-		glColor4f(1.0, 1.0, 1.0, 0.5);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -268,29 +240,15 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		for (uint i = 0; i < particlePaths.size(); i++) 
 		{
 			int visiblePathLen = 0;
-			const Point* first = particlePaths[i].getActivePathPoints(50, &visiblePathLen);
-			const Time* pathTimes = particlePaths[i].getActivePathTimes(50, &visiblePathLen);
-			double maxPathTime = pathTimes[visiblePathLen-1];
-			double minPathTime = pathTimes[0];
+			const Point* first = particlePaths[i].getActivePathPoints(maxActivePathLength, &visiblePathLen);
 
-			vIndexes.clear();
-			vIndexes.reserve(visiblePathLen);
-			cArray.clear();
-			cArray.reserve(visiblePathLen);
-			for (uint j = 0; j < visiblePathLen; j++) {
-				vIndexes.push_back(j);
-				cArray.push_back(0);
-				cArray.push_back(1);
-				cArray.push_back(0);
-				//cArray.push_back(1);
-				//cArray.push_back((float)j/((float)visiblePathLen));
-				double curTime = pathTimes[j];
-				cArray.push_back((curTime-minPathTime)/(maxPathTime-minPathTime));
+			if(visiblePathLen <= 0)
+			{
+				continue;
 			}
-			
 			GL::glVertexPointer(first);
-			GL::glColorPointer(4, GL_FLOAT, 0, &cArray[0]);
-			glDrawElements(GL_LINE_STRIP, visiblePathLen, GL_UNSIGNED_INT, &vIndexes[0]);
+			GL::glColorPointer(4, GL_FLOAT, 0, &colors[0]);
+			glDrawElements(GL_LINE_STRIP, visiblePathLen, GL_UNSIGNED_INT, &indices[0]);
 			
 		}
 		glDisableClientState(GL_COLOR_ARRAY);

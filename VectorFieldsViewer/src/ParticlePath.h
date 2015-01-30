@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VectorFieldsUtils.h"
+#include <math.h>
 
 class ParticlePath
 {
@@ -58,6 +59,7 @@ public:
 		assert(*actualLength > 0);
 		return &points[firstIndex];
 	}
+
 	const Time* getActivePathTimes(int requestedLength, int* actualLength)
 	{
 		int firstIndex = particleLoc - requestedLength;
@@ -70,13 +72,14 @@ public:
 		return &times[firstIndex];
 	}
 
-
 	void evolveParticleLoc(double dt)
 	{
+		int s = (int) size();
+		assert(s > 0 && particleLoc >= 0 && particleLoc < s);
 		double currentTime = times[particleLoc];
-		if (particleLoc == times.size() - 1)
+		if (particleLoc == s - 1)
 		{
-			particleLoc = rand() % times.size();
+			particleLoc = rand() % std::max( ((int) s / 5), s);
 			return;
 		}
 		for (int nextLoc = particleLoc; nextLoc < times.size(); nextLoc++)

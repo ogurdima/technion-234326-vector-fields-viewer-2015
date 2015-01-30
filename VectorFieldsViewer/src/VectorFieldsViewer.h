@@ -84,6 +84,11 @@ protected:
 private:
 
 	void computeVectorFieldLines();
+
+	vector<uint> indices;
+	vector<float> colors;
+
+	uint maxActivePathLength;
 };
 
 #endif

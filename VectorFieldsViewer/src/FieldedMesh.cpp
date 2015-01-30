@@ -61,12 +61,11 @@ void FieldedMesh::updateFaceIndices()
 void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
 {
 	Point center = (boundingBoxMax() + boundingBoxMin()) / 2;
-
 	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
 	{
 		Normal n = normal(cfit.handle());
 		Vec3f field(VectorFieldsUtils::projectVectorOntoTriangle(n % rotationAxis, getFacePoints(cfit)));
-
+		field.normalize();
 		vector<VectorFieldTimeVal> faceVectorField;
 		faceVectorField.push_back(VectorFieldTimeVal(field, 0));
 		faceVectorField.push_back(VectorFieldTimeVal(field, 1));
