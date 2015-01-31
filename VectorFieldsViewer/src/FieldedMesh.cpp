@@ -20,9 +20,10 @@ bool FieldedMesh::load(const char* path)
 {
 	isLoaded_ = false;
 	// load mesh
+	
 	if (OpenMesh::IO::read_mesh(*this, path))
 	{
-		surroundBoundingBox();
+		normalizeMesh();
 
 		// compute face & vertex normals
 		update_normals();
@@ -117,12 +118,34 @@ const Point& FieldedMesh::boundingBoxMax()
 	return bbMax;
 }
 
-void FieldedMesh::surroundBoundingBox()
+void FieldedMesh::normalizeMesh()
 {
 	// set center and radius
 	ConstVertexIter  v_it(vertices_begin()), v_end(vertices_end());
 
-	bbMin = bbMax = point(v_it);
+	bbMin = bbMax = point(v_it ++);
+	for (; v_it!=v_end; ++v_it)
+	{
+		bbMin.minimize(point(v_it));
+		bbMax.maximize(point(v_it));
+	}
+
+	Point translate = (bbMin + bbMax) / 2;
+
+	bbMax -= bbMin;
+
+	float scale = std::max(bbMax[0], std::max(bbMax[1], bbMax[2])) / 2;
+
+	v_it = vertices_begin();
+	v_end = vertices_end();
+	for (; v_it!=v_end; ++v_it)
+	{
+		set_point(v_it, (point(v_it) + translate) / scale);
+	}
+
+	v_it = vertices_begin();
+	v_end = vertices_end();
+	bbMin = bbMax = point(v_it ++);
 	for (; v_it!=v_end; ++v_it)
 	{
 		bbMin.minimize(point(v_it));

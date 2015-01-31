@@ -60,7 +60,8 @@ public:
 	virtual void processmenu(int i);
 	int LOAD_GEOMETRY_KEY;
 	
-
+	void evolvePaths();
+	void resetTimer();
 protected:
 
 	virtual void draw(const std::string& _draw_mode);
@@ -71,6 +72,8 @@ protected:
 	/// set vertex color from vertex valence
 	void colorCoding();
 
+private:
+
 	vector<ParticlePath> particlePaths;
 
 	FieldedMesh		fieldedMesh;
@@ -80,15 +83,13 @@ protected:
 	double			fieldSimulationMinTime;
 	double			fieldSimulationMaxTime;
 
-
-private:
-
 	void computeVectorFieldLines();
 
 	vector<uint> indices;
 	vector<float> colors;
 
 	uint maxActivePathLength;
+	uint timeout;
 };
 
 #endif

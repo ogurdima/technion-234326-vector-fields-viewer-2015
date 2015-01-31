@@ -50,7 +50,7 @@ public:
 
 	const Point* getActivePathPoints(int requestedLength, int* actualLength)
 	{
-		int firstIndex = particleLoc - requestedLength;
+		int firstIndex = particleLoc - requestedLength + 1;
 		if (firstIndex < 0) 
 		{
 			firstIndex = 0;

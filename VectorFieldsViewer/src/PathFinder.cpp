@@ -1,6 +1,7 @@
 #include "PathFinder.h"
 #include "FieldedMesh.h"
 #include "../OpenMesh/Core/Mesh/AttribKernelT.hh"
+#include <chrono>
 
 PathFinder::PathFinder() : 
 	dt(0.1),
@@ -38,16 +39,28 @@ vector<ParticlePath> PathFinder::getParticlePaths()
 	vector<ParticlePath> allPaths;
 	int totalFaces = fieldedMesh.n_faces();
 	int facesDone = 0;
+	vector<Mesh::FaceHandle> faceHandles;
+	faceHandles.reserve(totalFaces);
+
 	for(Mesh::ConstFaceIter fit(fieldedMesh.faces_begin()), fitEnd(fieldedMesh.faces_end()); fit != fitEnd; ++fit ) 
 	{
-		ParticlePath facePath = getParticlePath(fit.handle());
-		allPaths.push_back(facePath);
-		facesDone++;
-		if(facesDone % 100 == 0)
-		{
-			std:: cout << "Calculated " << facesDone << " paths of " << totalFaces << std::endl;
-		}
+		faceHandles.push_back(fit.handle());
 	}
+	allPaths.resize(totalFaces);
+	
+	auto start_time = std::chrono::high_resolution_clock::now();
+#pragma omp for schedule(dynamic, 150)
+	for(int i = 0; i < totalFaces; ++i ) 
+	{
+		allPaths[i] = getParticlePath(faceHandles[i]);
+	}
+
+	auto end_time = std::chrono::high_resolution_clock::now();
+	auto time = end_time - start_time;
+	
+	
+	std::cout << "run took " <<  std::chrono::duration_cast<std::chrono::seconds>(time).count() << " seconds.\n";
+
 	std::cout << "Fuckup count: " << fuckupCount << std::endl;
 	return allPaths;
 }

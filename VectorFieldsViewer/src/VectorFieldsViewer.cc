@@ -7,10 +7,11 @@ VectorFieldsViewer* VectorFieldsViewer::activeInstance = NULL;
 
 VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
 GlutExaminer(_title, _width, _height),
-fieldSimulationTimeInterval(0.0001),
+fieldSimulationTimeInterval(0.005),
 fieldSimulationMinTime(0),
-fieldSimulationMaxTime(0.01),
-maxActivePathLength(20)
+fieldSimulationMaxTime(0.2),
+maxActivePathLength(30),
+timeout(200)
 {
 	float r = 1;
 	float g = 1;
@@ -23,7 +24,7 @@ maxActivePathLength(20)
 		colors.push_back(r);
 		colors.push_back(g);
 		colors.push_back(b);
-		colors.push_back( std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 2);
+		colors.push_back( std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 5);
 	}
 
 	clear_draw_modes();
@@ -36,22 +37,33 @@ maxActivePathLength(20)
 	
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
 
-	const char initPath[] = "..\\Data\\old\\horse.off";
+	const char initPath[] = "..\\Data\\old\\Horse.off";
 	open_mesh(initPath);
 	set_draw_mode(4);
 	VectorFieldsViewer::activeInstance = this;
-	glutTimerFunc(60, &VectorFieldsViewer::onTimer, 0);
+	resetTimer();
+}
+
+void VectorFieldsViewer::resetTimer()
+{
+	glutTimerFunc(timeout, &VectorFieldsViewer::onTimer, 0);
+}
+
+void VectorFieldsViewer::evolvePaths()
+{
+	double dt = fieldSimulationTimeInterval * 2;
+	int s = particlePaths.size();
+	for (int i = 0; i < s; i++) 
+	{
+		particlePaths[i].evolveParticleLoc(dt);
+	}
 }
 
 void VectorFieldsViewer::onTimer(int val)
 {
-	for (uint i = 0; i < VectorFieldsViewer::activeInstance->particlePaths.size(); i++) 
-	{
-		double dt = (VectorFieldsViewer::activeInstance->fieldSimulationMaxTime -  VectorFieldsViewer::activeInstance->fieldSimulationMinTime) / (60.0 * 10);
-		VectorFieldsViewer::activeInstance->particlePaths[i].evolveParticleLoc(dt);
-	}
+	VectorFieldsViewer::activeInstance->evolvePaths();
 	glutPostRedisplay();
-	glutTimerFunc(200, &VectorFieldsViewer::onTimer, 0);
+	VectorFieldsViewer::activeInstance->resetTimer();
 }
 
 // Overriden virtual method - fetch class specific IDs here
@@ -234,7 +246,6 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		}
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_COLOR_ARRAY);
 		for (uint i = 0; i < particlePaths.size(); i++) 
