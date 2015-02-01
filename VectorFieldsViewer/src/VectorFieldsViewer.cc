@@ -10,7 +10,7 @@ GlutExaminer(_title, _width, _height),
 fieldSimulationTimeInterval(0.005),
 fieldSimulationMinTime(0),
 fieldSimulationMaxTime(0.2),
-maxActivePathLength(30),
+maxActivePathLength(10),
 timeout(200)
 {
 	float r = 1;
@@ -37,7 +37,7 @@ timeout(200)
 	
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
 
-	const char initPath[] = "..\\Data\\old\\Horse.off";
+	const char initPath[] = "..\\Data\\old\\cow.off";
 	open_mesh(initPath);
 	set_draw_mode(4);
 	VectorFieldsViewer::activeInstance = this;

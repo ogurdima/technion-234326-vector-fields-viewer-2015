@@ -2,6 +2,7 @@
 #include "FieldedMesh.h"
 #include "../OpenMesh/Core/Mesh/AttribKernelT.hh"
 #include <chrono>
+#include <omp.h>
 
 PathFinder::PathFinder() : 
 	dt(0.1),
@@ -11,7 +12,7 @@ PathFinder::PathFinder() :
 	pathDepth(10),
 	fuckupCount(0)
 {
-
+	
 }
 
 bool PathFinder::configure(const FieldedMesh& aMesh_, Time dt_, Time tmin_, Time tmax_)
@@ -47,9 +48,9 @@ vector<ParticlePath> PathFinder::getParticlePaths()
 		faceHandles.push_back(fit.handle());
 	}
 	allPaths.resize(totalFaces);
-	
+
 	auto start_time = std::chrono::high_resolution_clock::now();
-#pragma omp for schedule(dynamic, 150)
+#pragma omp parallel for schedule(dynamic, 150)
 	for(int i = 0; i < totalFaces; ++i ) 
 	{
 		allPaths[i] = getParticlePath(faceHandles[i]);
@@ -70,7 +71,6 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	ParticlePath particlePath;
 
 	Triangle pts(fieldedMesh.getFacePoints(faceHandle));
-	Vec3f field = fieldedMesh.faceVectorField(faceHandle, tmin);
 	Point pstart = VectorFieldsUtils::barycentricToStd(Point(1./3.), pts);
 	
 	particlePath.pushBack(pstart, tmin);
@@ -106,10 +106,7 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 
 		// Next we find next owner face. If owner face changed then we need to change next particle point to be on the
 		// edge of the new owner face
-		if (curState.ownerFace.idx() == 27)
-		{
-			bool debug = true;
-		}
+
 		const Normal& normal = fieldedMesh.normal(curState.ownerFace);
 		Point intersection;
 		bool breakSearch = false;

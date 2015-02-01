@@ -15,7 +15,8 @@ public:
 	ParticlePath():
 		particleLoc(0)
 	{
-
+		points.reserve(500);
+		times.reserve(500);
 	}
 
 	inline const vector<Point>& getPoints()
@@ -74,15 +75,15 @@ public:
 
 	void evolveParticleLoc(double dt)
 	{
-		int s = (int) size();
-		assert(s > 0 && particleLoc >= 0 && particleLoc < s);
+		int pathLength = (int) size();
+		assert(pathLength > 0 && particleLoc >= 0 && particleLoc < pathLength);
 		double currentTime = times[particleLoc];
-		if (particleLoc == s - 1)
+		if (particleLoc == pathLength - 1)
 		{
-			particleLoc = rand() % std::max( ((int) s / 5), s);
+			particleLoc = rand() % std::max( ((int) pathLength / 5), pathLength);
 			return;
 		}
-		for (int nextLoc = particleLoc; nextLoc < times.size(); nextLoc++)
+		for (int nextLoc = particleLoc; nextLoc < pathLength; nextLoc++)
 		{
 			if (times[nextLoc] >= currentTime + dt)
 			{
@@ -91,7 +92,7 @@ public:
 				return;
 			}
 		}
-		particleLoc = times.size() - 1;
+		particleLoc = pathLength - 1;
 	}
 };
 

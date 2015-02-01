@@ -93,7 +93,7 @@ void FieldedMesh::assignRandVectorField()
 
 		vector<VectorFieldTimeVal> faceVectorField;
 		Vec3f field = inStd - center;
-
+		field.normalize();
 		faceVectorField.push_back(VectorFieldTimeVal(field,0));
 		faceVectorField.push_back(VectorFieldTimeVal(field,1));
 
@@ -155,7 +155,7 @@ void FieldedMesh::normalizeMesh()
 
 Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, const Time& time) const
 {
-	vector<VectorFieldTimeVal> fieldSamples = property(vectorFieldFaceProperty, faceHandle);
+	const vector<VectorFieldTimeVal>& fieldSamples = property(vectorFieldFaceProperty, faceHandle);
 	if (fieldSamples.size() == 0) {
 		return Vec3f(0,0,0);
 	}
