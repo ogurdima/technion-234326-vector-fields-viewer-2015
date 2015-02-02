@@ -59,6 +59,7 @@ public:
 	virtual bool open_mesh(const char* _filename);
 	virtual void processmenu(int i);
 	int LOAD_GEOMETRY_KEY;
+	int LOAD_FIELD_KEY;
 	
 	void evolvePaths();
 	void resetTimer();

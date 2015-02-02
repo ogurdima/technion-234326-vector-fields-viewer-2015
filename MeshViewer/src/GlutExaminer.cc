@@ -392,7 +392,17 @@ void GlutExaminer::keyboard(int key, int x, int y)
 			std::cerr << fps << " FPS\n";
 			break;
 		}
-
+	case '=':
+		{
+			
+			translate(Vec3f(0.0, 0.0, radius_ * 0.1));
+			break;
+		}
+	case '-':
+		{
+			translate(Vec3f(0.0, 0.0, radius_ * -0.1));
+			break;
+		}
 	default:
 		{
 			GlutViewer::keyboard(key, x, y);

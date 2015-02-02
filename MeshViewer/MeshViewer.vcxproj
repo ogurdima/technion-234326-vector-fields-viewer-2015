@@ -22,7 +22,7 @@
     <ClCompile Include="src\MeshViewer.cc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>00-MeshViewer</ProjectName>
+    <ProjectName>MeshViewer</ProjectName>
     <ProjectGuid>{AB3B6522-4B6E-4E85-B97C-13C26F467603}</ProjectGuid>
     <RootNamespace>CurvatureViewer</RootNamespace>
     <Keyword>ManagedCProj</Keyword>

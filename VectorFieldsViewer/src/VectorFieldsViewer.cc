@@ -32,14 +32,16 @@ timeout(200)
 	add_draw_mode("Hidden Line");
 	add_draw_mode("Solid Flat");
 	add_draw_mode("Solid Smooth");
-	add_draw_mode("Vector Field");
+	int vfDrawModeId = add_draw_mode("Vector Field");
 	add_draw_mode("Only Lines");
 	
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
+	LOAD_FIELD_KEY = add_draw_mode("Load Field");
 
-	const char initPath[] = "..\\Data\\old\\cow.off";
+	//const char initPath[] = "..\\Data\\miri\\cat.off";
+	const char initPath[] = "..\\Data\\models\\apple.off";
 	open_mesh(initPath);
-	set_draw_mode(4);
+	set_draw_mode(vfDrawModeId);
 	VectorFieldsViewer::activeInstance = this;
 	resetTimer();
 }
@@ -69,11 +71,21 @@ void VectorFieldsViewer::onTimer(int val)
 // Overriden virtual method - fetch class specific IDs here
 void VectorFieldsViewer::processmenu(int i) 
 {
-	if(i != LOAD_GEOMETRY_KEY)
+	if(LOAD_GEOMETRY_KEY == i)
 	{
-		set_draw_mode(i);
+		OPENFILENAME ofn={0};
+		char szFileName[MAX_PATH]={0};
+		ofn.lStructSize=sizeof(OPENFILENAME);
+		ofn.Flags=OFN_ALLOWMULTISELECT|OFN_EXPLORER;
+		ofn.lpstrFilter="OFF Files (*.off)\0*.off\0";
+		ofn.lpstrFile=szFileName;
+		ofn.nMaxFile=MAX_PATH;
+		if(GetOpenFileName(&ofn)) {
+			std::cout << "Opening Mesh File " << ofn.lpstrFile << std::endl;
+			open_mesh(szFileName);
+		}
 	}
-	else
+	else if (LOAD_FIELD_KEY == i)
 	{
 		OPENFILENAME ofn={0};
 		char szFileName[MAX_PATH]={0};
@@ -83,8 +95,12 @@ void VectorFieldsViewer::processmenu(int i)
 		ofn.lpstrFile=szFileName;
 		ofn.nMaxFile=MAX_PATH;
 		if(GetOpenFileName(&ofn)) {
-			open_mesh(szFileName);
+			std::cout << "Opening Field File " << ofn.lpstrFile << std::endl;
 		}
+	}
+	else 
+	{
+		set_draw_mode(i);
 	}
 }
 
