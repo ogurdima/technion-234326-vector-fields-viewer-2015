@@ -5,7 +5,7 @@
 #include <omp.h>
 
 PathFinder::PathFinder() : 
-	dt(0.1),
+	dt(0.1f),
 	tmin(0),
 	tmax(1),
 	hasValidConfig(false),
@@ -71,7 +71,7 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	ParticlePath particlePath;
 
 	Triangle pts(fieldedMesh.getFacePoints(faceHandle));
-	Point pstart = VectorFieldsUtils::barycentricToStd(Point(1./3.), pts);
+	Point pstart = VectorFieldsUtils::barycentricToStd(Point(1.f/3.f), pts);
 	
 	particlePath.pushBack(pstart, tmin);
 
@@ -131,7 +131,7 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			//std::cout << "Owner face changed from " << curState.ownerFace << " to " << fieldedMesh.opposite_face_handle(cfhei.handle()) << std::endl;
 			curState.ownerFace = fieldedMesh.opposite_face_handle(cfhei.handle());
 			curState.p = intersection;
-			curState.t = curState.t + actualTimeInterval;
+			curState.t = curState.t + (Time)actualTimeInterval;
 			particlePath.pushBack(intersection, curState.t);
 			excludeHalfEdge = fieldedMesh.opposite_halfedge_handle(cfhei.handle());
 			exclude = true;
@@ -199,7 +199,7 @@ Vec3f PathFinder::getOneRingLerpField(const Point p, const Mesh::FaceHandle& own
 	for(int i = 0, size = distanceAndFields.size(); i < size; ++i)
 	{
 		std::pair<double, Vec3f>& current = distanceAndFields[i];
-		totalField += current.second * (totalDist - current.first) / totalDist;
+		totalField += current.second * (float)((totalDist - current.first) / totalDist);
 	}
 	
 	// now we cheat by projecting totalField onto ownerFace's plane

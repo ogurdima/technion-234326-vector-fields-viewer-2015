@@ -123,7 +123,7 @@ void FieldedMesh::normalizeMesh()
 	// set center and radius
 	ConstVertexIter  v_it(vertices_begin()), v_end(vertices_end());
 
-	bbMin = bbMax = point(v_it ++);
+	bbMin = bbMax = point(++v_it);
 	for (; v_it!=v_end; ++v_it)
 	{
 		bbMin.minimize(point(v_it));
@@ -145,7 +145,7 @@ void FieldedMesh::normalizeMesh()
 
 	v_it = vertices_begin();
 	v_end = vertices_end();
-	bbMin = bbMax = point(v_it ++);
+	bbMin = bbMax = point(++v_it);
 	for (; v_it!=v_end; ++v_it)
 	{
 		bbMin.minimize(point(v_it));

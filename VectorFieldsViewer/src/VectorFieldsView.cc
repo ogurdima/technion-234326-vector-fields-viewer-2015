@@ -4,7 +4,12 @@
 //                                                                            
 //=============================================================================
 
+#pragma warning( push )
+#pragma warning( disable : 4101)
 #include "VectorFieldsViewer.h"
+#pragma warning( pop ) 
+
+
 
 
 

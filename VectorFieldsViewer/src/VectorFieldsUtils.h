@@ -18,7 +18,7 @@ using std::vector;
 #pragma region typedef
 
 #define BEGINNING_OF_TIME -DBL_MAX
-typedef double Time;
+typedef float Time;
 
 typedef TriMesh_ArrayKernelT<> Mesh;
 typedef FPropHandleT<Vec3f> VfieldFProp;
