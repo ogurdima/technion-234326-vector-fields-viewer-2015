@@ -82,7 +82,10 @@ void VectorFieldsViewer::processmenu(int i)
 		ofn.nMaxFile=MAX_PATH;
 		if(GetOpenFileName(&ofn)) {
 			std::cout << "Opening Mesh File " << ofn.lpstrFile << std::endl;
-			open_mesh(szFileName);
+			bool success = open_mesh(szFileName);
+			if (!success) {
+				std::cout << "Failed to read mesh" << std::endl;
+			}
 		}
 	}
 	else if (LOAD_FIELD_KEY == i)
@@ -91,11 +94,18 @@ void VectorFieldsViewer::processmenu(int i)
 		char szFileName[MAX_PATH]={0};
 		ofn.lStructSize=sizeof(OPENFILENAME);
 		ofn.Flags=OFN_ALLOWMULTISELECT|OFN_EXPLORER;
-		ofn.lpstrFilter="All Files (*.*)\0*.*\0";
+		ofn.lpstrFilter="VF Files (*.vf)\0*.vf\0";
 		ofn.lpstrFile=szFileName;
 		ofn.nMaxFile=MAX_PATH;
 		if(GetOpenFileName(&ofn)) {
 			std::cout << "Opening Field File " << ofn.lpstrFile << std::endl;
+			bool success = fieldedMesh.assignVectorField(szFileName);
+			if (!success) {
+				std::cout << "Failed to read field" << std::endl;
+			}
+			else {
+				computeVectorFieldLines();
+			}
 		}
 	}
 	else 
@@ -103,6 +113,7 @@ void VectorFieldsViewer::processmenu(int i)
 		set_draw_mode(i);
 	}
 }
+
 
 VectorFieldsViewer::~VectorFieldsViewer()
 {
@@ -112,16 +123,13 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 {
 	if (fieldedMesh.load(fileName))
 	{
-		computeVectorFieldLines();
-
+		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
 		set_scene( (Vec3f)(fieldedMesh.boundingBoxMin() + fieldedMesh.boundingBoxMax())*0.5,
 			0.5*(fieldedMesh.boundingBoxMin() - fieldedMesh.boundingBoxMax()).norm());
+		computeVectorFieldLines();
 		glutPostRedisplay();
 		return true;
 	}
-
-	// info
-	std::cerr << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
 	return false;
 }
 

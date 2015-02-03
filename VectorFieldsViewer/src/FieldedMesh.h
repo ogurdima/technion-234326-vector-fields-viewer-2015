@@ -33,6 +33,7 @@ public:
 
 	bool									load(const char* path);
 	bool									isLoaded();
+	bool									assignVectorField(const char* path);
 
 	const Point&							boundingBoxMin();
 	const Point&							boundingBoxMax();
@@ -53,5 +54,7 @@ private:
 	void									updateFaceIndices();
 	void									assignRandVectorField();
 	void									assignRotatingVectorField(const Vec3f& rotationAxis = Vec3f(0,0,1));
+	std::vector<Vec3f>						readFieldFile(const char* path);
+	bool									assignFieldToFaces(std::vector<Vec3f> fieldPerFace);
 };
 

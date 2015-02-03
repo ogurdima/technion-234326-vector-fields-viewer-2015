@@ -1,4 +1,7 @@
 #include "FieldedMesh.h"
+#include <iostream>
+#include <fstream>
+#include <string>
 
 FieldedMesh::FieldedMesh(void) : 
 	isLoaded_(false), 
@@ -23,6 +26,7 @@ bool FieldedMesh::load(const char* path)
 	
 	if (OpenMesh::IO::read_mesh(*this, path))
 	{
+		isLoaded_ = true;
 		normalizeMesh();
 
 		// compute face & vertex normals
@@ -34,10 +38,14 @@ bool FieldedMesh::load(const char* path)
 		// compute and assign vector field
 		assignRotatingVectorField();
 		//assignRandVectorField();
-
-		isLoaded_ = true;
 	}
 	return isLoaded_;
+}
+
+bool FieldedMesh::assignVectorField(const char* path)
+{
+	std::vector<Vec3f> field = readFieldFile(path);	
+	return assignFieldToFaces(field);
 }
 
 void FieldedMesh::updateFaceIndices()
@@ -61,19 +69,14 @@ void FieldedMesh::updateFaceIndices()
 // Color all certices appropriately
 void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
 {
-	Point center = (boundingBoxMax() + boundingBoxMin()) / 2;
+	vector<Vec3f> fieldPerFace;
 	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
 	{
 		Normal n = normal(cfit.handle());
 		Vec3f field(VectorFieldsUtils::projectVectorOntoTriangle(n % rotationAxis, getFacePoints(cfit)));
-		field.normalize();
-		vector<VectorFieldTimeVal> faceVectorField;
-		faceVectorField.push_back(VectorFieldTimeVal(field, 0));
-		faceVectorField.push_back(VectorFieldTimeVal(field, 1));
-
-		property(vectorFieldFaceProperty, cfit.handle()) = faceVectorField;
-
+		fieldPerFace.push_back(field);
 	}
+	assignFieldToFaces(fieldPerFace);
 }
 
 void FieldedMesh::assignRandVectorField()
@@ -175,12 +178,19 @@ Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, const Tim
 		prevTime = fieldSamples[i].time;
 		prevField = fieldSamples[i].field;
 	}
-
+	Vec3f result;
 	if (abs(nextTime - prevTime) < NUMERICAL_ERROR_THRESH) {
-		return (nextField + prevField) / 2.0;
+		
+		result = (nextField + prevField) / 2.0;
 	}
-	return (prevField * (time - prevTime) + nextField * (nextTime - time)) / (nextTime - prevTime);
-
+	else {
+		result = (prevField * (time - prevTime) + nextField * (nextTime - time)) / (nextTime - prevTime);
+	}
+	if (!_finite(result[0]))
+	{
+		bool debug = true;
+	}
+	return result;
 }
 
 bool FieldedMesh::isLoaded()
@@ -192,3 +202,48 @@ const vector<unsigned int>& FieldedMesh::getIndices() const
 {
 	return faceIndices;
 }
+
+std::vector<Vec3f> FieldedMesh::readFieldFile(const char* path)
+{
+	std::ifstream file = std::ifstream(path);
+	std::vector<Vec3f> fieldPerFace;
+	float x,y,z;
+	while (file >> x >> y >> z)
+	{
+		fieldPerFace.push_back(Vec3f(x,y,z));
+	}
+	std::cout << "Read " << fieldPerFace.size() << " vectors" << std::endl;
+	return fieldPerFace;
+}
+
+bool FieldedMesh::assignFieldToFaces(std::vector<Vec3f> fieldPerFace)
+{
+	if (!isLoaded())
+	{
+		std::cerr << "Failed to assign vector field: mesh not loaded" << std::endl;
+		return false;
+	}
+	if (fieldPerFace.size() < n_faces())
+	{
+		std::cerr << "Failed to assign vector field: fieldPerFace.size() < n_faces()" << std::endl;
+		return false;
+	}
+	int i = 0;
+	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit, ++i) 
+	{
+		Vec3f fixed = VectorFieldsUtils::projectVectorOntoTriangle(fieldPerFace[i], getFacePoints(cfit.handle()));
+		if (!VectorFieldsUtils::isCloseToZero(fixed.norm())) {
+			fixed.normalize();
+		}
+		if (!_finite(fixed[0]))
+		{
+			bool debug = true;
+		}
+		vector<VectorFieldTimeVal> faceVectorField;
+		faceVectorField.push_back(VectorFieldTimeVal(fixed, 0));
+		faceVectorField.push_back(VectorFieldTimeVal(fixed, 1));
+		property(vectorFieldFaceProperty, cfit.handle()) = faceVectorField;
+	}
+	return true;
+}
+	

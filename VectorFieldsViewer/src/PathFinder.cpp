@@ -90,6 +90,10 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	{
 		Vec3f field = getOneRingLerpField(curState.p, curState.ownerFace);
 		Point next = curState.p + field * dt;
+		if (!_finite(field[0]) || !_finite(field[1]) || !_finite(field[2]))
+		{
+			bool debug = true;
+		}
 
 		Triangle triangle(fieldedMesh.getFacePoints(curState.ownerFace));
 
@@ -199,7 +203,15 @@ Vec3f PathFinder::getOneRingLerpField(const Point p, const Mesh::FaceHandle& own
 	for(int i = 0, size = distanceAndFields.size(); i < size; ++i)
 	{
 		std::pair<double, Vec3f>& current = distanceAndFields[i];
+		if (!_finite(current.second[0]))
+		{
+			bool debug = true;
+		}
 		totalField += current.second * (float)((totalDist - current.first) / totalDist);
+		if (!_finite(totalField[0]))
+		{
+			bool debug = true;
+		}
 	}
 	
 	// now we cheat by projecting totalField onto ownerFace's plane
