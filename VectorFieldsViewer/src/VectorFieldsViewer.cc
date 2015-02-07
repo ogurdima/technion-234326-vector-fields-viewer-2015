@@ -7,9 +7,9 @@ VectorFieldsViewer* VectorFieldsViewer::activeInstance = NULL;
 
 VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
 GlutExaminer(_title, _width, _height),
-fieldSimulationTimeInterval(0.005),
+	fieldSimulationTimeInterval(0.002),
 fieldSimulationMinTime(0),
-fieldSimulationMaxTime(0.2),
+	fieldSimulationMaxTime(0.02),
 maxActivePathLength(10),
 timeout(200)
 {
@@ -24,7 +24,7 @@ timeout(200)
 		colors.push_back(r);
 		colors.push_back(g);
 		colors.push_back(b);
-		colors.push_back( std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 5);
+		colors.push_back( std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 3);
 	}
 
 	clear_draw_modes();
@@ -39,7 +39,7 @@ timeout(200)
 	LOAD_FIELD_KEY = add_draw_mode("Load Field");
 
 	//const char initPath[] = "..\\Data\\miri\\cat.off";
-	const char initPath[] = "..\\Data\\models\\apple.off";
+	const char initPath[] = "..\\Data\\miri\\teddy171.off";
 	open_mesh(initPath);
 	set_draw_mode(vfDrawModeId);
 	VectorFieldsViewer::activeInstance = this;
@@ -114,11 +114,6 @@ void VectorFieldsViewer::processmenu(int i)
 	}
 }
 
-
-VectorFieldsViewer::~VectorFieldsViewer()
-{
-}
-
 bool VectorFieldsViewer::open_mesh(const char* fileName)
 {
 	if (fieldedMesh.load(fileName))
@@ -136,10 +131,12 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 void VectorFieldsViewer::computeVectorFieldLines()
 {
 	bool success = pathFinder.configure(fieldedMesh, fieldSimulationTimeInterval, fieldSimulationMinTime, fieldSimulationMaxTime);
-	if (success) {
+	if (success) 
+	{
 		particlePaths = pathFinder.getParticlePaths();
 	}
-	else {
+	else 
+	{
 		std::cerr << "Failed to properly configure PathFinder" << std::endl;
 		particlePaths = vector<ParticlePath>();
 	}

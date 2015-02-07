@@ -144,7 +144,7 @@ public:
 	
 	static Vec3f lerp(Vec3f first, Vec3f second, double time);
 
-	static Point getTriangleCentroid(Triangle t);
+	static Point getTriangleCentroid(const Triangle& t);
 
 	//static TriIntersectionDataT segmentTriangleIntersect(const Point& segA, const Point& segB, const Triangle& tri);
 

@@ -15,7 +15,7 @@ PathFinder::PathFinder() :
 	
 }
 
-bool PathFinder::configure(const FieldedMesh& aMesh_, Time dt_, Time tmin_, Time tmax_)
+bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_, const Time& tmin_, const Time& tmax_)
 {
 	if (tmax_ <= tmin_|| (dt_ >= (tmax_ - tmin_))) 
 	{
@@ -50,7 +50,7 @@ vector<ParticlePath> PathFinder::getParticlePaths()
 	allPaths.resize(totalFaces);
 
 	auto start_time = std::chrono::high_resolution_clock::now();
-#pragma omp parallel for schedule(dynamic, 150)
+#pragma omp parallel for schedule(dynamic, 500)
 	for(int i = 0; i < totalFaces; ++i ) 
 	{
 		allPaths[i] = getParticlePath(faceHandles[i]);
@@ -60,7 +60,7 @@ vector<ParticlePath> PathFinder::getParticlePaths()
 	auto time = end_time - start_time;
 	
 	
-	std::cout << "run took " <<  std::chrono::duration_cast<std::chrono::seconds>(time).count() << " seconds.\n";
+	std::cout << "run took " <<  std::chrono::duration_cast<std::chrono::milliseconds>(time).count() << " milliseconds.\n";
 
 	std::cout << "Fuckup count: " << fuckupCount << std::endl;
 	return allPaths;
@@ -177,45 +177,54 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	return particlePath;
 }
 
-Vec3f PathFinder::getOneRingLerpField(const Point p, const Mesh::FaceHandle& ownerFace)
+Vec3f PathFinder::getOneRingLerpField(const Point& p, const Mesh::FaceHandle& ownerFace)
 {
-	vector<std::pair<double, Vec3f>> distanceAndFields;
-	distanceAndFields.reserve(10);
+	vector<double> distances;
+	vector<Vec3f> fields;
 	double totalDist(0);
-
-	addDistanceAndField(p, ownerFace, distanceAndFields, totalDist);
-
-	for(Mesh::FFIter curFace = fieldedMesh.ff_begin(ownerFace); curFace != fieldedMesh.ff_end(ownerFace); ++curFace) 
+	fieldedMesh.points();
+	int i = 0;
+	for(Mesh::ConstFaceFaceIter curFace(fieldedMesh.cff_begin(ownerFace)), end(fieldedMesh.cff_end(ownerFace));
+		curFace != end; ++curFace) 
 	{
 		if (curFace.handle().idx() < 0) 
 		{
 			continue;
 		}
-		addDistanceAndField(p, curFace.handle(), distanceAndFields, totalDist);
+		
+		distances.push_back((p - VectorFieldsUtils::getTriangleCentroid(fieldedMesh.getFacePoints(curFace))).length());
+		totalDist += distances[i];
+		fields.push_back(fieldedMesh.faceVectorField(curFace, 0));
+		++i;
+	}
+	
+	if (i == 0)
+	{
+		return fieldedMesh.faceVectorField(ownerFace, 0);
 	}
 
-	if (distanceAndFields.size() == 1)
-	{
-		return distanceAndFields[0].second;
-	}
+	Triangle ownerFacePoints(fieldedMesh.getFacePoints(ownerFace));
+	distances.push_back((p - VectorFieldsUtils::getTriangleCentroid(ownerFacePoints)).length());
+	totalDist += distances[i];
+	fields.push_back(fieldedMesh.faceVectorField(ownerFace, 0));
+
 
 	Vec3f totalField(0.f);
-	for(int i = 0, size = distanceAndFields.size(); i < size; ++i)
+	for(int j = 0; j <= i; ++j)
 	{
-		std::pair<double, Vec3f>& current = distanceAndFields[i];
-		if (!_finite(current.second[0]))
+		/*if (!_finite(fields[j][0]))
 		{
 			bool debug = true;
-		}
-		totalField += current.second * (float)((totalDist - current.first) / totalDist);
-		if (!_finite(totalField[0]))
+		}*/
+		totalField += fields[j] * (float)((totalDist - distances[j]) / totalDist);
+		/*if (!_finite(totalField[0]))
 		{
 			bool debug = true;
-		}
+		}*/
 	}
 	
 	// now we cheat by projecting totalField onto ownerFace's plane
-	return VectorFieldsUtils::projectVectorOntoTriangle(totalField, fieldedMesh.getFacePoints(ownerFace));
+	return VectorFieldsUtils::projectVectorOntoTriangle(totalField, ownerFacePoints);
 }
 
 void PathFinder::addDistanceAndField(const Point& p, const Mesh::FaceHandle & face, vector<std::pair<double, Vec3f>>& outDistanceAndFields, double& outTotalDistance)

@@ -80,7 +80,7 @@ public:
 		double currentTime = times[particleLoc];
 		if (particleLoc == pathLength - 1)
 		{
-			particleLoc = rand() % std::max( ((int) pathLength / 5), pathLength);
+			particleLoc = rand() % std::max( ((int) (pathLength / 10)),  pathLength);
 			return;
 		}
 		for (int nextLoc = particleLoc; nextLoc < pathLength; nextLoc++)

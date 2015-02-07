@@ -14,10 +14,7 @@ FieldedMesh::FieldedMesh(void) :
 	add_property(vectorFieldFaceProperty);
 }
 
-FieldedMesh::~FieldedMesh(void)
-{
 
-}
 
 bool FieldedMesh::load(const char* path)
 {
@@ -105,7 +102,7 @@ void FieldedMesh::assignRandVectorField()
 	}
 }
 
-Triangle FieldedMesh::getFacePoints(OpenMesh::ArrayKernel::FaceHandle faceHandle)
+Triangle FieldedMesh::getFacePoints(const OpenMesh::ArrayKernel::FaceHandle& faceHandle)
 {
 	ConstFaceVertexIter cvit(cfv_iter(faceHandle));
 	return Triangle(point(cvit), point(++cvit), point(++cvit));
@@ -179,11 +176,12 @@ Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, const Tim
 		prevField = fieldSamples[i].field;
 	}
 	Vec3f result;
-	if (abs(nextTime - prevTime) < NUMERICAL_ERROR_THRESH) {
-		
+	if (abs(nextTime - prevTime) < NUMERICAL_ERROR_THRESH) 
+	{
 		result = (nextField + prevField) / 2.0;
 	}
-	else {
+	else 
+	{
 		result = (prevField * (time - prevTime) + nextField * (nextTime - time)) / (nextTime - prevTime);
 	}
 	if (!_finite(result[0]))

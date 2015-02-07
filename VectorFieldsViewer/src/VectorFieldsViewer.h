@@ -53,27 +53,23 @@ public:
 
 	/// default constructor
 	VectorFieldsViewer(const char* _title, int _width, int _height);
-	// destructor
-	~VectorFieldsViewer();
 	/// open mesh
 	virtual bool open_mesh(const char* _filename);
 	virtual void processmenu(int i);
 	int LOAD_GEOMETRY_KEY;
 	int LOAD_FIELD_KEY;
 	
-	void evolvePaths();
-	void resetTimer();
+	
+
 protected:
+	static VectorFieldsViewer* activeInstance;
+	static void onTimer(int val);
 
 	virtual void draw(const std::string& _draw_mode);
 
-	static VectorFieldsViewer* activeInstance;
-	static void onTimer(int val);
-	
-	/// set vertex color from vertex valence
-	void colorCoding();
-
 private:
+	void evolvePaths();
+	void resetTimer();
 
 	vector<ParticlePath> particlePaths;
 

@@ -70,7 +70,7 @@ Vec3f VectorFieldsUtils::lerp(Vec3f first, Vec3f second, double time) {
 	return (first * (1.0 - (float)time)) + (second * (float)time);
 }
 
-Point VectorFieldsUtils::getTriangleCentroid(Triangle t)
+Point VectorFieldsUtils::getTriangleCentroid(const Triangle& t)
 {
 	return (t[0] + t[1] + t[2]) / 3.0;
 }

@@ -16,7 +16,7 @@ class PathFinder
 public:
 	PathFinder();
 
-	bool					configure(const FieldedMesh& aMesh_, Time dt_, Time tmin_, Time tmax_);
+	bool					configure(const FieldedMesh& aMesh_, const Time& dt_, const Time& tmin_, const Time& tmax_);
 
 	vector<ParticlePath>	getParticlePaths();
 
@@ -34,7 +34,7 @@ protected:
 
 	ParticlePath getParticlePath(const Mesh::FaceHandle& face_);
 
-	Vec3f getOneRingLerpField(const Point p, const Mesh::FaceHandle& ownerFace);
+	Vec3f getOneRingLerpField(const Point& p, const Mesh::FaceHandle& ownerFace);
 	void addDistanceAndField(const Point& p, const Mesh::FaceHandle & face, vector<std::pair<double, Vec3f>>& outDistanceAndFields, double& outTotalDistance);
 	
 };

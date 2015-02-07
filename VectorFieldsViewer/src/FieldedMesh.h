@@ -29,7 +29,6 @@ class FieldedMesh : public Mesh
 
 public:
 	FieldedMesh(void);
-	~FieldedMesh(void);
 
 	bool									load(const char* path);
 	bool									isLoaded();
@@ -41,7 +40,7 @@ public:
 	Vec3f									faceVectorField(const FaceHandle& face, const Time& time) const;
 				
 	const vector<uint>&						getIndices() const;
-	Triangle								getFacePoints(OpenMesh::ArrayKernel::FaceHandle faceHandle);
+	Triangle								getFacePoints(const OpenMesh::ArrayKernel::FaceHandle& faceHandle);
 protected:
 	bool									isLoaded_;
 	Point									bbMax;
