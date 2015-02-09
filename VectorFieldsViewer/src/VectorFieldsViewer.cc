@@ -3,40 +3,35 @@
 #include <vector>
 #include <float.h>
 
+
+_declspec(dllexport) void OpenWindow(void (*timeoutChanged)(int),
+										  void (*pathLengthChanged)(int),
+										  void (*closedCallback)(void));
+
 VectorFieldsViewer* VectorFieldsViewer::activeInstance = NULL;
 
-void callback(int i)
+void VectorFieldsViewer::OpenParameterWindow()
 {
-	std::cout << i << " call" << std::endl;
+	if(isParameterOpen)
+	{
+		return;
+	}
+	OpenWindow(&VectorFieldsViewer::timeoutChanged, &VectorFieldsViewer::maxPathChanged, &VectorFieldsViewer::windowClosed);
+	isParameterOpen = true;
 }
 
-_declspec(dllexport) void ShowMessageBox(int *value);
-_declspec(dllexport) void RegisterAndCall(void (*cb)(int));
-
-
-
 VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
-GlutExaminer(_title, _width, _height),
-	fieldSimulationTimeInterval(0.002),
-fieldSimulationMinTime(0),
+	GlutExaminer(_title, _width, _height),
+	fieldSimulationTimeInterval(0.0001),
+	fieldSimulationMinTime(0),
 	fieldSimulationMaxTime(0.02),
-maxActivePathLength(10),
-timeout(200)
+	maxActivePathLength(10),
+	timeout(200),
+	isParameterOpen(false),
+	color(1,1,1)
 {
-	RegisterAndCall(callback);
-	float r = 1;
-	float g = 1;
-	float b = 1;
-	colors.reserve(maxActivePathLength * 4);
-	indices.reserve(maxActivePathLength);
-	for(uint i = 0; i < maxActivePathLength; ++i)
-	{
-		indices.push_back(i);
-		colors.push_back(r);
-		colors.push_back(g);
-		colors.push_back(b);
-		colors.push_back( std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 3);
-	}
+	
+	resetColorAndIndices();
 
 	clear_draw_modes();
 	add_draw_mode("Wireframe");
@@ -50,14 +45,13 @@ timeout(200)
 	LOAD_FIELD_KEY = add_draw_mode("Load Field");
 
 	//const char initPath[] = "..\\Data\\miri\\cat.off";
-	const char initPath[] = "..\\Data\\miri\\teddy171.off";
+	const char initPath[] = "..\\Data\\old\\Horse.off";
 	open_mesh(initPath);
 	set_draw_mode(vfDrawModeId);
 	VectorFieldsViewer::activeInstance = this;
 	resetTimer();
 
-	
-
+	OpenParameterWindow();
 }
 
 void VectorFieldsViewer::resetTimer()

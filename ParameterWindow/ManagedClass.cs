@@ -5,16 +5,30 @@ namespace ParameterWindow
 {
     public static class ManagedClass
     {
-        
-        public static unsafe void RegisterAndCall(void * cb)
+
+        public static unsafe void OpenParameterWindow(void* timeoutChanged,
+            void* pathLengthChanged,
+            void* closedCallback)
         {
-            var d = (MyDel)Marshal.GetDelegateForFunctionPointer((IntPtr)cb, typeof(MyDel));
             var window = new ParameterWindow();
-            window.Callback += d;
+            window.TimeoutChanged +=
+                (IntParameterCallback)
+                    Marshal.GetDelegateForFunctionPointer((IntPtr) timeoutChanged, typeof (IntParameterCallback));
+            window.PathLengthChanged +=
+                (IntParameterCallback)
+                    Marshal.GetDelegateForFunctionPointer((IntPtr) pathLengthChanged, typeof (IntParameterCallback));
+            window.WindowClosed +=
+                (VoidParameterCallback)
+                    Marshal.GetDelegateForFunctionPointer((IntPtr) closedCallback, typeof (VoidParameterCallback));
+            
             window.Show();
         }
-
-        public delegate void MyDel(int i);
     }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void IntParameterCallback(int i);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void VoidParameterCallback();
 
 }

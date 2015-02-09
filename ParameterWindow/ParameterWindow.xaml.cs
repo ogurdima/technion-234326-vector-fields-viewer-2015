@@ -18,19 +18,49 @@ namespace ParameterWindow
     /// </summary>
     public partial class ParameterWindow : Window
     {
-        public event ManagedClass.MyDel Callback;
 
 
         public ParameterWindow()
         {
             InitializeComponent();
+            Closed += OnClosed;
         }
 
-        private int i = 0;
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        private void OnClosed(object sender, EventArgs eventArgs)
         {
-            if (Callback != null)
-                Callback(i++);
+            WindowClosed();
         }
+
+
+        public event IntParameterCallback TimeoutChanged = delegate { };
+
+        private int _timeout = 100;
+
+        public int Timeout
+        {
+            get { return _timeout; }
+            set
+            {
+                _timeout = value;
+                TimeoutChanged(_timeout);
+            }
+        }
+
+        public event IntParameterCallback PathLengthChanged = delegate { }; 
+
+        private int _maxLength = 10;
+
+        public int MaxLength
+        {
+            get { return _maxLength; }
+            set
+            {
+                _maxLength = value;
+                PathLengthChanged(_maxLength);
+            }
+        }
+
+
+        public event VoidParameterCallback WindowClosed = delegate { };
     }
 }

@@ -12,18 +12,22 @@ namespace ManagedDll {
 	{
 	public:
 
-		void RegisterAndCall(void (* cb)(int))
+		void OpenWindow(void (*timeoutChanged)(int),
+						void (*pathLengthChanged)(int),
+						void (*closedCallback)(void))
 		{
-			ParameterWindow::ManagedClass::RegisterAndCall(cb);
+			ParameterWindow::ManagedClass::OpenParameterWindow(timeoutChanged, pathLengthChanged, closedCallback);
 		}
 	};
 }
 
 
-__declspec(dllexport) void RegisterAndCall(void (* cb)(int))
+__declspec(dllexport) void OpenWindow(void (*timeoutChanged)(int),
+				void (*pathLengthChanged)(int),
+				void (*closedCallback)(void))
 {
 	ManagedDll::DoWork work;	
-	work.RegisterAndCall(cb);	
+	work.OpenWindow(timeoutChanged, pathLengthChanged, closedCallback);	
 }
 
 

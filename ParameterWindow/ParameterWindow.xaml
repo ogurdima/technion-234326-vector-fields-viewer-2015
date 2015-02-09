@@ -3,10 +3,44 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        Width="300"
+        Height="200"
+        MinWidth="300"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        ResizeMode="NoResize"
+        WindowStyle="ToolWindow"
         d:DesignHeight="300"
         d:DesignWidth="300"
         mc:Ignorable="d">
-    <StackPanel>
-        <Button Content="click" Click="ButtonBase_OnClick" />
-    </StackPanel>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Margin="2" Text="Timeout(milliseconds):" />
+        <xctk:IntegerUpDown Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="2"
+                            Increment="10"
+                            Maximum="2000"
+                            Minimum="50"
+                            Value="{Binding Timeout}" />
+
+        <TextBlock Grid.Row="1"
+                   Grid.Column="0"
+                   Margin="2"
+                   Text="Maximum path length:" />
+        <xctk:IntegerUpDown Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="2"
+                            Increment="1"
+                            Maximum="100"
+                            Minimum="1"
+                            Value="{Binding MaxLength}" />
+    </Grid>
 </Window>
