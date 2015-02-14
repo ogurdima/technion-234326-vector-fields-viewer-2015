@@ -5,6 +5,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VectorFieldsViewer", "VectorFieldsViewer\VectorFieldsViewer.vcxproj", "{C9349948-C638-4913-BF63-4936861CB04C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AB3B6522-4B6E-4E85-B97C-13C26F467603} = {AB3B6522-4B6E-4E85-B97C-13C26F467603}
+		{369E36C5-4ED4-4478-A3AD-7546CB8EA495} = {369E36C5-4ED4-4478-A3AD-7546CB8EA495}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MeshViewer", "MeshViewer\MeshViewer.vcxproj", "{AB3B6522-4B6E-4E85-B97C-13C26F467603}"

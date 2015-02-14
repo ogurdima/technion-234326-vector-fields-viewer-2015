@@ -157,7 +157,7 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		GlutExaminer::draw(_draw_mode);
 		return;
 	}
-
+#pragma region Wireframe
 	if (_draw_mode == "Wireframe")
 	{
 		glDisable(GL_LIGHTING);
@@ -172,6 +172,8 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+#pragma endregion Mode
+#pragma region Hidden Line
 	else if (_draw_mode == "Hidden Line")
 	{
 
@@ -201,6 +203,8 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		glDepthFunc(GL_LESS);
 
 	}
+#pragma endregion Mode
+#pragma region Solid Flat
 	else if (_draw_mode == "Solid Flat")
 	{
 		Mesh::ConstFaceIter        f_it(fieldedMesh.faces_begin()),  f_end(fieldedMesh.faces_end());
@@ -222,6 +226,8 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		}
 		glEnd();
 	}
+#pragma endregion Mode
+#pragma region Solid Smooth
 	else if (_draw_mode == "Solid Smooth")
 	{
 		glEnable(GL_LIGHTING);
@@ -236,16 +242,17 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_NORMAL_ARRAY);
-	} else
-	if (_draw_mode == "Only Lines" || _draw_mode == "Vector Field")
+	} 
+#pragma endregion Mode
+#pragma region Vector Field and Only Lines
+	else if (_draw_mode == "Only Lines" || _draw_mode == "Vector Field" || _draw_mode == "Lines in Front" )
 	{
 		glDisable(GL_LIGHTING);
-
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable( GL_BLEND );
 
 		glClearColor(0.0,0.0,0.0,0.0);
-
+#pragma region Connectivity
 		if (_draw_mode == "Vector Field")
 		{
 			glDisable(GL_LIGHTING);
@@ -273,7 +280,7 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glDepthFunc(GL_LESS);
 		}
-
+#pragma endregion Submode
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_COLOR_ARRAY);
@@ -296,10 +303,26 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+#pragma endregion Mode
 	// call parent method
 	else 
 	{
 		GlutExaminer::draw(_draw_mode);
 	}
+}
+
+void VectorFieldsViewer::drawWireframe(bool hideBackground)
+{
+
+}
+
+void VectorFieldsViewer::drawSolid(bool isSmooth, bool useLighting)
+{
+
+}
+
+void VectorFieldsViewer::drawVectorField(bool hideBackground)
+{
+
 }
 

@@ -69,6 +69,10 @@ protected:
 
 	virtual void draw(const std::string& _draw_mode);
 
+	void drawWireframe(bool hideBackground); 
+	void drawSolid(bool isSmooth, bool useLighting); 
+	void drawVectorField(bool hideBackground); 
+
 private:
 	bool isParameterOpen;
 	Vec3f color;
