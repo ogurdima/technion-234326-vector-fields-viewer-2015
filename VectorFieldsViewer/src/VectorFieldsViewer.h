@@ -69,9 +69,9 @@ protected:
 
 	virtual void draw(const std::string& _draw_mode);
 
-	void drawWireframe(bool hideBackground); 
-	void drawSolid(bool isSmooth, bool useLighting); 
-	void drawVectorField(bool hideBackground); 
+	void drawWireframe(Vec3f color = Vec3f(1,1,1)); 
+	void drawSolid(bool isSmooth, bool useLighting, Vec3f color = Vec3f(0,0,0)); 
+	void drawVectorField(); 
 
 private:
 	bool isParameterOpen;
