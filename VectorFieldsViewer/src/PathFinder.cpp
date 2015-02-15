@@ -22,7 +22,44 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_, const Tim
 		hasValidConfig = false;
 		return hasValidConfig;
 	}
+
 	fieldedMesh = FieldedMesh(aMesh_);
+
+	// caching
+	int size = fieldedMesh.n_faces();
+	if(size < 1)
+	{
+		hasValidConfig = false;
+		return false;
+	}
+	triangles.resize(size);
+	centroids.resize(size);
+	oneRingFaceIds.resize(size);
+	faceFields.resize(size);
+	normals.resize(size);
+
+	for(Mesh::ConstFaceIter fit(fieldedMesh.faces_begin()), fitEnd(fieldedMesh.faces_end()); fit != fitEnd; ++fit ) 
+	{
+		int idx = fit.handle().idx();
+
+		triangles[idx] = fieldedMesh.getFacePoints(fit);
+		faceFields[idx] = fieldedMesh.getVectorField(fit);
+
+		centroids[idx] = VectorFieldsUtils::getTriangleCentroid(triangles[idx]);
+		normals[idx] = VectorFieldsUtils::getTriangleNormal(triangles[idx]);
+
+		for(Mesh::ConstFaceFaceIter curFace(fieldedMesh.cff_begin(fit)), end(fieldedMesh.cff_end(fit));
+			curFace != end; ++curFace) 
+		{
+			int neighborId = curFace.handle().idx();
+			if (neighborId < 0) 
+			{
+				continue;
+			}
+			oneRingFaceIds[idx].push_back(neighborId);
+		}
+	}
+
 	tmax = tmax_;
 	tmin = tmin_;
 	dt = dt_;
@@ -70,8 +107,7 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 {
 	ParticlePath particlePath;
 
-	Triangle pts(fieldedMesh.getFacePoints(faceHandle));
-	Point pstart = VectorFieldsUtils::barycentricToStd(Point(1.f/3.f), pts);
+	Point pstart = VectorFieldsUtils::barycentricToStd(Point(1.f/3.f), triangles[faceHandle.idx()]);
 	
 	particlePath.pushBack(pstart, tmin);
 
@@ -86,7 +122,7 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	
 	Mesh::HalfedgeHandle excludeHalfEdge;
 	bool exclude = false;
-	while (curState.t <= tmax && particlePath.size() < 1000)
+	while (curState.t <= tmax )
 	{
 		Vec3f field = getOneRingLerpField(curState.p, curState.ownerFace);
 		Point next = curState.p + field * dt;
@@ -95,13 +131,10 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			bool debug = true;
 		}
 
-		Triangle triangle(fieldedMesh.getFacePoints(curState.ownerFace));
-
-		if( VectorFieldsUtils::isInnerPoint(next, triangle))
+		if( VectorFieldsUtils::isInnerPoint(next, triangles[curState.ownerFace.idx()]))
 		{
 			curState.p = next;
 			curState.t = curState.t + dt;
-
 			particlePath.pushBack(next, curState.t);
 			//std::cout << "Owner face stayed " << curState.ownerFace << std::endl;
 			
@@ -126,7 +159,7 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			Point& from = fieldedMesh.point(fieldedMesh.from_vertex_handle(cfhei));
 			Point& to = fieldedMesh.point(fieldedMesh.to_vertex_handle(cfhei));
 
-			if (!VectorFieldsUtils::intersectionRaySegmentDima(curState.p, field,from, to, normal, intersection)) 
+			if (!VectorFieldsUtils::intersectionRaySegmentDima(curState.p, field, from, to, normal, intersection)) 
 			{
 				continue;
 			}
@@ -143,16 +176,17 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 
 			if (curState.ownerFace.idx() != -1)
 			{
-				if (!VectorFieldsUtils::isInnerPoint(curState.p, fieldedMesh.getFacePoints(curState.ownerFace)))
+				bool b = false;
+				/*if (!VectorFieldsUtils::isInnerPoint(curState.p, triangles[curState.ownerFace.idx()]))
 				{
 					Vec3f fieldContinuationVec = field.normalized() * (NUMERICAL_ERROR_THRESH * 2);
-					curState.p = intersection + VectorFieldsUtils::projectVectorOntoTriangle(fieldContinuationVec, fieldedMesh.getFacePoints(curState.ownerFace));
+					curState.p = intersection + VectorFieldsUtils::projectVectorOntoTriangle(fieldContinuationVec, triangles[curState.ownerFace.idx()]);
 				}
-				if (!VectorFieldsUtils::isInnerPoint(curState.p, fieldedMesh.getFacePoints(curState.ownerFace)))
+				if (!VectorFieldsUtils::isInnerPoint(curState.p, triangles[curState.ownerFace.idx()]))
 				{
 					Vec3f fieldContinuationVec = field.normalized() * (NUMERICAL_ERROR_THRESH * 4);
-					curState.p = intersection - VectorFieldsUtils::projectVectorOntoTriangle(fieldContinuationVec, fieldedMesh.getFacePoints(curState.ownerFace));
-				}
+					curState.p = intersection - VectorFieldsUtils::projectVectorOntoTriangle(fieldContinuationVec, triangles[curState.ownerFace.idx()]);
+				}*/
 			}
 
 			break;
@@ -164,7 +198,7 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 		}
 		if (!intersectionFound)
 		{
-			if(!VectorFieldsUtils::isInnerPoint(curState.p, triangle))
+			if(!VectorFieldsUtils::isInnerPoint(curState.p, triangles[curState.ownerFace.idx()]))
 			{
 				fuckupCount++; 
 				
@@ -179,36 +213,32 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 
 Vec3f PathFinder::getOneRingLerpField(const Point& p, const Mesh::FaceHandle& ownerFace)
 {
-	vector<double> distances;
-	vector<Vec3f> fields;
+	int ownerIdx = ownerFace.idx();
+	vector<int>& ringIds = oneRingFaceIds[ownerIdx];
+	int size = ringIds.size();
+	if(size == 0)
+	{
+		return VectorFieldsUtils::calculateField(faceFields[ownerIdx], 0);
+	}
+
+
+	vector<double> distances(size + 1);
+	vector<Vec3f> fields(size + 1);
 	double totalDist(0);
-	fieldedMesh.points();
 	int i = 0;
-	for(Mesh::ConstFaceFaceIter curFace(fieldedMesh.cff_begin(ownerFace)), end(fieldedMesh.cff_end(ownerFace));
-		curFace != end; ++curFace) 
+	for(; i < size; ++i) 
 	{
-		if (curFace.handle().idx() < 0) 
-		{
-			continue;
-		}
-		
-		distances.push_back((p - VectorFieldsUtils::getTriangleCentroid(fieldedMesh.getFacePoints(curFace))).length());
-		totalDist += distances[i];
-		fields.push_back(fieldedMesh.faceVectorField(curFace, 0));
-		++i;
-	}
-	
-	if (i == 0)
-	{
-		return fieldedMesh.faceVectorField(ownerFace, 0);
+		int idx = ringIds[i];
+		float len =  (p - centroids[idx]).length();
+		distances[i] = len;
+		totalDist += len;
+		fields[i] = VectorFieldsUtils::calculateField(faceFields[idx], 0);
 	}
 
-	Triangle ownerFacePoints(fieldedMesh.getFacePoints(ownerFace));
-	distances.push_back((p - VectorFieldsUtils::getTriangleCentroid(ownerFacePoints)).length());
+	distances[i] = (p - centroids[ownerIdx]).length();
 	totalDist += distances[i];
-	fields.push_back(fieldedMesh.faceVectorField(ownerFace, 0));
-
-
+	fields[i] = VectorFieldsUtils::calculateField(faceFields[ownerIdx], 0);
+	
 	Vec3f totalField(0.f);
 	for(int j = 0; j <= i; ++j)
 	{
@@ -224,13 +254,5 @@ Vec3f PathFinder::getOneRingLerpField(const Point& p, const Mesh::FaceHandle& ow
 	}
 	
 	// now we cheat by projecting totalField onto ownerFace's plane
-	return VectorFieldsUtils::projectVectorOntoTriangle(totalField, ownerFacePoints);
-}
-
-void PathFinder::addDistanceAndField(const Point& p, const Mesh::FaceHandle & face, vector<std::pair<double, Vec3f>>& outDistanceAndFields, double& outTotalDistance)
-{
-	Point faceCentroid = VectorFieldsUtils::getTriangleCentroid(fieldedMesh.getFacePoints(face));
-	double currentDistance = (p - faceCentroid).length();
-	outTotalDistance += currentDistance;
-	outDistanceAndFields.push_back(std::pair<double, Vec3f>(currentDistance, fieldedMesh.faceVectorField(face, 0)));
+	return VectorFieldsUtils::projectVectorOntoTriangle(totalField, normals[ownerIdx]);
 }

@@ -27,18 +27,29 @@ typedef Mesh::Normal Normal;
 
 typedef OpenMesh::VectorT<Point,3> Triangle;
 
-typedef struct
-{
-	bool found;
-	Point p;
-	int edgeIndex;
-} TriIntersectionDataT;
-
 #pragma endregion
 
 #define NUMERICAL_ERROR_THRESH				DBL_EPSILON * 10
 
 
+
+class VectorFieldTimeVal 
+{
+public:
+	VectorFieldTimeVal(const Vec3f& _field, const Time& _time) :
+		field(_field), time(_time)
+	{}
+	Vec3f	field;
+	Time	time;
+};
+
+//class VectorField
+//{
+//	vector<VectorFieldTimeVal> samples;
+//public:
+//	VectorField()
+//	{}
+//};
 
 class VectorFieldsUtils
 {
@@ -142,24 +153,15 @@ public:
 
 
 	
-	static Vec3f lerp(Vec3f first, Vec3f second, double time);
+	static Vec3f lerp(const Vec3f& first, const Vec3f& second, const Time& time);
 
 	static Point getTriangleCentroid(const Triangle& t);
 
 	//static TriIntersectionDataT segmentTriangleIntersect(const Point& segA, const Point& segB, const Triangle& tri);
 
-	static Vec3f getTriangleNormal(Triangle t);
+	static Vec3f getTriangleNormal(const Triangle& t);
 
-	static Vec3f projectVectorOntoTriangle(Vec3f v, Triangle t);
-};
+	static Vec3f projectVectorOntoTriangle(const Vec3f& v, const Normal& n);
 
-
-class VectorFieldTimeVal 
-{
-public:
-	VectorFieldTimeVal(const Vec3f& _field, const Time& _time) :
-		field(_field), time(_time)
-	{}
-	Vec3f	field;
-	Time	time;
+	static Vec3f calculateField(const vector<VectorFieldTimeVal>& fieldSamples, const Time& time);
 };

@@ -5,8 +5,8 @@
 
 
 _declspec(dllexport) void OpenWindow(void (*timeoutChanged)(int),
-										  void (*pathLengthChanged)(int),
-										  void (*closedCallback)(void));
+									 void (*pathLengthChanged)(int),
+									 void (*closedCallback)(void));
 
 VectorFieldsViewer* VectorFieldsViewer::activeInstance = NULL;
 
@@ -22,15 +22,15 @@ void VectorFieldsViewer::OpenParameterWindow()
 
 VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
 	GlutExaminer(_title, _width, _height),
-	fieldSimulationTimeInterval(0.0001),
+	fieldSimulationTimeInterval(0.05),
 	fieldSimulationMinTime(0),
-	fieldSimulationMaxTime(0.02),
+	fieldSimulationMaxTime(10),
 	maxActivePathLength(10),
 	timeout(200),
 	isParameterOpen(false),
-	color(1,1,1)
+	color(0.1,1,0.1)
 {
-	
+
 	resetColorAndIndices();
 
 	clear_draw_modes();
@@ -41,15 +41,17 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	int vfDrawModeId = add_draw_mode("Vector Field");
 	add_draw_mode("Only Lines");
 	add_draw_mode("Hidden Field");
-	
+
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
 	LOAD_FIELD_KEY = add_draw_mode("Load Field");
 
-	//const char initPath[] = "..\\Data\\miri\\cat.off";
-	const char initPath[] = "..\\Data\\old\\Horse.off";
+	const char initPath[] = "..\\Data\\miri\\teddy171.off";
+	//const char initPath[] = "..\\Data\\old\\Horse.off";
 	open_mesh(initPath);
+	fieldedMesh.assignVectorField("..\\Data\\miri\\teddy171.vf");
 	set_draw_mode(vfDrawModeId);
 	VectorFieldsViewer::activeInstance = this;
+	computeVectorFieldLines();
 	resetTimer();
 
 	OpenParameterWindow();
@@ -92,9 +94,15 @@ void VectorFieldsViewer::processmenu(int i)
 		if(GetOpenFileName(&ofn)) {
 			std::cout << "Opening Mesh File " << ofn.lpstrFile << std::endl;
 			bool success = open_mesh(szFileName);
-			if (!success) {
+			
+			if (!success)
+			{
 				std::cout << "Failed to read mesh" << std::endl;
-	}
+			}
+			else
+			{
+				particlePaths.clear();
+			}
 		}
 	}
 	else if (LOAD_FIELD_KEY == i)
@@ -109,12 +117,14 @@ void VectorFieldsViewer::processmenu(int i)
 		if(GetOpenFileName(&ofn)) {
 			std::cout << "Opening Field File " << ofn.lpstrFile << std::endl;
 			bool success = fieldedMesh.assignVectorField(szFileName);
-			if (!success) {
+			if (!success) 
+			{
 				std::cout << "Failed to read field" << std::endl;
-		}
-			else {
+			}
+			else 
+			{
 				computeVectorFieldLines();
-	}
+			}
 		}
 	}
 	else 
@@ -130,7 +140,6 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
 		set_scene( (Vec3f)(fieldedMesh.boundingBoxMin() + fieldedMesh.boundingBoxMax())*0.5,
 			0.5*(fieldedMesh.boundingBoxMin() - fieldedMesh.boundingBoxMax()).norm());
-		computeVectorFieldLines();
 		glutPostRedisplay();
 		return true;
 	}
@@ -184,7 +193,7 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 		}
 		else if (_draw_mode == "Hidden Field")
 		{
-			drawSolid(true, false, Vec3f(0,0,0));
+			drawSolid(true, false, Vec3f(0.05, 0.05, 0.05));
 		}
 		drawVectorField();
 	}

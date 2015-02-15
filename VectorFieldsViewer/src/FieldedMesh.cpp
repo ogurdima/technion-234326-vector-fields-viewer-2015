@@ -6,7 +6,8 @@
 FieldedMesh::FieldedMesh(void) : 
 	isLoaded_(false), 
 	bbMin(.0f), 
-	bbMax(.0f)
+	bbMax(.0f),
+	scaleFactor(1)
 {
 	request_face_normals();
 	request_vertex_normals();
@@ -41,7 +42,7 @@ bool FieldedMesh::load(const char* path)
 
 bool FieldedMesh::assignVectorField(const char* path)
 {
-	std::vector<Vec3f> field = readFieldFile(path);	
+	const std::vector<Vec3f>& field = readFieldFile(path);	
 	return assignFieldToFaces(field);
 }
 
@@ -69,9 +70,7 @@ void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
 	vector<Vec3f> fieldPerFace;
 	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
 	{
-		Normal n = normal(cfit.handle());
-		Vec3f field(VectorFieldsUtils::projectVectorOntoTriangle(n % rotationAxis, getFacePoints(cfit)));
-		fieldPerFace.push_back(field);
+		fieldPerFace.push_back(normal(cfit.handle()) % rotationAxis);
 	}
 	assignFieldToFaces(fieldPerFace);
 }
@@ -134,13 +133,13 @@ void FieldedMesh::normalizeMesh()
 
 	bbMax -= bbMin;
 
-	float scale = std::max(bbMax[0], std::max(bbMax[1], bbMax[2])) / 2;
+	scaleFactor = std::max(bbMax[0], std::max(bbMax[1], bbMax[2])) / 2;
 
 	v_it = vertices_begin();
 	v_end = vertices_end();
 	for (; v_it!=v_end; ++v_it)
 	{
-		set_point(v_it, (point(v_it) + translate) / scale);
+		set_point(v_it, (point(v_it) + translate) / scaleFactor);
 	}
 
 	v_it = vertices_begin();
@@ -153,10 +152,16 @@ void FieldedMesh::normalizeMesh()
 	}
 }
 
+const vector<VectorFieldTimeVal> FieldedMesh::getVectorField(const FaceHandle& handle) const
+{
+	return property(vectorFieldFaceProperty, handle);
+}
+
 Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, const Time& time) const
 {
 	const vector<VectorFieldTimeVal>& fieldSamples = property(vectorFieldFaceProperty, faceHandle);
-	if (fieldSamples.size() == 0) {
+	if (fieldSamples.size() == 0) 
+	{
 		return Vec3f(0,0,0);
 	}
 
@@ -214,7 +219,7 @@ std::vector<Vec3f> FieldedMesh::readFieldFile(const char* path)
 	return fieldPerFace;
 }
 
-bool FieldedMesh::assignFieldToFaces(std::vector<Vec3f> fieldPerFace)
+bool FieldedMesh::assignFieldToFaces(const std::vector<Vec3f>& fieldPerFace)
 {
 	if (!isLoaded())
 	{
@@ -229,18 +234,12 @@ bool FieldedMesh::assignFieldToFaces(std::vector<Vec3f> fieldPerFace)
 	int i = 0;
 	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit, ++i) 
 	{
-		Vec3f fixed = VectorFieldsUtils::projectVectorOntoTriangle(fieldPerFace[i], getFacePoints(cfit.handle()));
-		if (!VectorFieldsUtils::isCloseToZero(fixed.norm())) {
-			fixed.normalize();
-		}
-		if (!_finite(fixed[0]))
-		{
-			bool debug = true;
-		}
+		Vec3f fixed = VectorFieldsUtils::projectVectorOntoTriangle(fieldPerFace[i], normal(cfit)) / scaleFactor;
+		
 		vector<VectorFieldTimeVal> faceVectorField;
 		faceVectorField.push_back(VectorFieldTimeVal(fixed, 0));
 		faceVectorField.push_back(VectorFieldTimeVal(fixed, 1));
-		property(vectorFieldFaceProperty, cfit.handle()) = faceVectorField;
+		property(vectorFieldFaceProperty, cfit) = faceVectorField;
 	}
 	return true;
 }

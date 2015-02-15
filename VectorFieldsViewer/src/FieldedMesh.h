@@ -38,7 +38,7 @@ public:
 	const Point&							boundingBoxMax();
 
 	Vec3f									faceVectorField(const FaceHandle& face, const Time& time) const;
-				
+	const vector<VectorFieldTimeVal>		getVectorField(const FaceHandle& handle) const;
 	const vector<uint>&						getIndices() const;
 	Triangle								getFacePoints(const OpenMesh::ArrayKernel::FaceHandle& faceHandle);
 protected:
@@ -47,13 +47,14 @@ protected:
 	Point									bbMin;
 	vector<unsigned int>					faceIndices;
 	FaceFieldPropT							vectorFieldFaceProperty;
-
+	double									scaleFactor;
 private:
 	void									normalizeMesh();
 	void									updateFaceIndices();
 	void									assignRandVectorField();
 	void									assignRotatingVectorField(const Vec3f& rotationAxis = Vec3f(0,0,1));
 	std::vector<Vec3f>						readFieldFile(const char* path);
-	bool									assignFieldToFaces(std::vector<Vec3f> fieldPerFace);
+	bool									assignFieldToFaces(const std::vector<Vec3f>& fieldPerFace);
+	
 };
 

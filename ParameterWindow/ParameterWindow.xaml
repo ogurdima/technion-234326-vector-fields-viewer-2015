@@ -26,9 +26,9 @@
         <xctk:IntegerUpDown Grid.Row="0"
                             Grid.Column="1"
                             Margin="2"
-                            Increment="10"
+                            Increment="5"
                             Maximum="2000"
-                            Minimum="50"
+                            Minimum="10"
                             Value="{Binding Timeout}" />
 
         <TextBlock Grid.Row="1"
@@ -39,8 +39,8 @@
                             Grid.Column="1"
                             Margin="2"
                             Increment="1"
-                            Maximum="100"
-                            Minimum="1"
+                            Maximum="200"
+                            Minimum="5"
                             Value="{Binding MaxLength}" />
     </Grid>
 </Window>

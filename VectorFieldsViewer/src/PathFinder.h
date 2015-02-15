@@ -31,11 +31,20 @@ protected:
 	int				pathDepth;
 	int				fuckupCount;
 
+	// cache
+	vector<Triangle>						triangles;
+	vector<Point>							centroids;
+	vector<vector<int>>						oneRingFaceIds;
+	vector<vector<VectorFieldTimeVal>>		faceFields;
+	vector<Normal>							normals;
+
+	
+	
+
 
 	ParticlePath getParticlePath(const Mesh::FaceHandle& face_);
 
 	Vec3f getOneRingLerpField(const Point& p, const Mesh::FaceHandle& ownerFace);
-	void addDistanceAndField(const Point& p, const Mesh::FaceHandle & face, vector<std::pair<double, Vec3f>>& outDistanceAndFields, double& outTotalDistance);
 	
 };
 
