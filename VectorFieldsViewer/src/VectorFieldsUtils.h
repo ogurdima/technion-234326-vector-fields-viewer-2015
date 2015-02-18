@@ -17,6 +17,8 @@ using std::vector;
 
 #pragma region typedef
 
+
+
 #define BEGINNING_OF_TIME -DBL_MAX
 typedef float Time;
 
@@ -164,4 +166,12 @@ public:
 	static Vec3f projectVectorOntoTriangle(const Vec3f& v, const Normal& n);
 
 	static Vec3f calculateField(const vector<VectorFieldTimeVal>& fieldSamples, const Time& time);
+
+	template<class T>
+	static inline T intepolate(const Point& barycentric, const OpenMesh::VectorT<T, 3>& items)
+	{
+		return items[0] * barycentric[0] + items[1] * barycentric[1] + items[2] * barycentric[2];
+	}
+
+	
 };

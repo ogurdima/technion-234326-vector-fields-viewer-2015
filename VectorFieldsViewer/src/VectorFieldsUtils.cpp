@@ -114,10 +114,10 @@ Vec3f VectorFieldsUtils::getTriangleNormal(const Triangle& t)
 
 Vec3f VectorFieldsUtils::projectVectorOntoTriangle(const Vec3f& v, const Normal& n)
 {
-	return v - (n * dot(v, n)) ;
-	//Vec3f onPlanePerpToV = v % n;
-	//Vec3f onPlaneClosestToV = n % onPlanePerpToV;
-	//return onPlaneClosestToV; // TODO: check lengths, maybe need to normalize one step
+	//return v - (n * dot(v, n)) ;
+	Vec3f onPlanePerpToV = v % n;
+	Vec3f onPlaneClosestToV = n % onPlanePerpToV;
+	return onPlaneClosestToV; // TODO: check lengths, maybe need to normalize one step
 }
 
 

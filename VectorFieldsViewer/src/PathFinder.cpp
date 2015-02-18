@@ -42,6 +42,8 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 	oneRingFaceIds.resize(size);
 	faceFields.resize(size);
 	normals.resize(size);
+	faceVertices.resize(size);
+	faceVertexFields.resize(size);
 
 	for(Mesh::ConstFaceIter fit(fieldedMesh.faces_begin()), fitEnd(fieldedMesh.faces_end()); fit != fitEnd; ++fit ) 
 	{
@@ -49,6 +51,13 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 
 		triangles[idx] = fieldedMesh.getFacePoints(fit);
 		faceFields[idx] = fieldedMesh.getVectorField(fit);
+
+		Mesh::ConstFaceVertexIter cvit(fieldedMesh.cfv_iter(fit));
+		for(int i = 0; i < 3; ++i, ++cvit)
+		{
+			faceVertices[idx][i] = fieldedMesh.point(cvit);
+			faceVertexFields[idx][i] = fieldedMesh.vertexField(cvit);
+		}
 
 		centroids[idx] = VectorFieldsUtils::getTriangleCentroid(triangles[idx]);
 		normals[idx] = VectorFieldsUtils::getTriangleNormal(triangles[idx]);
@@ -296,4 +305,12 @@ Vec3f PathFinder::getOneRingLerpField(const Point& p, const int ownerIdx, const 
 	
 	// now we cheat by projecting totalField onto ownerFace's plane
 	return VectorFieldsUtils::projectVectorOntoTriangle(totalField, normals[ownerIdx]);
+}
+
+Vec3f PathFinder::getField(const Point& p, int fid)
+{
+	Point bc = VectorFieldsUtils::stdToBarycentric(p, faceVertices[fid]);
+	Vec3f f = VectorFieldsUtils::intepolate<Vec3f>(bc, faceVertexFields[fid]);
+	Vec3f ff = VectorFieldsUtils::projectVectorOntoTriangle(f,	normals[fid]);
+	return ff;
 }

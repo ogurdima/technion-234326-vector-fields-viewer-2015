@@ -15,6 +15,7 @@ FieldedMesh::FieldedMesh(void) :
 	request_vertex_normals();
 	request_vertex_colors();
 	add_property(vectorFieldFaceProperty);
+	add_property(vertexFieldProperty);
 }
 
 bool FieldedMesh::load(const char* path)
@@ -34,8 +35,10 @@ bool FieldedMesh::load(const char* path)
 		updateFaceIndices();
 
 		// compute and assign vector field
-		assignRotatingVectorField();
+		//assignRotatingVectorField();
 		//assignRandVectorField();
+		//assignRandVectorFieldPerVertex();
+		assignRotatingVectorFieldPerVertex();
 	}
 	return isLoaded_;
 }
@@ -66,23 +69,19 @@ bool FieldedMesh::assignVectorField(const char* path, bool isConst)
 
 void FieldedMesh::updateFaceIndices()
 {
-	Mesh::ConstFaceIter			f_it(faces_sbegin()), f_end(faces_end());
-	Mesh::ConstFaceVertexIter	fv_it;
-
 	faceIndices.clear();
 	faceIndices.reserve(n_faces()*3);
 
+	Mesh::ConstFaceIter			f_it(faces_sbegin()), f_end(faces_end());
 	for (; f_it!=f_end; ++f_it)
 	{
-		fv_it = fv_iter(f_it);
+		Mesh::ConstFaceVertexIter fv_it = fv_iter(f_it);
 		faceIndices.push_back( fv_it.handle().idx() );
 		faceIndices.push_back((++fv_it).handle().idx());
 		faceIndices.push_back((++fv_it).handle().idx());
 	}
 }
 
-// Add random normalized Vec3f as vfield_fprop property for each face
-// Color all certices appropriately
 void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
 {
 	vector<Vec3f> constField;
@@ -130,6 +129,32 @@ void FieldedMesh::assignRandVectorField()
 		property(vectorFieldFaceProperty, cfit.handle()) = faceVectorField;
 
 	}
+}
+
+bool FieldedMesh::assignRandVectorFieldPerVertex()
+{
+	srand((uint)time(0));
+	for(VertexIter vit(vertices_begin()), vend(vertices_end()); vit != vend; ++vit)
+	{
+		const Normal& vn = normal(vit);
+		vector<Normal> faceNormals;
+		for(VertexFaceIter vfit(vf_begin(vit)), vfend(vf_end(vit)); vfit != vfend; ++vfit)
+		{
+			faceNormals.push_back(normal(vfit));
+		}
+		int size = faceNormals.size();
+		property(vertexFieldProperty, vit) = size == 0 ? Vec3f(0.) :  vn % faceNormals[ rand() % size];
+	}
+	return true;
+}
+
+bool FieldedMesh::assignRotatingVectorFieldPerVertex(const Vec3f& axis)
+{
+	for(VertexIter vit(vertices_begin()), vend(vertices_end()); vit != vend; ++vit)
+	{
+		property(vertexFieldProperty, vit) = point(vit) % axis;
+	}
+	return true;
 }
 
 Triangle FieldedMesh::getFacePoints(const OpenMesh::ArrayKernel::FaceHandle& faceHandle)
@@ -196,6 +221,11 @@ void FieldedMesh::normalizeMesh()
 const vector<VectorFieldTimeVal>& FieldedMesh::getVectorField(const FaceHandle& handle) const
 {
 	return property(vectorFieldFaceProperty, handle);
+}
+
+const Vec3f& FieldedMesh::vertexField(const Mesh::VertexHandle& vertexHandle) const
+{
+	return property(vertexFieldProperty, vertexHandle);
 }
 
 Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, const Time& time) const

@@ -92,6 +92,7 @@ void VectorFieldsViewer::processmenu(int i)
 		ofn.lpstrFile=szFileName;
 		ofn.nMaxFile=MAX_PATH;
 		if(GetOpenFileName(&ofn)) {
+			particlePaths.clear();
 			std::cout << "Opening Mesh File " << ofn.lpstrFile << std::endl;
 			bool success = open_mesh(szFileName);
 			
@@ -168,6 +169,38 @@ void VectorFieldsViewer::computeVectorFieldLines()
 		particlePaths = vector<ParticlePath>();
 	}
 }
+
+void VectorFieldsViewer::keyboard(int key, int x, int y)
+{
+	switch (key)
+	{
+	case 101:
+		translate(Vec3f(0.0, 0.05, 0.));
+		return;
+	case 100:
+		translate(Vec3f(-0.05, 0.0, 0.0));
+		return;
+	case 103:
+		translate(Vec3f(0.0, -0.05, 0.));
+		return;
+	case 102:
+		translate(Vec3f(0.05, 0.0, 0.0));
+		return;
+	case ',':
+		translate(Vec3f(0.0, 0.0, 0.05));
+		return;
+	case '.':
+		translate(Vec3f(0.0, 0.0, -0.05));
+		return;
+	default:
+		{
+
+			GlutExaminer::keyboard(key, x, y);
+			break;
+		}
+	}
+}
+
 
 void VectorFieldsViewer::draw(const std::string& _draw_mode)
 {

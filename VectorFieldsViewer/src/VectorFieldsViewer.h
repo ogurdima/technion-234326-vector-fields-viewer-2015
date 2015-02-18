@@ -35,6 +35,8 @@ protected:
 	void drawSolid(bool isSmooth, bool useLighting, Vec3f color = Vec3f(0,0,0)); 
 	void drawVectorField(); 
 
+	virtual void keyboard(int key, int x, int y);
+	
 private:
 	bool isParameterOpen;
 	Vec3f color;

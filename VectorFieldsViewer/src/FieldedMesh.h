@@ -3,26 +3,7 @@
 #include "VectorFieldsUtils.h"
 
 typedef OpenMesh::FPropHandleT<vector<VectorFieldTimeVal>> FaceFieldPropT;
-
-//typedef OpenMesh::VectorT<Vec3f,3> TriVerteces;
-//
-//typedef struct 
-//{
-//	OpenMesh::ArrayItems::Halfedge		halfEdge;
-//	Point								from;
-//	Point								to;
-//
-//	bool								isWindward(Vec3f field);
-//} TriHalfEdge;
-//
-//typedef OpenMesh::VectorT<TriHalfEdge,3> TriHalfEdges;
-//
-//class FaceWrapper
-//{
-//public:
-//	TriHalfEdges halfEdges;
-//};
-
+typedef OpenMesh::VPropHandleT<Vec3f> VertexFieldHandleT;
 
 class FieldedMesh : public Mesh
 {
@@ -45,12 +26,15 @@ public:
 	Time									minTime();
 	Time									maxTime();
 
+
+	const Vec3f&							vertexField(const VertexHandle& vertex) const;
 protected:
 	bool									isLoaded_;
 	Point									bbMax;
 	Point									bbMin;
 	vector<unsigned int>					faceIndices;
 	FaceFieldPropT							vectorFieldFaceProperty;
+	VertexFieldHandleT						vertexFieldProperty;
 	double									scaleFactor;
 
 	Time									_minTime;
@@ -65,5 +49,9 @@ private:
 	void									readFieldFile(const char* path, vector<vector<Vec3f>>& fieldPerFace, vector<Time>& times);
 	bool									assignFieldToFaces(const vector<vector<Vec3f>>& fieldPerFace, const vector<Time>& times);
 	
+	bool									assignRandVectorFieldPerVertex();
+	bool									assignRotatingVectorFieldPerVertex(const Vec3f& rotationAxis = Vec3f(0,0,1));
+	//bool									assignFieldPerVertex(const vector<Vec3f>& fieldPerVertex);
+
 };
 
