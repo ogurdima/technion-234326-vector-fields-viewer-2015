@@ -115,7 +115,7 @@ void VectorFieldsViewer::processmenu(int i)
 		ofn.lpstrFilter="VF Files (*.vf)\0*.vf\0";
 		if (!isConstField) 
 		{
-			ofn.lpstrFilter="VF Files (*.txt)\0*.txt\0";
+			ofn.lpstrFilter="TXT Files (*.txt)\0*.txt\0";
 		}
 		ofn.lpstrFile=szFileName;
 		ofn.nMaxFile=MAX_PATH;
@@ -132,7 +132,6 @@ void VectorFieldsViewer::processmenu(int i)
 			}
 		}
 	}
-
 	else 
 	{
 		set_draw_mode(i);

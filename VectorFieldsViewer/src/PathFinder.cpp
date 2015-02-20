@@ -96,6 +96,12 @@ vector<ParticlePath> PathFinder::getParticlePaths()
 	for(int i = 0; i < totalFaces; ++i ) 
 	{
 		allPaths[i] = getParticlePath(faceHandles[i]);
+		int fractionDone = (int)((double)(i+1) * 100. / (double)totalFaces);
+		int prevFractionDone = (int)((double)(i) * 100. / (double)totalFaces);
+		if ( (fractionDone % 10) == 0  && fractionDone != prevFractionDone)
+		{
+			std::cout << fractionDone << "% Done" << std::endl;
+		}
 	}
 
 	auto end_time = std::chrono::high_resolution_clock::now();
@@ -125,8 +131,13 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	
 	Mesh::HalfedgeHandle excludeHalfEdge;
 	bool exclude = false;
+
+	int convergenceCheckCounter = 0;
+
 	while (curState.t <= tmax )
 	{
+		
+
 		const int currentOwnerIdx = curState.ownerFace.idx();
 		Vec3f field = getOneRingLerpField(curState.p, currentOwnerIdx, curState.t);
 		if (VectorFieldsUtils::isCloseToZero(field.length()))
@@ -136,8 +147,30 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			continue;
 		}
 
+		convergenceCheckCounter = (convergenceCheckCounter + 1)%50; 
+		if (convergenceCheckCounter == 0) // Every so often
+		{
+			Point conv;
+			float curFacePerimeter = 0;
+			curFacePerimeter +=	(triangles[currentOwnerIdx][1] - triangles[currentOwnerIdx][0]).length();
+			curFacePerimeter +=	(triangles[currentOwnerIdx][2] - triangles[currentOwnerIdx][1]).length();
+			curFacePerimeter +=	(triangles[currentOwnerIdx][0] - triangles[currentOwnerIdx][2]).length();
+			float pointConvRadius = curFacePerimeter / 1000.;
+			if (particlePath.isConverged(pointConvRadius, (dt/100), 10, &conv))
+			{
+				curState.t += dt;
+				particlePath.pushBack(curState.p, curState.t);
+				continue;
+			}
+		}
+		
+
 		Point next = curState.p + field * dt;
 		if (!_finite(field[0]) || !_finite(field[1]) || !_finite(field[2]))
+		{
+			bool debug = true;
+		}
+		if (particlePath.size() > 1000)
 		{
 			bool debug = true;
 		}
@@ -148,7 +181,6 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			curState.t = curState.t + dt;
 			particlePath.pushBack(next, curState.t);
 			//std::cout << "Owner face stayed " << curState.ownerFace << std::endl;
-			
 			continue;
 		}
 
