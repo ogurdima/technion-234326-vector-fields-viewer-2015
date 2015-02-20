@@ -22,9 +22,7 @@ void VectorFieldsViewer::OpenParameterWindow()
 
 VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
 	GlutExaminer(_title, _width, _height),
-	fieldSimulationTimeInterval(0.05),
-	fieldSimulationMinTime(0),
-	fieldSimulationMaxTime(10),
+	fieldSimulationTimeInterval(0.001),
 	maxActivePathLength(10),
 	timeout(200),
 	isParameterOpen(false),
@@ -43,15 +41,16 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	add_draw_mode("Hidden Field");
 
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
-	LOAD_FIELD_KEY = add_draw_mode("Load Field");
+	LOAD_CONST_FIELD_KEY = add_draw_mode("Load Constant Field");
+	LOAD_VAR_FIELD_KEY = add_draw_mode("Load Variable Field");
 
-	const char initPath[] = "..\\Data\\miri\\teddy171.off";
+	const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
 	//const char initPath[] = "..\\Data\\old\\Horse.off";
 	open_mesh(initPath);
-	fieldedMesh.assignVectorField("..\\Data\\miri\\teddy171.vf");
+	//fieldedMesh.assignVectorField("..\\Data\\miri\\teddy171.vf");
 	set_draw_mode(vfDrawModeId);
 	VectorFieldsViewer::activeInstance = this;
-	computeVectorFieldLines();
+	//computeVectorFieldLines();
 	resetTimer();
 
 	OpenParameterWindow();
@@ -64,8 +63,9 @@ void VectorFieldsViewer::resetTimer()
 
 void VectorFieldsViewer::evolvePaths()
 {
-	double dt = fieldSimulationTimeInterval * 2;
+	double dt = fieldSimulationTimeInterval;
 	int s = particlePaths.size();
+#pragma omp parallel for schedule(dynamic)
 	for (int i = 0; i < s; i++) 
 	{
 		particlePaths[i].evolveParticleLoc(dt);
@@ -101,32 +101,38 @@ void VectorFieldsViewer::processmenu(int i)
 			}
 			else
 			{
-				particlePaths.clear();
+				computeVectorFieldLines();
 			}
 		}
 	}
-	else if (LOAD_FIELD_KEY == i)
+	else if (LOAD_CONST_FIELD_KEY == i || LOAD_VAR_FIELD_KEY == i)
 	{
+		bool isConstField = (LOAD_CONST_FIELD_KEY == i);
 		OPENFILENAME ofn={0};
 		char szFileName[MAX_PATH]={0};
 		ofn.lStructSize=sizeof(OPENFILENAME);
-		ofn.Flags=OFN_ALLOWMULTISELECT|OFN_EXPLORER;
+		ofn.Flags=OFN_EXPLORER;
 		ofn.lpstrFilter="VF Files (*.vf)\0*.vf\0";
+		if (!isConstField) 
+		{
+			ofn.lpstrFilter="VF Files (*.txt)\0*.txt\0";
+		}
 		ofn.lpstrFile=szFileName;
 		ofn.nMaxFile=MAX_PATH;
 		if(GetOpenFileName(&ofn)) {
 			std::cout << "Opening Field File " << ofn.lpstrFile << std::endl;
-			bool success = fieldedMesh.assignVectorField(szFileName);
+			bool success = fieldedMesh.assignVectorField(szFileName, isConstField);
 			if (!success) 
 			{
 				std::cout << "Failed to read field" << std::endl;
 			}
-			else 
+			else
 			{
 				computeVectorFieldLines();
 			}
 		}
 	}
+
 	else 
 	{
 		set_draw_mode(i);
@@ -140,6 +146,9 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
 		set_scene( (Vec3f)(fieldedMesh.boundingBoxMin() + fieldedMesh.boundingBoxMax())*0.5,
 			0.5*(fieldedMesh.boundingBoxMin() - fieldedMesh.boundingBoxMax()).norm());
+
+		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 100.;
+
 		glutPostRedisplay();
 		return true;
 	}
@@ -148,7 +157,8 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 
 void VectorFieldsViewer::computeVectorFieldLines()
 {
-	bool success = pathFinder.configure(fieldedMesh, fieldSimulationTimeInterval, fieldSimulationMinTime, fieldSimulationMaxTime);
+	particlePaths.clear();
+	bool success = pathFinder.configure(fieldedMesh, fieldSimulationTimeInterval);
 	if (success) 
 	{
 		particlePaths = pathFinder.getParticlePaths();
@@ -209,15 +219,18 @@ void VectorFieldsViewer::drawWireframe(Vec3f color)
 	glColor3f(color[0], color[1], color[2]);
 	glDepthFunc(GL_LEQUAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	GL::glVertexPointer(fieldedMesh.points());
 	glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	
 }
 
 void VectorFieldsViewer::drawSolid(bool isSmooth, bool useLighting, Vec3f color)
 {
+	glDepthRange(0.01, 1.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	if(isSmooth) {
 		glShadeModel(GL_SMOOTH);
@@ -240,6 +253,7 @@ void VectorFieldsViewer::drawSolid(bool isSmooth, bool useLighting, Vec3f color)
 	glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
+	glDepthRange(0, 1.0);
 }
 
 void VectorFieldsViewer::drawVectorField()

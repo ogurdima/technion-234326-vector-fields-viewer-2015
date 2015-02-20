@@ -147,7 +147,7 @@ Vec3f VectorFieldsUtils::calculateField(const vector<VectorFieldTimeVal>& fieldS
 			break;
 		}
 	}
-	assert(i <size);
+	assert(i < size);
 	// fieldSamples[i - 1].time < time && time <= fieldSamples[i].time
 	assert(fieldSamples[i - 1].time < time && time <= fieldSamples[i].time);
 

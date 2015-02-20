@@ -21,7 +21,9 @@ public:
 	virtual void processmenu(int i);
 
 	int LOAD_GEOMETRY_KEY;
-	int LOAD_FIELD_KEY;
+	int LOAD_CONST_FIELD_KEY;
+	int LOAD_VAR_FIELD_KEY;
+	
 	
 protected:
 	static VectorFieldsViewer* activeInstance;
@@ -59,7 +61,7 @@ private:
 			colors[i * 4] = color[0];
 			colors[i * 4 + 1] = color[1];
 			colors[i * 4 + 2] = color[2];
-			colors[i * 4 + 3] = std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 7;
+			colors[i * 4 + 3] = std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 3;
 		}
 	}
 
@@ -79,8 +81,6 @@ private:
 	PathFinder		pathFinder;
 
 	double			fieldSimulationTimeInterval;
-	double			fieldSimulationMinTime;
-	double			fieldSimulationMaxTime;
 
 	void computeVectorFieldLines();
 

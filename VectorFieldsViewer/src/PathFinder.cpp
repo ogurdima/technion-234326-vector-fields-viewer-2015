@@ -15,15 +15,20 @@ PathFinder::PathFinder() :
 	
 }
 
-bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_, const Time& tmin_, const Time& tmax_)
+bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 {
+	
+	
+	fieldedMesh = FieldedMesh(aMesh_);
+
+	Time tmax_ = fieldedMesh.maxTime();
+	Time tmin_ = fieldedMesh.minTime();
+
 	if (tmax_ <= tmin_|| (dt_ >= (tmax_ - tmin_))) 
 	{
 		hasValidConfig = false;
 		return hasValidConfig;
 	}
-
-	fieldedMesh = FieldedMesh(aMesh_);
 
 	// caching
 	int size = fieldedMesh.n_faces();
@@ -118,13 +123,19 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	curState.p = pstart;
 	curState.t = tmin;
 	
-	double stepThreshold = dt / 500;
-	
 	Mesh::HalfedgeHandle excludeHalfEdge;
 	bool exclude = false;
 	while (curState.t <= tmax )
 	{
-		Vec3f field = getOneRingLerpField(curState.p, curState.ownerFace);
+		const int currentOwnerIdx = curState.ownerFace.idx();
+		Vec3f field = getOneRingLerpField(curState.p, currentOwnerIdx, curState.t);
+		if (VectorFieldsUtils::isCloseToZero(field.length()))
+		{
+			curState.t += dt;
+			particlePath.pushBack(curState.p, curState.t);
+			continue;
+		}
+
 		Point next = curState.p + field * dt;
 		if (!_finite(field[0]) || !_finite(field[1]) || !_finite(field[2]))
 		{
@@ -177,16 +188,16 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			if (curState.ownerFace.idx() != -1)
 			{
 				bool b = false;
-				/*if (!VectorFieldsUtils::isInnerPoint(curState.p, triangles[curState.ownerFace.idx()]))
+				if (!VectorFieldsUtils::isInnerPoint(curState.p, triangles[curState.ownerFace.idx()]))
 				{
 					Vec3f fieldContinuationVec = field.normalized() * (NUMERICAL_ERROR_THRESH * 2);
-					curState.p = intersection + VectorFieldsUtils::projectVectorOntoTriangle(fieldContinuationVec, triangles[curState.ownerFace.idx()]);
+					curState.p = intersection + VectorFieldsUtils::projectVectorOntoTriangle(fieldContinuationVec, normals[curState.ownerFace.idx()]);
 				}
 				if (!VectorFieldsUtils::isInnerPoint(curState.p, triangles[curState.ownerFace.idx()]))
 				{
 					Vec3f fieldContinuationVec = field.normalized() * (NUMERICAL_ERROR_THRESH * 4);
-					curState.p = intersection - VectorFieldsUtils::projectVectorOntoTriangle(fieldContinuationVec, triangles[curState.ownerFace.idx()]);
-				}*/
+					curState.p = intersection - VectorFieldsUtils::projectVectorOntoTriangle(fieldContinuationVec, normals[curState.ownerFace.idx()]);
+				}
 			}
 
 			break;
@@ -211,14 +222,13 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	return particlePath;
 }
 
-Vec3f PathFinder::getOneRingLerpField(const Point& p, const Mesh::FaceHandle& ownerFace)
+Vec3f PathFinder::getOneRingLerpField(const Point& p, const int ownerIdx, const Time time)
 {
-	int ownerIdx = ownerFace.idx();
 	vector<int>& ringIds = oneRingFaceIds[ownerIdx];
 	int size = ringIds.size();
 	if(size == 0)
 	{
-		return VectorFieldsUtils::calculateField(faceFields[ownerIdx], 0);
+		return VectorFieldsUtils::calculateField(faceFields[ownerIdx], time);
 	}
 
 
@@ -226,18 +236,17 @@ Vec3f PathFinder::getOneRingLerpField(const Point& p, const Mesh::FaceHandle& ow
 	vector<Vec3f> fields(size + 1);
 	double totalDist(0);
 	int i = 0;
-	for(; i < size; ++i) 
+	for(; i < size; ++i)
 	{
 		int idx = ringIds[i];
-		float len =  (p - centroids[idx]).length();
-		distances[i] = len;
-		totalDist += len;
-		fields[i] = VectorFieldsUtils::calculateField(faceFields[idx], 0);
+		distances[i] =  (p - centroids[idx]).length();
+		totalDist += distances[i];
+		fields[i] = VectorFieldsUtils::calculateField(faceFields[idx], time);
 	}
 
 	distances[i] = (p - centroids[ownerIdx]).length();
 	totalDist += distances[i];
-	fields[i] = VectorFieldsUtils::calculateField(faceFields[ownerIdx], 0);
+	fields[i] = VectorFieldsUtils::calculateField(faceFields[ownerIdx], time);
 	
 	Vec3f totalField(0.f);
 	for(int j = 0; j <= i; ++j)
