@@ -44,13 +44,14 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	LOAD_CONST_FIELD_KEY = add_draw_mode("Load Constant Field");
 	LOAD_VAR_FIELD_KEY = add_draw_mode("Load Variable Field");
 
-	const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
+	const char initPath[] = "..\\Data\\miri\\teddy171.off";
+	//const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
 	//const char initPath[] = "..\\Data\\old\\Horse.off";
 	open_mesh(initPath);
 	//fieldedMesh.assignVectorField("..\\Data\\miri\\teddy171.vf");
 	set_draw_mode(vfDrawModeId);
 	VectorFieldsViewer::activeInstance = this;
-	//computeVectorFieldLines();
+	computeVectorFieldLines();
 	resetTimer();
 
 	OpenParameterWindow();
@@ -109,18 +110,16 @@ void VectorFieldsViewer::processmenu(int i)
 	else if (LOAD_CONST_FIELD_KEY == i || LOAD_VAR_FIELD_KEY == i)
 	{
 		bool isConstField = (LOAD_CONST_FIELD_KEY == i);
-		OPENFILENAME ofn={0};
-		char szFileName[MAX_PATH]={0};
-		ofn.lStructSize=sizeof(OPENFILENAME);
-		ofn.Flags=OFN_EXPLORER;
-		ofn.lpstrFilter="VF Files (*.vf)\0*.vf\0";
-		if (!isConstField) 
+		OPENFILENAME ofn = {0};
+		char szFileName[MAX_PATH] = {0};
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.Flags = OFN_EXPLORER;
+		ofn.lpstrFilter = isConstField ? "VF Files (*.vf)\0*.vf\0" : "TXT Files (*.txt)\0*.txt\0";
+		
+		ofn.lpstrFile = szFileName;
+		ofn.nMaxFile = MAX_PATH;
+		if(GetOpenFileName(&ofn)) 
 		{
-			ofn.lpstrFilter="TXT Files (*.txt)\0*.txt\0";
-		}
-		ofn.lpstrFile=szFileName;
-		ofn.nMaxFile=MAX_PATH;
-		if(GetOpenFileName(&ofn)) {
 			std::cout << "Opening Field File " << ofn.lpstrFile << std::endl;
 			bool success = fieldedMesh.assignVectorField(szFileName, isConstField);
 			if (!success) 
@@ -200,7 +199,6 @@ void VectorFieldsViewer::keyboard(int key, int x, int y)
 		}
 	}
 }
-
 
 void VectorFieldsViewer::draw(const std::string& _draw_mode)
 {

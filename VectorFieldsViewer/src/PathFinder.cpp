@@ -17,8 +17,6 @@ PathFinder::PathFinder() :
 
 bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 {
-	
-	
 	fieldedMesh = FieldedMesh(aMesh_);
 
 	Time tmax_ = fieldedMesh.maxTime();
@@ -40,7 +38,7 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 	triangles.resize(size);
 	centroids.resize(size);
 	oneRingFaceIds.resize(size);
-	faceFields.resize(size);
+	//faceFields.resize(size);
 	normals.resize(size);
 	faceVertices.resize(size);
 	faceVertexFields.resize(size);
@@ -50,7 +48,7 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 		int idx = fit.handle().idx();
 
 		triangles[idx] = fieldedMesh.getFacePoints(fit);
-		faceFields[idx] = fieldedMesh.getVectorField(fit);
+		//faceFields[idx] = fieldedMesh.getVectorField(fit, );
 
 		Mesh::ConstFaceVertexIter cvit(fieldedMesh.cfv_iter(fit));
 		for(int i = 0; i < 3; ++i, ++cvit)
@@ -145,10 +143,8 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 
 	while (curState.t <= tmax )
 	{
-		
-
 		const int currentOwnerIdx = curState.ownerFace.idx();
-		Vec3f field = getOneRingLerpField(curState.p, currentOwnerIdx, curState.t);
+		Vec3f field = getField(curState.p, currentOwnerIdx, curState.t);
 		if (VectorFieldsUtils::isCloseToZero(field.length()))
 		{
 			curState.t += dt;
@@ -263,54 +259,58 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 	return particlePath;
 }
 
-Vec3f PathFinder::getOneRingLerpField(const Point& p, const int ownerIdx, const Time time)
-{
-	vector<int>& ringIds = oneRingFaceIds[ownerIdx];
-	int size = ringIds.size();
-	if(size == 0)
-	{
-		return VectorFieldsUtils::calculateField(faceFields[ownerIdx], time);
-	}
+//Vec3f PathFinder::getOneRingLerpField(const Point& p, const int ownerIdx, const Time time)
+//{
+//	vector<int>& ringIds = oneRingFaceIds[ownerIdx];
+//	int size = ringIds.size();
+//	if(size == 0)
+//	{
+//		return VectorFieldsUtils::calculateField(faceFields[ownerIdx], time);
+//	}
+//
+//
+//	vector<double> distances(size + 1);
+//	vector<Vec3f> fields(size + 1);
+//	double totalDist(0);
+//	int i = 0;
+//	for(; i < size; ++i)
+//	{
+//		int idx = ringIds[i];
+//		distances[i] =  (p - centroids[idx]).length();
+//		totalDist += distances[i];
+//		fields[i] = VectorFieldsUtils::calculateField(faceFields[idx], time);
+//	}
+//
+//	distances[i] = (p - centroids[ownerIdx]).length();
+//	totalDist += distances[i];
+//	fields[i] = VectorFieldsUtils::calculateField(faceFields[ownerIdx], time);
+//	
+//	Vec3f totalField(0.f);
+//	for(int j = 0; j <= i; ++j)
+//	{
+//		/*if (!_finite(fields[j][0]))
+//		{
+//			bool debug = true;
+//		}*/
+//		totalField += fields[j] * (float)((totalDist - distances[j]) / totalDist);
+//		/*if (!_finite(totalField[0]))
+//		{
+//			bool debug = true;
+//		}*/
+//	}
+//	
+//	// now we cheat by projecting totalField onto ownerFace's plane
+//	return VectorFieldsUtils::projectVectorOntoTriangle(totalField, normals[ownerIdx]);
+//}
 
-
-	vector<double> distances(size + 1);
-	vector<Vec3f> fields(size + 1);
-	double totalDist(0);
-	int i = 0;
-	for(; i < size; ++i)
-	{
-		int idx = ringIds[i];
-		distances[i] =  (p - centroids[idx]).length();
-		totalDist += distances[i];
-		fields[i] = VectorFieldsUtils::calculateField(faceFields[idx], time);
-	}
-
-	distances[i] = (p - centroids[ownerIdx]).length();
-	totalDist += distances[i];
-	fields[i] = VectorFieldsUtils::calculateField(faceFields[ownerIdx], time);
-	
-	Vec3f totalField(0.f);
-	for(int j = 0; j <= i; ++j)
-	{
-		/*if (!_finite(fields[j][0]))
-		{
-			bool debug = true;
-		}*/
-		totalField += fields[j] * (float)((totalDist - distances[j]) / totalDist);
-		/*if (!_finite(totalField[0]))
-		{
-			bool debug = true;
-		}*/
-	}
-	
-	// now we cheat by projecting totalField onto ownerFace's plane
-	return VectorFieldsUtils::projectVectorOntoTriangle(totalField, normals[ownerIdx]);
-}
-
-Vec3f PathFinder::getField(const Point& p, int fid)
+Vec3f PathFinder::getField(const Point& p,const int fid, const Time time)
 {
 	Point bc = VectorFieldsUtils::stdToBarycentric(p, faceVertices[fid]);
-	Vec3f f = VectorFieldsUtils::intepolate<Vec3f>(bc, faceVertexFields[fid]);
+	OpenMesh::VectorT<Vec3f, 3> field;
+	field[0] = VectorFieldsUtils::calculateField(faceVertexFields[fid][0], time);
+	field[1] = VectorFieldsUtils::calculateField(faceVertexFields[fid][1], time);
+	field[2] = VectorFieldsUtils::calculateField(faceVertexFields[fid][2], time);
+	Vec3f f = VectorFieldsUtils::intepolate<Vec3f>(bc, field);
 	Vec3f ff = VectorFieldsUtils::projectVectorOntoTriangle(f,	normals[fid]);
 	return ff;
 }

@@ -14,7 +14,7 @@ FieldedMesh::FieldedMesh(void) :
 	request_face_normals();
 	request_vertex_normals();
 	request_vertex_colors();
-	add_property(vectorFieldFaceProperty);
+	//add_property(vectorFieldFaceProperty);
 	add_property(vertexFieldProperty);
 }
 
@@ -105,55 +105,60 @@ void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
 	assignFieldToFaces(fields, times);
 }
 
-void FieldedMesh::assignRandVectorField()
-{
-	srand((uint)time(0));
-	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
-	{
-		float x = VectorFieldsUtils::fRand(0,1);
-		float y = VectorFieldsUtils::fRand(0,(1-x));
-		float z = 1 - x - y;
-		Point inBarycentric = Vec3f(x,y,z);
-		// For now we make this vector field constant in time
-		Triangle triangle = getFacePoints(cfit);
-		
-		Point inStd = VectorFieldsUtils::barycentricToStd(inBarycentric, triangle);
-		Point center = VectorFieldsUtils::barycentricToStd(Vec3f(float(1/3.)), triangle);
+//void FieldedMesh::assignRandVectorField()
+//{
+//	srand((uint)time(0));
+//	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
+//	{
+//		float x = VectorFieldsUtils::fRand(0,1);
+//		float y = VectorFieldsUtils::fRand(0,(1-x));
+//		float z = 1 - x - y;
+//		Point inBarycentric = Vec3f(x,y,z);
+//		// For now we make this vector field constant in time
+//		Triangle triangle = getFacePoints(cfit);
+//		
+//		Point inStd = VectorFieldsUtils::barycentricToStd(inBarycentric, triangle);
+//		Point center = VectorFieldsUtils::barycentricToStd(Vec3f(float(1/3.)), triangle);
+//
+//		vector<VectorFieldTimeVal> faceVectorField;
+//		Vec3f field = inStd - center;
+//		field.normalize();
+//		faceVectorField.push_back(VectorFieldTimeVal(field,0));
+//		faceVectorField.push_back(VectorFieldTimeVal(field,1));
+//
+//		property(vectorFieldFaceProperty, cfit.handle()) = faceVectorField;
+//
+//	}
+//}
 
-		vector<VectorFieldTimeVal> faceVectorField;
-		Vec3f field = inStd - center;
-		field.normalize();
-		faceVectorField.push_back(VectorFieldTimeVal(field,0));
-		faceVectorField.push_back(VectorFieldTimeVal(field,1));
-
-		property(vectorFieldFaceProperty, cfit.handle()) = faceVectorField;
-
-	}
-}
-
-bool FieldedMesh::assignRandVectorFieldPerVertex()
-{
-	srand((uint)time(0));
-	for(VertexIter vit(vertices_begin()), vend(vertices_end()); vit != vend; ++vit)
-	{
-		const Normal& vn = normal(vit);
-		vector<Normal> faceNormals;
-		for(VertexFaceIter vfit(vf_begin(vit)), vfend(vf_end(vit)); vfit != vfend; ++vfit)
-		{
-			faceNormals.push_back(normal(vfit));
-		}
-		int size = faceNormals.size();
-		property(vertexFieldProperty, vit) = size == 0 ? Vec3f(0.) :  vn % faceNormals[ rand() % size];
-	}
-	return true;
-}
+//bool FieldedMesh::assignRandVectorFieldPerVertex()
+//{
+//	srand((uint)time(0));
+//	for(VertexIter vit(vertices_begin()), vend(vertices_end()); vit != vend; ++vit)
+//	{
+//		const Normal& vn = normal(vit);
+//		vector<Normal> faceNormals;
+//		for(VertexFaceIter vfit(vf_begin(vit)), vfend(vf_end(vit)); vfit != vfend; ++vfit)
+//		{
+//			faceNormals.push_back(normal(vfit));
+//		}
+//		int size = faceNormals.size();
+//		property(vertexFieldProperty, vit) = size == 0 ? Vec3f(0.) :  vn % faceNormals[ rand() % size];
+//	}
+//	return true;
+//}
 
 bool FieldedMesh::assignRotatingVectorFieldPerVertex(const Vec3f& axis)
 {
 	for(VertexIter vit(vertices_begin()), vend(vertices_end()); vit != vend; ++vit)
 	{
-		property(vertexFieldProperty, vit) = point(vit) % axis;
+		vector<VectorFieldTimeVal>& field = property(vertexFieldProperty, vit);
+		Vec3f first(point(vit) % axis);
+		field.push_back(VectorFieldTimeVal(first, Time(0)));
+		field.push_back(VectorFieldTimeVal(normal(vit) % first, Time(1)));
 	}
+	_minTime = Time(0);
+	_maxTime = Time(1);
 	return true;
 }
 
@@ -218,54 +223,54 @@ void FieldedMesh::normalizeMesh()
 	}
 }
 
-const vector<VectorFieldTimeVal>& FieldedMesh::getVectorField(const FaceHandle& handle) const
-{
-	return property(vectorFieldFaceProperty, handle);
-}
+//const vector<VectorFieldTimeVal>& FieldedMesh::getVectorField(const FaceHandle& handle) const
+//{
+//	return property(vectorFieldFaceProperty, handle);
+//}
 
-const Vec3f& FieldedMesh::vertexField(const Mesh::VertexHandle& vertexHandle) const
+const vector<VectorFieldTimeVal>& FieldedMesh::vertexField(const Mesh::VertexHandle& vertexHandle) const
 {
 	return property(vertexFieldProperty, vertexHandle);
 }
 
-Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, const Time& time) const
-{
-	const vector<VectorFieldTimeVal>& fieldSamples = property(vectorFieldFaceProperty, faceHandle);
-	if (fieldSamples.size() == 0) 
-	{
-		return Vec3f(0,0,0);
-	}
-
-	// assuming samples are listed in increasing time order
-	Time	prevTime = fieldSamples[0].time;
-	Time	nextTime = fieldSamples[0].time;
-	Vec3f	prevField = fieldSamples[0].field;
-	Vec3f	nextField = fieldSamples[0].field;
-
-	for (uint i = 0; i < fieldSamples.size(); i++) {
-		nextTime = fieldSamples[i].time;
-		nextField = fieldSamples[i].field;
-		if (nextTime >= time) {
-			break;
-		}
-		prevTime = fieldSamples[i].time;
-		prevField = fieldSamples[i].field;
-	}
-	Vec3f result;
-	if (abs(nextTime - prevTime) < NUMERICAL_ERROR_THRESH) 
-	{
-		result = (nextField + prevField) / 2.0;
-	}
-	else 
-	{
-		result = (prevField * (time - prevTime) + nextField * (nextTime - time)) / (nextTime - prevTime);
-	}
-	if (!_finite(result[0]))
-	{
-		bool debug = true;
-	}
-	return result;
-}
+//Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, const Time& time) const
+//{
+//	const vector<VectorFieldTimeVal>& fieldSamples = property(vectorFieldFaceProperty, faceHandle);
+//	if (fieldSamples.size() == 0) 
+//	{
+//		return Vec3f(0,0,0);
+//	}
+//
+//	// assuming samples are listed in increasing time order
+//	Time	prevTime = fieldSamples[0].time;
+//	Time	nextTime = fieldSamples[0].time;
+//	Vec3f	prevField = fieldSamples[0].field;
+//	Vec3f	nextField = fieldSamples[0].field;
+//
+//	for (uint i = 0; i < fieldSamples.size(); i++) {
+//		nextTime = fieldSamples[i].time;
+//		nextField = fieldSamples[i].field;
+//		if (nextTime >= time) {
+//			break;
+//		}
+//		prevTime = fieldSamples[i].time;
+//		prevField = fieldSamples[i].field;
+//	}
+//	Vec3f result;
+//	if (abs(nextTime - prevTime) < NUMERICAL_ERROR_THRESH) 
+//	{
+//		result = (nextField + prevField) / 2.0;
+//	}
+//	else 
+//	{
+//		result = (prevField * (time - prevTime) + nextField * (nextTime - time)) / (nextTime - prevTime);
+//	}
+//	if (!_finite(result[0]))
+//	{
+//		bool debug = true;
+//	}
+//	return result;
+//}
 
 bool FieldedMesh::isLoaded()
 {
@@ -332,7 +337,7 @@ bool FieldedMesh::assignFieldToFaces(const vector<vector<Vec3f>>& fieldPerFace, 
 		{
 			faceVectorField.push_back(VectorFieldTimeVal(fieldPerFace[i][t], times[t]));
 		}
-		property(vectorFieldFaceProperty, cfit) = faceVectorField;
+		//property(vectorFieldFaceProperty, cfit) = faceVectorField;
 	}
 	_minTime = times[0];
 	_maxTime = times[timeSize - 1];

@@ -2,8 +2,8 @@
 
 #include "VectorFieldsUtils.h"
 
-typedef OpenMesh::FPropHandleT<vector<VectorFieldTimeVal>> FaceFieldPropT;
-typedef OpenMesh::VPropHandleT<Vec3f> VertexFieldHandleT;
+//typedef OpenMesh::FPropHandleT<vector<VectorFieldTimeVal>> FaceFieldPropT;
+typedef OpenMesh::VPropHandleT<vector<VectorFieldTimeVal>> VertexFieldHandleT;
 
 class FieldedMesh : public Mesh
 {
@@ -18,8 +18,8 @@ public:
 	const Point&							boundingBoxMin();
 	const Point&							boundingBoxMax();
 
-	Vec3f									faceVectorField(const FaceHandle& face, const Time& time) const;
-	const vector<VectorFieldTimeVal>&		getVectorField(const FaceHandle& handle) const;
+	//Vec3f									faceVectorField(const FaceHandle& face, const Time& time) const;
+	//const vector<VectorFieldTimeVal>&		getVectorField(const FaceHandle& handle) const;
 	const vector<uint>&						getIndices() const;
 	Triangle								getFacePoints(const OpenMesh::ArrayKernel::FaceHandle& faceHandle);
 
@@ -27,13 +27,13 @@ public:
 	Time									maxTime();
 
 
-	const Vec3f&							vertexField(const VertexHandle& vertex) const;
+	const vector<VectorFieldTimeVal>&		vertexField(const VertexHandle& vertex) const;
 protected:
 	bool									isLoaded_;
 	Point									bbMax;
 	Point									bbMin;
 	vector<unsigned int>					faceIndices;
-	FaceFieldPropT							vectorFieldFaceProperty;
+	//FaceFieldPropT							vectorFieldFaceProperty;
 	VertexFieldHandleT						vertexFieldProperty;
 	double									scaleFactor;
 
@@ -49,7 +49,7 @@ private:
 	void									readFieldFile(const char* path, vector<vector<Vec3f>>& fieldPerFace, vector<Time>& times);
 	bool									assignFieldToFaces(const vector<vector<Vec3f>>& fieldPerFace, const vector<Time>& times);
 	
-	bool									assignRandVectorFieldPerVertex();
+	//bool									assignRandVectorFieldPerVertex();
 	bool									assignRotatingVectorFieldPerVertex(const Vec3f& rotationAxis = Vec3f(0,0,1));
 	//bool									assignFieldPerVertex(const vector<Vec3f>& fieldPerVertex);
 
