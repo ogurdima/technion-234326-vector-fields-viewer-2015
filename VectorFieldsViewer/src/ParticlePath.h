@@ -94,27 +94,33 @@ public:
 		}
 		particleLoc = pathLength - 1;
 	}
-	
+
 	bool isConverged(float pointRadius, float timeRadius = NUMERICAL_ERROR_THRESH*100, int pointsToCheck = 10, Point* convergencePoint = NULL)
 	{
 		if (pointsToCheck > points.size())
 		{
 			return false; // Not enough data to deciede convergence
 		}
+
 		int last = times.size() - 1;
-		if (abs(times[last] - times[last-pointsToCheck]) > timeRadius)
+		int firstToCheck = last - pointsToCheck + 1;
+
+		if (abs(times[last] - times[firstToCheck]) > timeRadius)
 		{
 			return false; // Times are not close enough
 		}
 		Point centroid = Point(0,0,0);
-		float totalDist = -(points[last - pointsToCheck - 1] - points[last - pointsToCheck]).length();
-		for (int i = last - pointsToCheck; i <= last; i++)
+		double totalDist(0.);
+		for (int i = 0; i < pointsToCheck; ++i)
 		{
-			centroid += points[i];
-			totalDist += (points[i] - points[i-1]).length();
-			float distanceToCentroid = (points[i] - centroid).length();
+			int current = firstToCheck + i;
+			int next = firstToCheck + ((i + 1) % pointsToCheck);
+			centroid += points[current];
+			totalDist += (points[current] - points[next]).length();
+			float distanceToCentroid = (points[current] - centroid).length();
 			bool debug = true;
 		}
+
 		centroid /= pointsToCheck;
 		if (NULL != convergencePoint)
 		{
@@ -128,7 +134,7 @@ public:
 		}
 
 		// I cannot understand why the code below does not work... Distance to centroid is always a very large number
-		for (int i = last - pointsToCheck; i <= last; i++)
+		for (int i = firstToCheck; i <= last; ++i)
 		{
 			float distanceToCentroid = (points[i] - centroid).length();
 			if (distanceToCentroid > pointRadius)
