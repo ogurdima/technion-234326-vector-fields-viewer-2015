@@ -9,3 +9,5 @@ Debug
 Release
 !Debug\glut32.dll
 !Release\glut32.dll
+lib
+!lib\glut32.lib
