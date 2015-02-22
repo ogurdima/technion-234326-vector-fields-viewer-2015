@@ -173,5 +173,18 @@ public:
 		return items[0] * barycentric[0] + items[1] * barycentric[1] + items[2] * barycentric[2];
 	}
 
+	static Vec3f average(const vector<Vec3f>& values)
+	{
+		int count = 0;
+		Vec3f sum = Vec3f(0,0,0);
+		for (count; count < values.size(); count++)
+		{
+			sum += values[count];
+		}
+		if (0 != count) {
+			sum /= count;
+		}
+		return sum;
+	}
 	
 };

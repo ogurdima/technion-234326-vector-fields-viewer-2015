@@ -44,14 +44,14 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	LOAD_CONST_FIELD_KEY = add_draw_mode("Load Constant Field");
 	LOAD_VAR_FIELD_KEY = add_draw_mode("Load Variable Field");
 
-	const char initPath[] = "..\\Data\\miri\\teddy171.off";
-	//const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
+	//const char initPath[] = "..\\Data\\miri\\teddy171.off";
+	const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
 	//const char initPath[] = "..\\Data\\old\\Horse.off";
 	open_mesh(initPath);
-	//fieldedMesh.assignVectorField("..\\Data\\miri\\teddy171.vf");
+	//fieldedMesh.assignVectorField("..\\Data\\miri\\frog\\frog_s5_times.txt", false);
 	set_draw_mode(vfDrawModeId);
 	VectorFieldsViewer::activeInstance = this;
-	computeVectorFieldLines();
+	//computeVectorFieldLines();
 	resetTimer();
 
 	OpenParameterWindow();

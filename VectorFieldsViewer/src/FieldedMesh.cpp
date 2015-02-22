@@ -64,7 +64,8 @@ bool FieldedMesh::assignVectorField(const char* path, bool isConst)
 		times.push_back(Time(0));
 		times.push_back(Time(1));
 	}
-	return assignFieldToFaces(fields, times);
+	return assignFieldToVertices(fields, times);
+	//return assignFieldToFaces(fields, times);
 }
 
 void FieldedMesh::updateFaceIndices()
@@ -102,7 +103,8 @@ void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
 	times.push_back(Time(0));
 	times.push_back(Time(1));
 
-	assignFieldToFaces(fields, times);
+	assignFieldToVertices(fields, times);
+	//assignFieldToFaces(fields, times);
 }
 
 //void FieldedMesh::assignRandVectorField()
@@ -343,4 +345,54 @@ bool FieldedMesh::assignFieldToFaces(const vector<vector<Vec3f>>& fieldPerFace, 
 	_maxTime = times[timeSize - 1];
 	return true;
 }
-	
+
+bool FieldedMesh::assignFieldToVertices(const vector<vector<Vec3f>>& fieldPerFace, const vector<Time>& times)
+{
+	if (!isLoaded())
+	{
+		std::cerr << "Failed to assign vector field: mesh not loaded" << std::endl;
+		return false;
+	}
+	if (fieldPerFace.size() != n_faces())
+	{
+		std::cerr<< "Failed to assign vector field: fieldPerFace.size() != n_faces()" << std::endl;
+		return false;
+	}
+	std::cout << "Assigning vector field to vertices..." << std::endl;
+	int timeSize = times.size();
+	_minTime = times[0];
+	_maxTime = times[timeSize - 1];
+
+	FaceFieldPropT tmpFaceFieldProp;
+	add_property(tmpFaceFieldProp);
+	int i = 0;
+	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit, ++i) 
+	{
+		vector<VectorFieldTimeVal> faceVectorField;
+		for(int t = 0; t < timeSize; ++t)
+		{
+			faceVectorField.push_back(VectorFieldTimeVal(fieldPerFace[i][t], times[t]));
+		}
+		property(tmpFaceFieldProp, cfit) = faceVectorField;
+	}
+	for(VertexIter vit(vertices_begin()), vitEnd(vertices_end()); vit != vitEnd; ++vit)
+	{
+		vector<VectorFieldTimeVal> vertexField;
+		for (int timeIdx = 0; timeIdx < timeSize; timeIdx++) 
+		{
+			vector<Vec3f> facesSnapshot;
+			for(VertexFaceIter vfit(vf_begin(vit.handle())); vfit != vf_end(vit.handle()); vfit++)
+			{
+				vector<VectorFieldTimeVal> faceTime = property(tmpFaceFieldProp, vfit.handle());
+				facesSnapshot.push_back(faceTime[timeIdx].field);
+			}
+			Vec3f vertexSnapshot = VectorFieldsUtils::average(facesSnapshot);
+			vertexField.push_back(VectorFieldTimeVal(vertexSnapshot, times[timeIdx]));
+		}
+		property(vertexFieldProperty, vit.handle()) = vertexField;
+	}
+	remove_property(tmpFaceFieldProp);
+	std::cout << "Finished assigning vector field to vertices" << std::endl;
+	return true;
+}
+
