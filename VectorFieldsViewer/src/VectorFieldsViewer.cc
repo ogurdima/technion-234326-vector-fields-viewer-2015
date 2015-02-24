@@ -45,13 +45,13 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	LOAD_VAR_FIELD_KEY = add_draw_mode("Load Variable Field");
 
 	//const char initPath[] = "..\\Data\\miri\\teddy171.off";
-	const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
-	//const char initPath[] = "..\\Data\\old\\Horse.off";
+	//const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
+	const char initPath[] = "..\\Data\\old\\Horse.off";
 	open_mesh(initPath);
 	//fieldedMesh.assignVectorField("..\\Data\\miri\\frog\\frog_s5_times.txt", false);
 	set_draw_mode(vfDrawModeId);
 	VectorFieldsViewer::activeInstance = this;
-	//computeVectorFieldLines();
+	computeVectorFieldLines();
 	resetTimer();
 
 	OpenParameterWindow();
@@ -306,7 +306,9 @@ void VectorFieldsViewer::drawVectorField()
 		}
 		GL::glVertexPointer(first);
 		GL::glColorPointer(4, GL_FLOAT, 0, &colors[0]);
-		glDrawElements(GL_LINE_STRIP, visiblePathLen, GL_UNSIGNED_INT, &indices[0]);
+		glDrawArrays(GL_LINE_STRIP, 0, visiblePathLen);
+		//glMultiDrawArrays(GL_LINE_STRIP, &0)
+
 	}
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
