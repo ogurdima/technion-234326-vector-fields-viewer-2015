@@ -35,9 +35,6 @@ bool FieldedMesh::load(const char* path)
 		updateFaceIndices();
 
 		// compute and assign vector field
-		//assignRotatingVectorField();
-		//assignRandVectorField();
-		//assignRandVectorFieldPerVertex();
 		assignRotatingVectorFieldPerVertex();
 	}
 	return isLoaded_;

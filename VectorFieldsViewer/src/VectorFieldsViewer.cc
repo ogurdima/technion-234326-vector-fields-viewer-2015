@@ -28,7 +28,7 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	isParameterOpen(false),
 	color(0.1,1,0.1)
 {
-
+	VectorFieldsViewer::activeInstance = this;
 	resetColorAndIndices();
 
 	clear_draw_modes();
@@ -40,6 +40,8 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	add_draw_mode("Only Lines");
 	add_draw_mode("Hidden Field");
 
+	set_draw_mode(vfDrawModeId);
+
 	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
 	LOAD_CONST_FIELD_KEY = add_draw_mode("Load Constant Field");
 	LOAD_VAR_FIELD_KEY = add_draw_mode("Load Variable Field");
@@ -48,12 +50,8 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
 	//const char initPath[] = "..\\Data\\old\\Horse.off";
 	open_mesh(initPath);
-	//fieldedMesh.assignVectorField("..\\Data\\miri\\frog\\frog_s5_times.txt", false);
-	set_draw_mode(vfDrawModeId);
-	VectorFieldsViewer::activeInstance = this;
-	//computeVectorFieldLines();
+	
 	resetTimer();
-
 	OpenParameterWindow();
 }
 
@@ -146,7 +144,7 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 		set_scene( (Vec3f)(fieldedMesh.boundingBoxMin() + fieldedMesh.boundingBoxMax())*0.5,
 			0.5*(fieldedMesh.boundingBoxMin() - fieldedMesh.boundingBoxMax()).norm());
 
-		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 100.;
+		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 1000.;
 
 		glutPostRedisplay();
 		return true;
