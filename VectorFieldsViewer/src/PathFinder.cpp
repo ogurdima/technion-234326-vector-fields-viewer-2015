@@ -18,16 +18,13 @@ PathFinder::PathFinder() :
 bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 {
 	fieldedMesh = FieldedMesh(aMesh_);
-
 	Time tmax_ = fieldedMesh.maxTime();
 	Time tmin_ = fieldedMesh.minTime();
-
 	if (tmax_ <= tmin_|| (dt_ >= (tmax_ - tmin_))) 
 	{
 		hasValidConfig = false;
 		return hasValidConfig;
 	}
-
 	// caching
 	int size = fieldedMesh.n_faces();
 	if(size < 1)
@@ -38,7 +35,6 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 	triangles.resize(size);
 	centroids.resize(size);
 	oneRingFaceIds.resize(size);
-	//faceFields.resize(size);
 	normals.resize(size);
 	faceVertices.resize(size);
 	faceVertexFields.resize(size);
@@ -46,22 +42,16 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 	for(Mesh::ConstFaceIter fit(fieldedMesh.faces_begin()), fitEnd(fieldedMesh.faces_end()); fit != fitEnd; ++fit ) 
 	{
 		int idx = fit.handle().idx();
-
 		triangles[idx] = fieldedMesh.getFacePoints(fit);
-		//faceFields[idx] = fieldedMesh.getVectorField(fit, );
-
 		Mesh::ConstFaceVertexIter cvit(fieldedMesh.cfv_iter(fit));
 		for(int i = 0; i < 3; ++i, ++cvit)
 		{
 			faceVertices[idx][i] = fieldedMesh.point(cvit);
 			faceVertexFields[idx][i] = fieldedMesh.vertexField(cvit);
 		}
-
 		centroids[idx] = VectorFieldsUtils::getTriangleCentroid(triangles[idx]);
 		normals[idx] = VectorFieldsUtils::getTriangleNormal(triangles[idx]);
-
-		for(Mesh::ConstFaceFaceIter curFace(fieldedMesh.cff_begin(fit)), end(fieldedMesh.cff_end(fit));
-			curFace != end; ++curFace) 
+		for(Mesh::ConstFaceFaceIter curFace(fieldedMesh.cff_begin(fit)), end(fieldedMesh.cff_end(fit)); curFace != end; ++curFace) 
 		{
 			int neighborId = curFace.handle().idx();
 			if (neighborId < 0) 
@@ -71,7 +61,6 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 			oneRingFaceIds[idx].push_back(neighborId);
 		}
 	}
-
 	tmax = tmax_;
 	tmin = tmin_;
 	dt = dt_;
@@ -85,7 +74,6 @@ vector<ParticlePath> PathFinder::getParticlePaths()
 	{
 		throw std::exception("Calling getParticlePaths with badly configured PathFinder");
 	}
-
 	vector<ParticlePath> allPaths;
 	int totalFaces = fieldedMesh.n_faces();
 	int facesDone = 0;
@@ -110,13 +98,9 @@ vector<ParticlePath> PathFinder::getParticlePaths()
 			std::cout << fractionDone << "% Done" << std::endl;
 		}
 	}
-
 	auto end_time = std::chrono::high_resolution_clock::now();
 	auto time = end_time - start_time;
-	
-	
 	std::cout << "run took " <<  std::chrono::duration_cast<std::chrono::milliseconds>(time).count() << " milliseconds.\n";
-
 	std::cout << "Fuckup count: " << fuckupCount << std::endl;
 	return allPaths;
 }
@@ -124,23 +108,16 @@ vector<ParticlePath> PathFinder::getParticlePaths()
 ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 {
 	ParticlePath particlePath;
-
 	Point pstart = VectorFieldsUtils::barycentricToStd(Point(1.f/3.f), triangles[faceHandle.idx()]);
-	
 	particlePath.pushBack(pstart, tmin);
-
 	Mesh::FaceHandle ownerFace = faceHandle;
-
 	ParticleSimStateT curState;
 	curState.ownerFace = faceHandle;
 	curState.p = pstart;
 	curState.t = tmin;
-	
 	Mesh::HalfedgeHandle excludeHalfEdge;
 	bool exclude = false;
-
 	int convergenceCheckCounter = 0;
-
 	while (curState.t <= tmax )
 	{
 		const int currentOwnerIdx = curState.ownerFace.idx();
@@ -151,7 +128,6 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			particlePath.pushBack(curState.p, curState.t);
 			continue;
 		}
-
 		convergenceCheckCounter = (convergenceCheckCounter + 1)%50; 
 		if (convergenceCheckCounter == 0) // Every so often
 		{
@@ -160,7 +136,7 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			curFacePerimeter +=	(triangles[currentOwnerIdx][1] - triangles[currentOwnerIdx][0]).length();
 			curFacePerimeter +=	(triangles[currentOwnerIdx][2] - triangles[currentOwnerIdx][1]).length();
 			curFacePerimeter +=	(triangles[currentOwnerIdx][0] - triangles[currentOwnerIdx][2]).length();
-			float pointConvRadius = curFacePerimeter / 1000.;
+			float pointConvRadius = curFacePerimeter / 1000.f;
 			if (particlePath.isConverged(pointConvRadius, (dt/100), 10, &conv))
 			{
 				curState.t += dt;
@@ -168,8 +144,6 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 				continue;
 			}
 		}
-		
-
 		Point next = curState.p + field * dt;
 		if (!_finite(field[0]) || !_finite(field[1]) || !_finite(field[2]))
 		{
@@ -179,7 +153,6 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 		{
 			bool debug = true;
 		}
-
 		if( VectorFieldsUtils::isInnerPoint(next, triangles[curState.ownerFace.idx()]))
 		{
 			curState.p = next;
@@ -188,10 +161,6 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			//std::cout << "Owner face stayed " << curState.ownerFace << std::endl;
 			continue;
 		}
-
-		// Next we find next owner face. If owner face changed then we need to change next particle point to be on the
-		// edge of the new owner face
-
 		const Normal& normal = fieldedMesh.normal(curState.ownerFace);
 		Point intersection;
 		bool breakSearch = false;
@@ -203,7 +172,6 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 				exclude = false;
 				continue;
 			}
-
 			Point& from = fieldedMesh.point(fieldedMesh.from_vertex_handle(cfhei));
 			Point& to = fieldedMesh.point(fieldedMesh.to_vertex_handle(cfhei));
 
@@ -211,7 +179,6 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			{
 				continue;
 			}
-
 			double actualTimeInterval = dt * ( (intersection - curState.p).length() / (next - curState.p).length());
 			//std::cout << "Owner face changed from " << curState.ownerFace << " to " << fieldedMesh.opposite_face_handle(cfhei.handle()) << std::endl;
 			curState.ownerFace = fieldedMesh.opposite_face_handle(cfhei.handle());
@@ -236,7 +203,6 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 					curState.p = intersection - VectorFieldsUtils::projectVectorOntoTriangle(fieldContinuationVec, normals[curState.ownerFace.idx()]);
 				}
 			}
-
 			break;
 		}
 
@@ -248,62 +214,16 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 		{
 			if(!VectorFieldsUtils::isInnerPoint(curState.p, triangles[curState.ownerFace.idx()]))
 			{
-				fuckupCount++; 
-				
+				fuckupCount++; 		
 			}
 			break;
 			//throw new std::exception("Intersection was not found");
 		}
-
 	}
 	return particlePath;
 }
 
-//Vec3f PathFinder::getOneRingLerpField(const Point& p, const int ownerIdx, const Time time)
-//{
-//	vector<int>& ringIds = oneRingFaceIds[ownerIdx];
-//	int size = ringIds.size();
-//	if(size == 0)
-//	{
-//		return VectorFieldsUtils::calculateField(faceFields[ownerIdx], time);
-//	}
-//
-//
-//	vector<double> distances(size + 1);
-//	vector<Vec3f> fields(size + 1);
-//	double totalDist(0);
-//	int i = 0;
-//	for(; i < size; ++i)
-//	{
-//		int idx = ringIds[i];
-//		distances[i] =  (p - centroids[idx]).length();
-//		totalDist += distances[i];
-//		fields[i] = VectorFieldsUtils::calculateField(faceFields[idx], time);
-//	}
-//
-//	distances[i] = (p - centroids[ownerIdx]).length();
-//	totalDist += distances[i];
-//	fields[i] = VectorFieldsUtils::calculateField(faceFields[ownerIdx], time);
-//	
-//	Vec3f totalField(0.f);
-//	for(int j = 0; j <= i; ++j)
-//	{
-//		/*if (!_finite(fields[j][0]))
-//		{
-//			bool debug = true;
-//		}*/
-//		totalField += fields[j] * (float)((totalDist - distances[j]) / totalDist);
-//		/*if (!_finite(totalField[0]))
-//		{
-//			bool debug = true;
-//		}*/
-//	}
-//	
-//	// now we cheat by projecting totalField onto ownerFace's plane
-//	return VectorFieldsUtils::projectVectorOntoTriangle(totalField, normals[ownerIdx]);
-//}
-
-Vec3f PathFinder::getField(const Point& p,const int fid, const Time time)
+Vec3f PathFinder::getField(const Point& p, const int fid, const Time time)
 {
 	Point bc = VectorFieldsUtils::stdToBarycentric(p, faceVertices[fid]);
 	OpenMesh::VectorT<Vec3f, 3> field;

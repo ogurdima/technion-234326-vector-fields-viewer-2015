@@ -22,39 +22,44 @@ void VectorFieldsViewer::OpenParameterWindow()
 
 VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
 	GlutExaminer(_title, _width, _height),
-	fieldSimulationTimeInterval(0.001),
+	fieldSimulationTimeInterval(0.001f),
 	maxActivePathLength(10),
 	timeout(200),
 	isParameterOpen(false),
-	color(0.1,1,0.1)
+	color(0.1f,1.f,0.1f)
 {
-
 	resetColorAndIndices();
+	initContextMenu();
+	initDefaultData();
+	set_draw_mode(HIDDEN_FIELD_KEY);
+	VectorFieldsViewer::activeInstance = this;
+	resetTimer();
+	OpenParameterWindow();
+}
 
+void VectorFieldsViewer::initContextMenu()
+{
 	clear_draw_modes();
-	add_draw_mode("Wireframe");
-	add_draw_mode("Hidden Line");
-	add_draw_mode("Solid Flat");
-	add_draw_mode("Solid Smooth");
-	int vfDrawModeId = add_draw_mode("Vector Field");
-	int onlyLinesDm = add_draw_mode("Only Lines");
-	add_draw_mode("Hidden Field");
+	WIREFRAME_KEY			= add_draw_mode("Wireframe");
+	HIDDEN_LINE_KEY			= add_draw_mode("Hidden Line");
+	SOLID_FLAT_KEY			= add_draw_mode("Solid Flat");
+	SOLID_SMOOTH_KEY		= add_draw_mode("Solid Smooth");
+	VECTOR_FIELDS_KEY		= add_draw_mode("Vector Field");
+	ONLY_LINES_KEY			= add_draw_mode("Only Lines");
+	HIDDEN_FIELD_KEY		= add_draw_mode("Hidden Field");
+	LOAD_GEOMETRY_KEY		= add_draw_mode("Load Geometry");
+	LOAD_CONST_FIELD_KEY	= add_draw_mode("Load Constant Field");
+	LOAD_VAR_FIELD_KEY		= add_draw_mode("Load Variable Field");
+}
 
-	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
-	LOAD_CONST_FIELD_KEY = add_draw_mode("Load Constant Field");
-	LOAD_VAR_FIELD_KEY = add_draw_mode("Load Variable Field");
-
+void VectorFieldsViewer::initDefaultData()
+{
 	//const char initPath[] = "..\\Data\\miri\\teddy171.off";
-	const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
-	//const char initPath[] = "..\\Data\\old\\Horse.off";
+	//const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
+	const char initPath[] = "..\\Data\\old\\Horse.off";
 	open_mesh(initPath);
 	//fieldedMesh.assignVectorField("..\\Data\\miri\\frog\\frog_s5_times.txt", false);
-	set_draw_mode(onlyLinesDm);
-	VectorFieldsViewer::activeInstance = this;
 	computeVectorFieldLines();
-	resetTimer();
-
-	OpenParameterWindow();
 }
 
 void VectorFieldsViewer::resetTimer()
@@ -143,10 +148,10 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 	if (fieldedMesh.load(fileName))
 	{
 		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
-		set_scene( (Vec3f)(fieldedMesh.boundingBoxMin() + fieldedMesh.boundingBoxMax())*0.5,
-			0.5*(fieldedMesh.boundingBoxMin() - fieldedMesh.boundingBoxMax()).norm());
+		set_scene( (Vec3f)(fieldedMesh.boundingBoxMin() + fieldedMesh.boundingBoxMax())*0.5f,
+			0.5f*(fieldedMesh.boundingBoxMin() - fieldedMesh.boundingBoxMax()).norm());
 
-		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 100.;
+		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 100.f;
 
 		glutPostRedisplay();
 		return true;
@@ -174,26 +179,25 @@ void VectorFieldsViewer::keyboard(int key, int x, int y)
 	switch (key)
 	{
 	case 101:
-		translate(Vec3f(0.0, 0.05, 0.));
+		translate(Vec3f(0.0f, 0.05f, 0.f));
 		return;
 	case 100:
-		translate(Vec3f(-0.05, 0.0, 0.0));
+		translate(Vec3f(-0.05f, 0.0f, 0.0f));
 		return;
 	case 103:
-		translate(Vec3f(0.0, -0.05, 0.));
+		translate(Vec3f(0.0f, -0.05f, 0.f));
 		return;
 	case 102:
-		translate(Vec3f(0.05, 0.0, 0.0));
+		translate(Vec3f(0.05f, 0.0f, 0.0f));
 		return;
 	case ',':
-		translate(Vec3f(0.0, 0.0, 0.05));
+		translate(Vec3f(0.0f, 0.0f, 0.05f));
 		return;
 	case '.':
-		translate(Vec3f(0.0, 0.0, -0.05));
+		translate(Vec3f(0.0f, 0.0f, -0.05f));
 		return;
 	default:
 		{
-
 			GlutExaminer::keyboard(key, x, y);
 			break;
 		}
@@ -228,12 +232,12 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 	{
 		if (_draw_mode == "Vector Field")
 		{
-			drawSolid(true, false, Vec3f(0.3,0.3,0.3));
-			drawWireframe(Vec3f(0.5,0.5,0.2));
+			drawSolid(true, false, Vec3f(0.3f,0.3f,0.3f));
+			drawWireframe(Vec3f(0.5f,0.5f,0.2f));
 		}
 		else if (_draw_mode == "Hidden Field")
 		{
-			drawSolid(true, false, Vec3f(0.05, 0.05, 0.05));
+			drawSolid(true, false, Vec3f(0.05f, 0.05f, 0.05f));
 		}
 		drawVectorField();
 	}

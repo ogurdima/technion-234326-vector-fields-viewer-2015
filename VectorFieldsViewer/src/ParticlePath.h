@@ -7,9 +7,9 @@ class ParticlePath
 {
 
 private:
-	vector<Point> points;
-	vector<Time> times;
-	int particleLoc;
+	vector<Point>	points;
+	vector<Time>	times;
+	int				particleLoc;
 public:
 
 	ParticlePath():
@@ -95,7 +95,7 @@ public:
 		particleLoc = pathLength - 1;
 	}
 
-	bool isConverged(float pointRadius, float timeRadius = NUMERICAL_ERROR_THRESH*100, int pointsToCheck = 10, Point* convergencePoint = NULL)
+	bool isConverged(float pointRadius, float timeRadius = NUMERICAL_ERROR_THRESH*100, unsigned int pointsToCheck = 10, Point* convergencePoint = NULL)
 	{
 		if (pointsToCheck > points.size())
 		{
@@ -111,7 +111,7 @@ public:
 		}
 		Point centroid = Point(0,0,0);
 		double totalDist(0.);
-		for (int i = 0; i < pointsToCheck; ++i)
+		for (unsigned int i = 0; i < pointsToCheck; ++i)
 		{
 			int current = firstToCheck + i;
 			int next = firstToCheck + ((i + 1) % pointsToCheck);
@@ -121,7 +121,7 @@ public:
 			bool debug = true;
 		}
 
-		centroid /= pointsToCheck;
+		centroid /= (float)pointsToCheck;
 		if (NULL != convergencePoint)
 		{
 			*convergencePoint = centroid;

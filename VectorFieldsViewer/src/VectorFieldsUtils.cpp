@@ -68,7 +68,7 @@ float VectorFieldsUtils::fRand(float fMin, float fMax)
 Vec3f VectorFieldsUtils::lerp(const Vec3f& first, const Vec3f& second, const Time& time) 
 {
 	assert(time <= 1.0 && time >= 0.0);
-	return (first * (1.0 - time)) + (second * (float)time);
+	return (first * (1. - time)) + (second * (float)time);
 }
 
 Point VectorFieldsUtils::getTriangleCentroid(const Triangle& t)

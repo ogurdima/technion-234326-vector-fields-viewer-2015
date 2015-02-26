@@ -14,30 +14,20 @@ FieldedMesh::FieldedMesh(void) :
 	request_face_normals();
 	request_vertex_normals();
 	request_vertex_colors();
-	//add_property(vectorFieldFaceProperty);
 	add_property(vertexFieldProperty);
 }
 
 bool FieldedMesh::load(const char* path)
 {
 	isLoaded_ = false;
-	// load mesh
-	
 	if (OpenMesh::IO::read_mesh(*this, path))
 	{
 		isLoaded_ = true;
 		normalizeMesh();
-
 		// compute face & vertex normals
 		update_normals();
-
 		// update face indices for faster rendering
 		updateFaceIndices();
-
-		// compute and assign vector field
-		//assignRotatingVectorField();
-		//assignRandVectorField();
-		//assignRandVectorFieldPerVertex();
 		assignRotatingVectorFieldPerVertex();
 	}
 	return isLoaded_;
@@ -50,13 +40,28 @@ bool FieldedMesh::assignVectorField(const char* path, bool isConst)
 	
 	if(!isConst)
 	{
-		readFieldFile(path, fields, times);
+		try {
+			readFieldFile(path, fields, times);
+		}
+		catch (std::exception e)
+		{
+			std::cerr << "Exception caught in FieldedMesh::assignVectorField: " << e.what() << std::endl;
+			return false;
+		}
 	}
 	else
 	{
-		vector<Vec3f> constField = readConstFieldFile(path);
+		vector<Vec3f> constField;
+		try {
+			constField = readConstFieldFile(path);
+		}
+		catch (std::exception e)
+		{
+			std::cerr << "Exception caught in FieldedMesh::assignVectorField: " << e.what() << std::endl;
+			return false;
+		}
 		fields.resize(constField.size());
-		for(int i = 0; i < constField.size(); i++)
+		for(unsigned int i = 0; i < constField.size(); i++)
 		{
 			fields[i].push_back(constField[i]);
 			fields[i].push_back(constField[i]);
@@ -65,7 +70,6 @@ bool FieldedMesh::assignVectorField(const char* path, bool isConst)
 		times.push_back(Time(1));
 	}
 	return assignFieldToVertices(fields, times);
-	//return assignFieldToFaces(fields, times);
 }
 
 void FieldedMesh::updateFaceIndices()
@@ -95,7 +99,7 @@ void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
 	vector<Time> times;
 
 	fields.resize(constField.size());
-	for(int i = 0; i < constField.size(); i++)
+	for(unsigned int i = 0; i < constField.size(); i++)
 	{
 		fields[i].push_back(constField[i]);
 		fields[i].push_back(constField[i]);
@@ -298,7 +302,7 @@ void FieldedMesh::readFieldFile(const char* path, vector<vector<Vec3f>>& fieldPe
 	{
 		vector<Vec3f> constField = readConstFieldFile(timePath.c_str());
 		assert(constField.size() == n_faces());
-		for (int i = 0; i < constField.size(); i++)
+		for (unsigned int i = 0; i < constField.size(); i++)
 		{
 			fieldPerFace[i].push_back(constField[i]);
 		}
