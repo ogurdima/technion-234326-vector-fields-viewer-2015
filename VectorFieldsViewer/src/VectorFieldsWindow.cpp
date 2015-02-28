@@ -1,36 +1,16 @@
 #include <windows.h>
+#include <chrono>
+#include <math.h>
+#include "VectorFieldsWindow.h"
 #include "VectorFieldsViewer.h"
-#include <vector>
-#include <float.h>
 
+VectorFieldsWindow* VectorFieldsWindow::instance = NULL;
 
-_declspec(dllexport) void OpenWindow(void (*timeoutChanged)(int),
-									 void (*pathLengthChanged)(int),
-									 void (*closedCallback)(void));
-
-VectorFieldsViewer* VectorFieldsViewer::activeInstance = NULL;
-
-void VectorFieldsViewer::OpenParameterWindow()
+VectorFieldsWindow::VectorFieldsWindow(const char* _title, int _width, int _height) : 
+	GlutExaminer(_title, _width, _height)
 {
-	if(isParameterOpen)
-	{
-		return;
-	}
-	OpenWindow(&VectorFieldsViewer::timeoutChanged, &VectorFieldsViewer::maxPathChanged, &VectorFieldsViewer::windowClosed);
-	isParameterOpen = true;
-}
-
-VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _height) : 
-	GlutExaminer(_title, _width, _height),
-	fieldSimulationTimeInterval(0.001),
-	maxActivePathLength(10),
-	timeout(200),
-	isParameterOpen(false),
-	color(0.1,1,0.1)
-{
-	VectorFieldsViewer::activeInstance = this;
-	resetColorAndIndices();
-
+	VectorFieldsViewer::getInstance().AddRedrawHandler(&VectorFieldsWindow::getInstance()->redraw);
+	
 	clear_draw_modes();
 	add_draw_mode("Wireframe");
 	add_draw_mode("Hidden Line");
@@ -49,37 +29,27 @@ VectorFieldsViewer::VectorFieldsViewer(const char* _title, int _width, int _heig
 	//const char initPath[] = "..\\Data\\miri\\teddy171.off";
 	const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
 	//const char initPath[] = "..\\Data\\old\\Horse.off";
-	open_mesh(initPath);
-	
-	resetTimer();
-	OpenParameterWindow();
+	//open_mesh(initPath);
+
+	resetTimer(60);
 }
 
-void VectorFieldsViewer::resetTimer()
+void VectorFieldsWindow::resetTimer(int timeout)
 {
-	glutTimerFunc(timeout, &VectorFieldsViewer::onTimer, 0);
+	glutTimerFunc(timeout, &VectorFieldsWindow::onTimer, 0);
 }
 
-void VectorFieldsViewer::evolvePaths()
+void VectorFieldsWindow::onTimer(int val)
 {
-	double dt = fieldSimulationTimeInterval;
-	int s = particlePaths.size();
-#pragma omp parallel for schedule(dynamic)
-	for (int i = 0; i < s; i++) 
-	{
-		particlePaths[i].evolveParticleLoc(dt);
-	}
-}
-
-void VectorFieldsViewer::onTimer(int val)
-{
-	VectorFieldsViewer::activeInstance->evolvePaths();
+	auto start_time = std::chrono::high_resolution_clock::now();
+	VectorFieldsViewer::getInstance().onTimer(val);
 	glutPostRedisplay();
-	VectorFieldsViewer::activeInstance->resetTimer();
+	auto end_time = std::chrono::high_resolution_clock::now();
+	auto time = end_time - start_time;
+	instance->resetTimer(40);
 }
 
-// Overriden virtual method - fetch class specific IDs here
-void VectorFieldsViewer::processmenu(int i) 
+void VectorFieldsWindow::processmenu(int i) 
 {
 	if(LOAD_GEOMETRY_KEY == i)
 	{
@@ -94,7 +64,7 @@ void VectorFieldsViewer::processmenu(int i)
 			particlePaths.clear();
 			std::cout << "Opening Mesh File " << ofn.lpstrFile << std::endl;
 			bool success = open_mesh(szFileName);
-			
+
 			if (!success)
 			{
 				std::cout << "Failed to read mesh" << std::endl;
@@ -113,7 +83,7 @@ void VectorFieldsViewer::processmenu(int i)
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.Flags = OFN_EXPLORER;
 		ofn.lpstrFilter = isConstField ? "VF Files (*.vf)\0*.vf\0" : "TXT Files (*.txt)\0*.txt\0";
-		
+
 		ofn.lpstrFile = szFileName;
 		ofn.nMaxFile = MAX_PATH;
 		if(GetOpenFileName(&ofn)) 
@@ -136,38 +106,7 @@ void VectorFieldsViewer::processmenu(int i)
 	}
 }
 
-bool VectorFieldsViewer::open_mesh(const char* fileName)
-{
-	if (fieldedMesh.load(fileName))
-	{
-		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
-		set_scene( (Vec3f)(fieldedMesh.boundingBoxMin() + fieldedMesh.boundingBoxMax())*0.5,
-			0.5*(fieldedMesh.boundingBoxMin() - fieldedMesh.boundingBoxMax()).norm());
-
-		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 1000.;
-
-		glutPostRedisplay();
-		return true;
-	}
-	return false;
-}
-
-void VectorFieldsViewer::computeVectorFieldLines()
-{
-	particlePaths.clear();
-	bool success = pathFinder.configure(fieldedMesh, fieldSimulationTimeInterval);
-	if (success) 
-	{
-		particlePaths = pathFinder.getParticlePaths();
-	}
-	else 
-	{
-		std::cerr << "Failed to properly configure PathFinder" << std::endl;
-		particlePaths = vector<ParticlePath>();
-	}
-}
-
-void VectorFieldsViewer::keyboard(int key, int x, int y)
+void VectorFieldsWindow::keyboard(int key, int x, int y)
 {
 	switch (key)
 	{
@@ -198,13 +137,8 @@ void VectorFieldsViewer::keyboard(int key, int x, int y)
 	}
 }
 
-void VectorFieldsViewer::draw(const std::string& _draw_mode)
+void VectorFieldsWindow::draw(const std::string& _draw_mode)
 {
-	if (!fieldedMesh.isLoaded())
-	{
-		GlutExaminer::draw(_draw_mode);
-		return;
-	}
 	if (_draw_mode == "Wireframe")
 	{
 		drawWireframe();
@@ -241,22 +175,22 @@ void VectorFieldsViewer::draw(const std::string& _draw_mode)
 	}
 }
 
-void VectorFieldsViewer::drawWireframe(Vec3f color)
+void VectorFieldsWindow::drawWireframe(Vec3f color)
 {
 	glDisable(GL_LIGHTING);
 	glColor3f(color[0], color[1], color[2]);
 	glDepthFunc(GL_LEQUAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	
 
+	FieldedMesh& fieldedMesh = VectorFieldsViewer::getInstance().getMesh();
 	glEnableClientState(GL_VERTEX_ARRAY);
 	GL::glVertexPointer(fieldedMesh.points());
 	glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
 	glDisableClientState(GL_VERTEX_ARRAY);
-	
+
 }
 
-void VectorFieldsViewer::drawSolid(bool isSmooth, bool useLighting, Vec3f color)
+void VectorFieldsWindow::drawSolid(bool isSmooth, bool useLighting, Vec3f color)
 {
 	glDepthRange(0.01, 1.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -284,7 +218,7 @@ void VectorFieldsViewer::drawSolid(bool isSmooth, bool useLighting, Vec3f color)
 	glDepthRange(0, 1.0);
 }
 
-void VectorFieldsViewer::drawVectorField()
+void VectorFieldsWindow::drawVectorField()
 {
 	glDisable(GL_LIGHTING);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -294,19 +228,32 @@ void VectorFieldsViewer::drawVectorField()
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
-	for (uint i = 0; i < particlePaths.size(); i++) 
+	Point ** points;
+	int ** indices;
+	int * sizes;
+	float ** colors;
+	int pathNumber;
+	VectorFieldsViewer::getInstance().paths(points, indices, colors, sizes, pathNumber);
+	for (uint i = 0; i < pathNumber; i++) 
 	{
-		int visiblePathLen = 0;
-		const Point* first = particlePaths[i].getActivePathPoints(maxActivePathLength, &visiblePathLen);
-		if(visiblePathLen <= 0)
-		{
-			continue;
-		}
-		GL::glVertexPointer(first);
-		GL::glColorPointer(4, GL_FLOAT, 0, &colors[0]);
-		glDrawElements(GL_LINE_STRIP, visiblePathLen, GL_UNSIGNED_INT, &indices[0]);
+		GL::glVertexPointer(points[i]);
+		GL::glColorPointer(4, GL_FLOAT, 0, colors[i]);
+		glDrawElements(GL_LINE_STRIP, sizes[i], GL_UNSIGNED_INT, indices[i]);
 	}
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
+void VectorFieldsWindow::initInstance(const char* title, int w, int h)
+{
+	if(instance != NULL)
+	{
+		delete instance;
+	}
+	instance = new VectorFieldsWindow(title, w, h);
+}
+
+const VectorFieldsWindow* VectorFieldsWindow::getInstance()
+{
+	return instance;
+}

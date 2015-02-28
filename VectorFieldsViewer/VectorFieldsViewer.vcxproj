@@ -15,14 +15,16 @@
     <ClCompile Include="src\ParticlePath.cpp" />
     <ClCompile Include="src\PathFinder.cpp" />
     <ClCompile Include="src\VectorFieldsUtils.cpp" />
-    <ClCompile Include="src\VectorFieldsView.cc" />
-    <ClCompile Include="src\VectorFieldsViewer.cc" />
+    <ClCompile Include="src\VectorFieldsView.cpp" />
+    <ClCompile Include="src\VectorFieldsWindow.cpp" />
+    <ClCompile Include="src\VectorFieldsViewer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\FieldedMesh.h" />
     <ClInclude Include="src\ParticlePath.h" />
     <ClInclude Include="src\PathFinder.h" />
     <ClInclude Include="src\VectorFieldsUtils.h" />
+    <ClInclude Include="src\VectorFieldsWindow.h" />
     <ClInclude Include="src\VectorFieldsViewer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

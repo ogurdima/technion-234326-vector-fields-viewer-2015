@@ -1,7 +1,7 @@
 #pragma once
 
 #include <OpenMesh/Core/Geometry/VectorT.hh>
-#include <OpenMesh/Core/IO/MeshIO.hh>
+
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 
 #pragma region using

@@ -1,97 +1,68 @@
-#ifndef VECTORFIELDSVIEWERWIDGET_H
-#define VECTORFIELDSVIEWERWIDGET_H
+#pragma once
 
-#include "VectorFieldsUtils.h"
-#include "MeshViewer.h"
-#include "PathFinder.h"
+#include <string>
 #include "FieldedMesh.h"
-#include "ParticlePath.h"
+#include "PathFinder.h"
 
+using std::string;
 
+_declspec(dllexport) void OpenWindow(
+	void (*changedRangeCallback)(double),				// 
+	void (*openMeshCallback)(std::string),				// 
+	void (*openFieldCallback)(std::string, bool));		// 
 
-
-class VectorFieldsViewer : public GlutExaminer
+class VectorFieldsViewer
 {
+private:
+	VectorFieldsViewer(void);
+	~VectorFieldsViewer(void);
+
+	static VectorFieldsViewer instance;
+	// callbacks
+public:
+	static void				onTimer(int val);
+private:
+	static void				changedRangeCallback(double range);
+	static void				openMeshCallback(string path);
+	static void				openFieldCallback(string path, bool isConst);
+	// callback handlers
+	void					openField(string path, bool isConst);
+	void					openMesh(string path);
+	void					changeRange(double range);
+
+	// events
+	void					(*redrawEvent)(void);
+	void					(*resetSceneEvent)(void);
+
+	// members
+	Vec3f					color;
+	double					fieldSimulationTimeInterval;
+
+	FieldedMesh				fieldedMesh;
+	PathFinder				pathFinder;
+
+	vector<uint>			indices;
+	vector<float>			colors;
+
+	vector<ParticlePath>	particlePaths;
+
+	void					computePaths();
+	void					evolvePaths();
+
+	void					resetColorAndIndices();
+
+	void					openParameterWindow();
 
 public:
-
-	VectorFieldsViewer(const char* _title, int _width, int _height);
-
-	virtual bool open_mesh(const char* _filename);
-	virtual void processmenu(int i);
-
-	int LOAD_GEOMETRY_KEY;
-	int LOAD_CONST_FIELD_KEY;
-	int LOAD_VAR_FIELD_KEY;
+	// singleton
+	static VectorFieldsViewer&		getInstance();
 	
+	// events
+	void							AddRedrawHandler(void (*redrawCallback)(void));
+	void							AddResetSceneHandler(void (*resetSceneCallback)(void));
 	
-protected:
-	static VectorFieldsViewer* activeInstance;
-	static void onTimer(int val);
+	// api
+	const FieldedMesh&				mesh();
 
-	virtual void draw(const std::string& _draw_mode);
-
-	void drawWireframe(Vec3f color = Vec3f(1,1,1)); 
-	void drawSolid(bool isSmooth, bool useLighting, Vec3f color = Vec3f(0,0,0)); 
-	void drawVectorField(); 
-
-	virtual void keyboard(int key, int x, int y);
-	
-private:
-	bool isParameterOpen;
-	Vec3f color;
-
-	static void timeoutChanged(int newVal)
-	{
-		activeInstance->timeout = newVal;
-
-	}
-
-	static void maxPathChanged(int newVal)
-	{
-		activeInstance->maxActivePathLength = newVal;
-		activeInstance->resetColorAndIndices();
-	}
-
-	void resetColorAndIndices()
-	{
-		colors.resize(maxActivePathLength * 4);
-		indices.resize(maxActivePathLength);
-		for(uint i = 0; i < maxActivePathLength; ++i)
-		{
-			indices[i] = i;
-			colors[i * 4] = color[0];
-			colors[i * 4 + 1] = color[1];
-			colors[i * 4 + 2] = color[2];
-			colors[i * 4 + 3] = std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 3;
-		}
-	}
-
-	static void windowClosed()
-	{
-		activeInstance->isParameterOpen = false;
-	}
-
-	void OpenParameterWindow();
-
-	void evolvePaths();
-	void resetTimer();
-
-	vector<ParticlePath> particlePaths;
-
-	FieldedMesh		fieldedMesh;
-	PathFinder		pathFinder;
-
-	double			fieldSimulationTimeInterval;
-
-	void computeVectorFieldLines();
-
-	vector<uint> indices;
-	vector<float> colors;
-
-	uint maxActivePathLength;
-	uint timeout;
 };
-
-#endif
 

@@ -17,27 +17,23 @@ PathFinder::PathFinder() :
 
 bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 {
+	
 	fieldedMesh = FieldedMesh(aMesh_);
+	int size = fieldedMesh.n_faces();
 
-	Time tmax_ = fieldedMesh.maxTime();
-	Time tmin_ = fieldedMesh.minTime();
+	dt = dt_;
+	tmax = fieldedMesh.maxTime();
+	tmin = fieldedMesh.minTime();
 
-	if (tmax_ <= tmin_|| (dt_ >= (tmax_ - tmin_))) 
+	if (tmax <= tmin|| (dt_ >= (tmax - tmin)) || size < 1) 
 	{
 		hasValidConfig = false;
 		return hasValidConfig;
 	}
 
-	// caching
-	int size = fieldedMesh.n_faces();
-	if(size < 1)
-	{
-		hasValidConfig = false;
-		return false;
-	}
 	triangles.resize(size);
 	centroids.resize(size);
-	oneRingFaceIds.resize(size);
+	//oneRingFaceIds.resize(size);
 	//faceFields.resize(size);
 	normals.resize(size);
 	faceVertices.resize(size);
@@ -48,8 +44,6 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 		int idx = fit.handle().idx();
 
 		triangles[idx] = fieldedMesh.getFacePoints(fit);
-		//faceFields[idx] = fieldedMesh.getVectorField(fit, );
-
 		Mesh::ConstFaceVertexIter cvit(fieldedMesh.cfv_iter(fit));
 		for(int i = 0; i < 3; ++i, ++cvit)
 		{
@@ -59,22 +53,8 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 
 		centroids[idx] = VectorFieldsUtils::getTriangleCentroid(triangles[idx]);
 		normals[idx] = VectorFieldsUtils::getTriangleNormal(triangles[idx]);
-
-		for(Mesh::ConstFaceFaceIter curFace(fieldedMesh.cff_begin(fit)), end(fieldedMesh.cff_end(fit));
-			curFace != end; ++curFace) 
-		{
-			int neighborId = curFace.handle().idx();
-			if (neighborId < 0) 
-			{
-				continue;
-			}
-			oneRingFaceIds[idx].push_back(neighborId);
-		}
 	}
-
-	tmax = tmax_;
-	tmin = tmin_;
-	dt = dt_;
+	
 	hasValidConfig = true;
 	return hasValidConfig;
 }
