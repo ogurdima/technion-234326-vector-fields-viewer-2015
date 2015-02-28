@@ -18,10 +18,10 @@ private:
 	void resetTimer(int timeout);
 	static void onTimer(int val);
 
-	void redraw();
 	static void redrawHandler();
+	static void resetSceneHandler();
 
-	virtual bool open_mesh(const char* _filename);
+	//virtual bool open_mesh(const char* _filename);
 	virtual void processmenu(int i);
 
 	int LOAD_GEOMETRY_KEY;

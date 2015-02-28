@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenMesh/Core/IO/MeshIO.hh>
 #include "VectorFieldsUtils.h"
 
 typedef OpenMesh::FPropHandleT<vector<VectorFieldTimeVal>> FaceFieldPropT;

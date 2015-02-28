@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <string>
+
 using namespace System;
 using namespace System::Reflection;
 
@@ -12,22 +14,23 @@ namespace ManagedDll {
 	{
 	public:
 
-		void OpenWindow(void (*timeoutChanged)(int),
-						void (*pathLengthChanged)(int),
-						void (*closedCallback)(void))
+		void OpenWindow(void (*changedRangeCallback)(double), 
+						void (*openMeshCallback)(std::string),
+						void (*openFieldCallback)(std::string, bool))
 		{
-			ParameterWindow::ManagedClass::OpenParameterWindow(timeoutChanged, pathLengthChanged, closedCallback);
+			//ParameterWindow::ManagedClass::OpenParameterWindow(timeoutChanged, pathLengthChanged, closedCallback);
 		}
 	};
 }
 
 
-__declspec(dllexport) void OpenWindow(void (*timeoutChanged)(int),
-				void (*pathLengthChanged)(int),
-				void (*closedCallback)(void))
+__declspec(dllexport) void OpenWindow(void (*changedRangeCallback)(double), 
+									  void (*openMeshCallback)(std::string),
+									  void (*openFieldCallback)(std::string, bool))
+
 {
 	ManagedDll::DoWork work;	
-	work.OpenWindow(timeoutChanged, pathLengthChanged, closedCallback);	
+	work.OpenWindow(changedRangeCallback, openMeshCallback, openFieldCallback);
 }
 
 

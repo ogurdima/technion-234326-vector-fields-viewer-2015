@@ -9,7 +9,7 @@ VectorFieldsWindow* VectorFieldsWindow::instance = NULL;
 VectorFieldsWindow::VectorFieldsWindow(const char* _title, int _width, int _height) : 
 	GlutExaminer(_title, _width, _height)
 {
-	VectorFieldsViewer::getInstance().AddRedrawHandler(&VectorFieldsWindow::getInstance()->redraw);
+	VectorFieldsViewer::getInstance().AddRedrawHandler(&VectorFieldsWindow::redrawHandler);
 	
 	clear_draw_modes();
 	add_draw_mode("Wireframe");
@@ -51,7 +51,7 @@ void VectorFieldsWindow::onTimer(int val)
 
 void VectorFieldsWindow::processmenu(int i) 
 {
-	if(LOAD_GEOMETRY_KEY == i)
+	/*if(LOAD_GEOMETRY_KEY == i)
 	{
 		OPENFILENAME ofn={0};
 		char szFileName[MAX_PATH]={0};
@@ -103,7 +103,7 @@ void VectorFieldsWindow::processmenu(int i)
 	else 
 	{
 		set_draw_mode(i);
-	}
+	}*/
 }
 
 void VectorFieldsWindow::keyboard(int key, int x, int y)
@@ -182,7 +182,7 @@ void VectorFieldsWindow::drawWireframe(Vec3f color)
 	glDepthFunc(GL_LEQUAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	FieldedMesh& fieldedMesh = VectorFieldsViewer::getInstance().getMesh();
+	const FieldedMesh& fieldedMesh = VectorFieldsViewer::getInstance().getMesh();
 	glEnableClientState(GL_VERTEX_ARRAY);
 	GL::glVertexPointer(fieldedMesh.points());
 	glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
@@ -208,6 +208,7 @@ void VectorFieldsWindow::drawSolid(bool isSmooth, bool useLighting, Vec3f color)
 		glDisable(GL_LIGHTING);
 		glColor3f(color[0], color[1], color[2]);
 	}
+	const FieldedMesh& fieldedMesh = VectorFieldsViewer::getInstance().getMesh();
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	GL::glVertexPointer(fieldedMesh.points());
@@ -233,7 +234,7 @@ void VectorFieldsWindow::drawVectorField()
 	int * sizes;
 	float ** colors;
 	int pathNumber;
-	VectorFieldsViewer::getInstance().paths(points, indices, colors, sizes, pathNumber);
+	//VectorFieldsViewer::getInstance().paths(points, indices, colors, sizes, pathNumber);
 	for (uint i = 0; i < pathNumber; i++) 
 	{
 		GL::glVertexPointer(points[i]);
@@ -251,6 +252,21 @@ void VectorFieldsWindow::initInstance(const char* title, int w, int h)
 		delete instance;
 	}
 	instance = new VectorFieldsWindow(title, w, h);
+}
+
+void VectorFieldsWindow::redrawHandler()
+{
+	glutPostRedisplay();
+}
+
+void VectorFieldsWindow::resetSceneHandler()
+{
+	if(instance == NULL)
+	{
+		return;
+	}
+	Vec3f l(-1.), r(1.);
+	VectorFieldsWindow::instance->set_scene( (l + r) * 0.5, (l - r).norm() * 0.5);
 }
 
 const VectorFieldsWindow* VectorFieldsWindow::getInstance()

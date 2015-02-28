@@ -20,7 +20,7 @@ private:
 	static VectorFieldsViewer instance;
 	// callbacks
 public:
-	static void				onTimer(int val);
+	//static void				onTimerCallback(int val);
 private:
 	static void				changedRangeCallback(double range);
 	static void				openMeshCallback(string path);
@@ -62,7 +62,8 @@ public:
 	void							AddResetSceneHandler(void (*resetSceneCallback)(void));
 	
 	// api
-	const FieldedMesh&				mesh();
+	const FieldedMesh&				getMesh();
+	void							onTimer(int val);
 
 };
 

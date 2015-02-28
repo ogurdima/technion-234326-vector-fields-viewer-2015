@@ -1,5 +1,7 @@
 #include "VectorFieldsViewer.h"
 
+VectorFieldsViewer VectorFieldsViewer::instance;
+
 VectorFieldsViewer::VectorFieldsViewer(void) :
 	fieldSimulationTimeInterval(0.001),
 	color(0.1,1,0.1),
@@ -39,14 +41,38 @@ void VectorFieldsViewer::openMesh(string path)
 	}
 }
 
+void VectorFieldsViewer::onTimer(int val)
+{
+	evolvePaths();
+}
+
 void VectorFieldsViewer::openFieldCallback(string path, bool isConst)
 {
 	instance.openField(path, isConst);
 }
 
+void VectorFieldsViewer::openField(string path, bool isConst)
+{
+	std::cout << "Opening Field File " << path << std::endl;
+	bool success = fieldedMesh.assignVectorField(path.c_str(), isConst);
+	if (!success) 
+	{
+		std::cout << "Failed to read field" << std::endl;
+	}
+	else
+	{
+		computePaths();
+	}
+}
+
 void VectorFieldsViewer::changedRangeCallback(double range)
 {
 	instance.changeRange(range);
+}
+
+void VectorFieldsViewer::changeRange(double range)
+{
+	throw std::exception();
 }
 
 void VectorFieldsViewer::openParameterWindow()
@@ -110,4 +136,9 @@ void VectorFieldsViewer::AddRedrawHandler(void (*redrawCallback)(void))
 void VectorFieldsViewer::AddResetSceneHandler(void (*resetSceneCallback)(void))
 {
 	resetSceneEvent = resetSceneCallback;
+}
+
+const FieldedMesh& VectorFieldsViewer::getMesh()
+{
+	return fieldedMesh;
 }

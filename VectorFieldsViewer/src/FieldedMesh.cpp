@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 
+
 FieldedMesh::FieldedMesh(void) : 
 	isLoaded_(false), 
 	bbMin(.0f), 
