@@ -152,7 +152,6 @@ bool VectorFieldsViewer::open_mesh(const char* fileName)
 			0.5f*(fieldedMesh.boundingBoxMin() - fieldedMesh.boundingBoxMax()).norm());
 
 		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 100.f;
-
 		glutPostRedisplay();
 		return true;
 	}
