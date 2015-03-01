@@ -9,124 +9,132 @@ VectorFieldsWindow* VectorFieldsWindow::instance = NULL;
 VectorFieldsWindow::VectorFieldsWindow(const char* _title, int _width, int _height) : 
 	GlutExaminer(_title, _width, _height)
 {
-	VectorFieldsViewer::getInstance().AddRedrawHandler(&VectorFieldsWindow::redrawHandler);
-	
+	glutDetachMenu(GLUT_RIGHT_BUTTON);
 	clear_draw_modes();
-	add_draw_mode("Wireframe");
-	add_draw_mode("Hidden Line");
-	add_draw_mode("Solid Flat");
-	add_draw_mode("Solid Smooth");
-	int vfDrawModeId = add_draw_mode("Vector Field");
-	add_draw_mode("Only Lines");
-	add_draw_mode("Hidden Field");
+	initDefaultData();
+	//set_draw_mode(HIDDEN_FIELD_KEY);
 
-	set_draw_mode(vfDrawModeId);
-
-	LOAD_GEOMETRY_KEY = add_draw_mode("Load Geometry");
-	LOAD_CONST_FIELD_KEY = add_draw_mode("Load Constant Field");
-	LOAD_VAR_FIELD_KEY = add_draw_mode("Load Variable Field");
-
-	//const char initPath[] = "..\\Data\\miri\\teddy171.off";
-	const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
-	//const char initPath[] = "..\\Data\\old\\Horse.off";
-	//open_mesh(initPath);
-
-	resetTimer(60);
+	resetTimer();
 }
 
-void VectorFieldsWindow::resetTimer(int timeout)
+void VectorFieldsWindow::initContextMenu()
 {
-	glutTimerFunc(timeout, &VectorFieldsWindow::onTimer, 0);
+	clear_draw_modes();
+	/*WIREFRAME_KEY			= add_draw_mode("Wireframe");
+	HIDDEN_LINE_KEY			= add_draw_mode("Hidden Line");
+	SOLID_FLAT_KEY			= add_draw_mode("Solid Flat");
+	SOLID_SMOOTH_KEY		= add_draw_mode("Solid Smooth");
+	VECTOR_FIELDS_KEY		= add_draw_mode("Vector Field");
+	ONLY_LINES_KEY			= add_draw_mode("Only Lines");
+	HIDDEN_FIELD_KEY		= add_draw_mode("Hidden Field");
+	LOAD_GEOMETRY_KEY		= add_draw_mode("Load Geometry");
+	LOAD_CONST_FIELD_KEY	= add_draw_mode("Load Constant Field");
+	LOAD_VAR_FIELD_KEY		= add_draw_mode("Load Variable Field");*/
 }
 
-void VectorFieldsWindow::onTimer(int val)
+void VectorFieldsWindow::initDefaultData()
+{
+	//const char initPath[] = "..\\Data\\miri\\teddy171.off";
+	//const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
+	const char initPath[] = "..\\Data\\old\\Horse.off";
+	//open_mesh(initPath);
+	//fieldedMesh.assignVectorField("..\\Data\\miri\\frog\\frog_s5_times.txt", false);
+
+}
+
+void VectorFieldsWindow::resetTimer()
+{
+	glutTimerFunc(40, &VectorFieldsWindow::timerCallback, 0);
+}
+
+void VectorFieldsWindow::timerCallback(int val)
 {
 	auto start_time = std::chrono::high_resolution_clock::now();
 	VectorFieldsViewer::getInstance().onTimer(val);
 	glutPostRedisplay();
 	auto end_time = std::chrono::high_resolution_clock::now();
 	auto time = end_time - start_time;
-	instance->resetTimer(40);
+	resetTimer();
 }
 
-void VectorFieldsWindow::processmenu(int i) 
-{
-	/*if(LOAD_GEOMETRY_KEY == i)
-	{
-		OPENFILENAME ofn={0};
-		char szFileName[MAX_PATH]={0};
-		ofn.lStructSize=sizeof(OPENFILENAME);
-		ofn.Flags=OFN_ALLOWMULTISELECT|OFN_EXPLORER;
-		ofn.lpstrFilter="OFF Files (*.off)\0*.off\0";
-		ofn.lpstrFile=szFileName;
-		ofn.nMaxFile=MAX_PATH;
-		if(GetOpenFileName(&ofn)) {
-			particlePaths.clear();
-			std::cout << "Opening Mesh File " << ofn.lpstrFile << std::endl;
-			bool success = open_mesh(szFileName);
-
-			if (!success)
-			{
-				std::cout << "Failed to read mesh" << std::endl;
-			}
-			else
-			{
-				computeVectorFieldLines();
-			}
-		}
-	}
-	else if (LOAD_CONST_FIELD_KEY == i || LOAD_VAR_FIELD_KEY == i)
-	{
-		bool isConstField = (LOAD_CONST_FIELD_KEY == i);
-		OPENFILENAME ofn = {0};
-		char szFileName[MAX_PATH] = {0};
-		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.Flags = OFN_EXPLORER;
-		ofn.lpstrFilter = isConstField ? "VF Files (*.vf)\0*.vf\0" : "TXT Files (*.txt)\0*.txt\0";
-
-		ofn.lpstrFile = szFileName;
-		ofn.nMaxFile = MAX_PATH;
-		if(GetOpenFileName(&ofn)) 
-		{
-			std::cout << "Opening Field File " << ofn.lpstrFile << std::endl;
-			bool success = fieldedMesh.assignVectorField(szFileName, isConstField);
-			if (!success) 
-			{
-				std::cout << "Failed to read field" << std::endl;
-			}
-			else
-			{
-				computeVectorFieldLines();
-			}
-		}
-	}
-	else 
-	{
-		set_draw_mode(i);
-	}*/
-}
+//void VectorFieldsWindow::processmenu(int i) 
+//{
+//	if(LOAD_GEOMETRY_KEY == i)
+//	{
+//		OPENFILENAME ofn={0};
+//		char szFileName[MAX_PATH]={0};
+//		ofn.lStructSize=sizeof(OPENFILENAME);
+//		ofn.Flags=OFN_ALLOWMULTISELECT|OFN_EXPLORER;
+//		ofn.lpstrFilter="OFF Files (*.off)\0*.off\0";
+//		ofn.lpstrFile=szFileName;
+//		ofn.nMaxFile=MAX_PATH;
+//		if(GetOpenFileName(&ofn)) {
+//			particlePaths.clear();
+//			std::cout << "Opening Mesh File " << ofn.lpstrFile << std::endl;
+//			bool success = open_mesh(szFileName);
+//			
+//			if (!success)
+//			{
+//				std::cout << "Failed to read mesh" << std::endl;
+//			}
+//			else
+//			{
+//				computeVectorFieldLines();
+//			}
+//		}
+//	}
+//	else if (LOAD_CONST_FIELD_KEY == i || LOAD_VAR_FIELD_KEY == i)
+//	{
+//		bool isConstField = (LOAD_CONST_FIELD_KEY == i);
+//		OPENFILENAME ofn = {0};
+//		char szFileName[MAX_PATH] = {0};
+//		ofn.lStructSize = sizeof(OPENFILENAME);
+//		ofn.Flags = OFN_EXPLORER;
+//		ofn.lpstrFilter = isConstField ? "VF Files (*.vf)\0*.vf\0" : "TXT Files (*.txt)\0*.txt\0";
+//		
+//		ofn.lpstrFile = szFileName;
+//		ofn.nMaxFile = MAX_PATH;
+//		if(GetOpenFileName(&ofn)) 
+//		{
+//			std::cout << "Opening Field File " << ofn.lpstrFile << std::endl;
+//			bool success = fieldedMesh.assignVectorField(szFileName, isConstField);
+//			if (!success) 
+//			{
+//				std::cout << "Failed to read field" << std::endl;
+//			}
+//			else
+//			{
+//				computeVectorFieldLines();
+//			}
+//		}
+//	}
+//	else 
+//	{
+//		set_draw_mode(i);
+//	}
+//}
 
 void VectorFieldsWindow::keyboard(int key, int x, int y)
 {
 	switch (key)
 	{
 	case 101:
-		translate(Vec3f(0.0, 0.05, 0.));
+		translate(Vec3f(0.0f, 0.05f, 0.f));
 		return;
 	case 100:
-		translate(Vec3f(-0.05, 0.0, 0.0));
+		translate(Vec3f(-0.05f, 0.0f, 0.0f));
 		return;
 	case 103:
-		translate(Vec3f(0.0, -0.05, 0.));
+		translate(Vec3f(0.0f, -0.05f, 0.f));
 		return;
 	case 102:
-		translate(Vec3f(0.05, 0.0, 0.0));
+		translate(Vec3f(0.05f, 0.0f, 0.0f));
 		return;
 	case ',':
-		translate(Vec3f(0.0, 0.0, 0.05));
+		translate(Vec3f(0.0f, 0.0f, 0.05f));
 		return;
 	case '.':
-		translate(Vec3f(0.0, 0.0, -0.05));
+		translate(Vec3f(0.0f, 0.0f, -0.05f));
 		return;
 	default:
 		{
@@ -160,12 +168,12 @@ void VectorFieldsWindow::draw(const std::string& _draw_mode)
 	{
 		if (_draw_mode == "Vector Field")
 		{
-			drawSolid(true, false, Vec3f(0.3,0.3,0.3));
-			drawWireframe(Vec3f(0.5,0.5,0.2));
+			drawSolid(true, false, Vec3f(0.3f,0.3f,0.3f));
+			drawWireframe(Vec3f(0.5f,0.5f,0.2f));
 		}
 		else if (_draw_mode == "Hidden Field")
 		{
-			drawSolid(true, false, Vec3f(0.05, 0.05, 0.05));
+			drawSolid(true, false, Vec3f(0.05f, 0.05f, 0.05f));
 		}
 		drawVectorField();
 	}
@@ -173,6 +181,53 @@ void VectorFieldsWindow::draw(const std::string& _draw_mode)
 	{
 		GlutExaminer::draw(_draw_mode);
 	}
+}
+
+void VectorFieldsWindow::display()
+{
+	switch(VectorFieldsViewer::getInstance().getDrawState())
+	{
+	case(DrawStateType::NONE):
+		return;
+	case(DrawStateType::WIREFRAME):
+		drawWireframe();
+		return;
+	case(DrawStateType::SOLID_FLAT):
+		drawSolid(false, true);
+		return;
+	case(DrawStateType::SOLID_SMOOTH):
+		drawSolid(true, true);
+		return;
+	case(DrawStateType::FRONT_FIELD):
+		drawSolid(true, false, Vec3f(0.3f,0.3f,0.3f));
+	case(DrawStateType::FIELD):
+		drawVectorField();
+		return;
+	}
+
+	//else if (_draw_mode == "Hidden Line")
+	//{
+	//	drawSolid(true, false, Vec3f(0,0,0));
+	//	drawWireframe();
+	//}
+
+	//else if (_draw_mode == "Only Lines" || _draw_mode == "Vector Field" || _draw_mode == "Hidden Field" )
+	//{
+	//	if (_draw_mode == "Vector Field")
+	//	{
+	//		drawSolid(true, false, Vec3f(0.3f,0.3f,0.3f));
+	//		drawWireframe(Vec3f(0.5f,0.5f,0.2f));
+	//	}
+	//	else if (_draw_mode == "Hidden Field")
+	//	{
+	//		drawSolid(true, false, Vec3f(0.05f, 0.05f, 0.05f));
+	//	}
+	//	drawVectorField();
+	//}
+	//else // call parent method
+	//{
+	//	GlutExaminer::draw(_draw_mode);
+	//}
 }
 
 void VectorFieldsWindow::drawWireframe(Vec3f color)
@@ -227,21 +282,44 @@ void VectorFieldsWindow::drawVectorField()
 	glDepthFunc(GL_LEQUAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	Point ** points;
-	int ** indices;
-	int * sizes;
-	float ** colors;
-	int pathNumber;
-	//VectorFieldsViewer::getInstance().paths(points, indices, colors, sizes, pathNumber);
-	for (uint i = 0; i < pathNumber; i++) 
+	vector<int> startIndices;
+	vector<int> pathLenghts;
+	vector<Point> paths;
+	vector<float> tmpColors;
+	//paths.resize(particlePaths.size());
+	vector<ParticlePath> particlePaths;
+	VectorFieldsViewer::getInstance();
+	int pathIdx = 0;
+	for (uint i = 0; i < particlePaths.size(); i++) 
 	{
-		GL::glVertexPointer(points[i]);
-		GL::glColorPointer(4, GL_FLOAT, 0, colors[i]);
-		glDrawElements(GL_LINE_STRIP, sizes[i], GL_UNSIGNED_INT, indices[i]);
+		int visiblePathLen = 0;
+		const Point* first = particlePaths[i].getActivePathPoints(20, &visiblePathLen);
+		if(visiblePathLen <= 0)
+		{
+			continue;
+		}
+		startIndices.push_back(pathIdx);
+		for (int j = 0; j < visiblePathLen; j++)
+		{
+			paths.push_back(first[j]);
+			pathIdx++;
+			tmpColors.push_back(1); tmpColors.push_back(1); tmpColors.push_back(1); tmpColors.push_back(1);
+		}
+		pathLenghts.push_back(visiblePathLen);
 	}
-	glDisableClientState(GL_COLOR_ARRAY);
+	
+	assert(pathLenghts.size() == startIndices.size());
+	assert(4 * paths.size() == tmpColors.size());
+
+	glColor3f(1,1,1);
+	GL::glVertexPointer(&paths[0]);
+	GL::glColorPointer(4, GL_FLOAT, 0, &tmpColors[0]);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	//glEnableClientState(GL_COLOR_ARRAY);
+	
+	glMultiDrawArrays(GL_LINE_STRIP, &startIndices[0], &pathLenghts[0], pathLenghts.size());
+	//glMultiDrawArrays(
+	//glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 

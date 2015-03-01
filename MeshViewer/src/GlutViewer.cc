@@ -60,6 +60,17 @@ height_(_height)
 	windowID_ = glutCreateWindow(_title);
 	windows__[windowID_] = this;
 
+	glutInitContextVersion(1,6);
+	GLenum err = glewInit();
+	
+	if (GLEW_OK != err)
+	{
+	  /* Problem: glewInit failed, something is seriously wrong. */
+	  fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+	  throw std::exception("Failed to initialize GLEW");
+	}
+	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+	std::cout <<  "OpenGL version: " << (char*) glGetString(GL_VERSION) << std::endl;
 	// register callbacks
 	glutDisplayFunc(display__);
 	glutKeyboardFunc(keyboard__);

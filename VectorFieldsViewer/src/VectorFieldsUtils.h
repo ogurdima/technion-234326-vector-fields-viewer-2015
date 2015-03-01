@@ -175,14 +175,14 @@ public:
 
 	static Vec3f average(const vector<Vec3f>& values)
 	{
-		int count = 0;
 		Vec3f sum = Vec3f(0,0,0);
+		unsigned int count = 0;
 		for (count; count < values.size(); count++)
 		{
 			sum += values[count];
 		}
 		if (0 != count) {
-			sum /= count;
+			sum /= (float) count;
 		}
 		return sum;
 	}

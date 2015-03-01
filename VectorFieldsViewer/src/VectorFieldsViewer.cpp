@@ -20,6 +20,37 @@ void VectorFieldsViewer::openMeshCallback(string path)
 	instance.openMesh(path);
 }
 
+void VectorFieldsViewer::changedDrawStateCallback(int val)
+{
+	DrawStateType ds =(DrawStateType) val;
+	switch(ds )
+	{
+	case(DrawStateType::NONE):
+	case(DrawStateType::WIREFRAME):
+	case(DrawStateType::SOLID_FLAT):
+	case(DrawStateType::SOLID_SMOOTH):
+	case(DrawStateType::FRONT_FIELD):
+	case(DrawStateType::FIELD):
+		instance.drawState = ds;
+		break;
+	default:
+		instance.drawState = DrawStateType::NONE;
+		std::cerr << "Unknown draw state: " << val << std::endl;
+		break;
+	}
+	if(instance.redrawEvent != NULL)
+	{
+		instance.redrawEvent();
+	}
+}
+
+void VectorFieldsViewer::changedMeshColorCallback(float r, float g, float b, float a)
+{
+	
+}
+
+
+
 void VectorFieldsViewer::openMesh(string path)
 {
 	if (fieldedMesh.load(path.c_str()))
@@ -77,7 +108,10 @@ void VectorFieldsViewer::changeRange(double range)
 
 void VectorFieldsViewer::openParameterWindow()
 {
-	OpenWindow(&VectorFieldsViewer::changedRangeCallback, 
+	OpenWindow(&VectorFieldsViewer::changedRangeCallback,
+		&VectorFieldsViewer::changedDrawStateCallback, 
+		&VectorFieldsViewer::changedMeshColorCallback, 
+		&VectorFieldsViewer::changedFieldColorCallback, 
 		&VectorFieldsViewer::openMeshCallback, 
 		&VectorFieldsViewer::openFieldCallback);
 }
@@ -141,4 +175,23 @@ void VectorFieldsViewer::AddResetSceneHandler(void (*resetSceneCallback)(void))
 const FieldedMesh& VectorFieldsViewer::getMesh()
 {
 	return fieldedMesh;
+}
+
+DrawStateType VectorFieldsViewer::getDrawState()
+{
+	if(!fieldedMesh.isLoaded())
+		return DrawStateType::NONE;
+	switch(drawState)
+	{
+	case(DrawStateType::FIELD):
+	case(DrawStateType::FRONT_FIELD):
+		{
+			if(!fieldedMesh.hasField())
+			{
+				return DrawStateType::NONE;
+			}
+		}
+		break;
+	}
+	return drawState;
 }

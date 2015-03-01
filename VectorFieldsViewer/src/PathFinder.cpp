@@ -140,7 +140,7 @@ ParticlePath PathFinder::getParticlePath(const Mesh::FaceHandle& faceHandle)
 			curFacePerimeter +=	(triangles[currentOwnerIdx][1] - triangles[currentOwnerIdx][0]).length();
 			curFacePerimeter +=	(triangles[currentOwnerIdx][2] - triangles[currentOwnerIdx][1]).length();
 			curFacePerimeter +=	(triangles[currentOwnerIdx][0] - triangles[currentOwnerIdx][2]).length();
-			float pointConvRadius = curFacePerimeter / 1000.;
+			float pointConvRadius = curFacePerimeter / 1000.f;
 			if (particlePath.isConverged(pointConvRadius, (dt/100), 10, &conv))
 			{
 				curState.t += dt;

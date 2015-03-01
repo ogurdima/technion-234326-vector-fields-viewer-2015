@@ -3,11 +3,9 @@
 #include <fstream>
 #include <string>
 
-
 FieldedMesh::FieldedMesh(void) : 
 	isLoaded_(false), 
-	bbMin(.0f), 
-	bbMax(.0f),
+	isFieldAssigned(false),
 	scaleFactor(1),
 	_minTime(0),
 	_maxTime(1)
@@ -22,20 +20,16 @@ FieldedMesh::FieldedMesh(void) :
 bool FieldedMesh::load(const char* path)
 {
 	isLoaded_ = false;
-	// load mesh
-	
+	isFieldAssigned = false;
 	if (OpenMesh::IO::read_mesh(*this, path))
 	{
-		isLoaded_ = true;
 		normalizeMesh();
-
-		// compute face & vertex normals
 		update_normals();
-
-		// update face indices for faster rendering
 		updateFaceIndices();
-
-		// compute and assign vector field
+		isLoaded_ = true;
+	}
+	if(isLoaded_)
+	{
 		assignRotatingVectorFieldPerVertex();
 	}
 	return isLoaded_;
@@ -48,13 +42,28 @@ bool FieldedMesh::assignVectorField(const char* path, bool isConst)
 	
 	if(!isConst)
 	{
-		readFieldFile(path, fields, times);
+		try {
+			readFieldFile(path, fields, times);
+		}
+		catch (std::exception e)
+		{
+			std::cerr << "Exception caught in FieldedMesh::assignVectorField: " << e.what() << std::endl;
+			return false;
+		}
 	}
 	else
 	{
-		vector<Vec3f> constField = readConstFieldFile(path);
+		vector<Vec3f> constField;
+		try {
+			constField = readConstFieldFile(path);
+		}
+		catch (std::exception e)
+		{
+			std::cerr << "Exception caught in FieldedMesh::assignVectorField: " << e.what() << std::endl;
+			return false;
+		}
 		fields.resize(constField.size());
-		for(int i = 0; i < constField.size(); i++)
+		for(unsigned int i = 0; i < constField.size(); i++)
 		{
 			fields[i].push_back(constField[i]);
 			fields[i].push_back(constField[i]);
@@ -63,7 +72,6 @@ bool FieldedMesh::assignVectorField(const char* path, bool isConst)
 		times.push_back(Time(1));
 	}
 	return assignFieldToVertices(fields, times);
-	//return assignFieldToFaces(fields, times);
 }
 
 void FieldedMesh::updateFaceIndices()
@@ -81,29 +89,29 @@ void FieldedMesh::updateFaceIndices()
 	}
 }
 
-void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
-{
-	vector<Vec3f> constField;
-	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
-	{
-		constField.push_back(normal(cfit.handle()) % rotationAxis);
-	}
-
-	vector<vector<Vec3f>> fields;
-	vector<Time> times;
-
-	fields.resize(constField.size());
-	for(int i = 0; i < constField.size(); i++)
-	{
-		fields[i].push_back(constField[i]);
-		fields[i].push_back(constField[i]);
-	}
-	times.push_back(Time(0));
-	times.push_back(Time(1));
-
-	assignFieldToVertices(fields, times);
-	//assignFieldToFaces(fields, times);
-}
+//void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
+//{
+//	vector<Vec3f> constField;
+//	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
+//	{
+//		constField.push_back(normal(cfit.handle()) % rotationAxis);
+//	}
+//
+//	vector<vector<Vec3f>> fields;
+//	vector<Time> times;
+//
+//	fields.resize(constField.size());
+//	for(unsigned int i = 0; i < constField.size(); i++)
+//	{
+//		fields[i].push_back(constField[i]);
+//		fields[i].push_back(constField[i]);
+//	}
+//	times.push_back(Time(0));
+//	times.push_back(Time(1));
+//
+//	assignFieldToVertices(fields, times);
+//	//assignFieldToFaces(fields, times);
+//}
 
 //void FieldedMesh::assignRandVectorField()
 //{
@@ -150,6 +158,7 @@ void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
 
 bool FieldedMesh::assignRotatingVectorFieldPerVertex(const Vec3f& axis)
 {
+	isFieldAssigned = false;
 	for(VertexIter vit(vertices_begin()), vend(vertices_end()); vit != vend; ++vit)
 	{
 		vector<VectorFieldTimeVal>& field = property(vertexFieldProperty, vit);
@@ -159,10 +168,11 @@ bool FieldedMesh::assignRotatingVectorFieldPerVertex(const Vec3f& axis)
 	}
 	_minTime = Time(0);
 	_maxTime = Time(1);
+	isFieldAssigned = true;
 	return true;
 }
 
-Triangle FieldedMesh::getFacePoints(const OpenMesh::ArrayKernel::FaceHandle& faceHandle)
+Triangle FieldedMesh::getFacePoints(const OpenMesh::ArrayKernel::FaceHandle& faceHandle) const
 {
 	ConstFaceVertexIter cvit(cfv_iter(faceHandle));
 	return Triangle(point(cvit), point(++cvit), point(++cvit));
@@ -178,48 +188,36 @@ Time FieldedMesh::minTime()
 	return _minTime;
 }
 
-const Point& FieldedMesh::boundingBoxMin()
-{
-	return bbMin;
-}
-
-const Point& FieldedMesh::boundingBoxMax()
-{
-	return bbMax;
-}
+//const Point& FieldedMesh::boundingBoxMin()
+//{
+//	return bbMin;
+//}
+//
+//const Point& FieldedMesh::boundingBoxMax()
+//{
+//	return bbMax;
+//}
 
 void FieldedMesh::normalizeMesh()
 {
-	// set center and radius
 	ConstVertexIter  v_it(vertices_begin()), v_end(vertices_end());
-
-	bbMin = bbMax = point(++v_it);
-	for (; v_it!=v_end; ++v_it)
+	Point bbMin,bbMax;
+	bbMin = bbMax = point(v_it);
+	for (++v_it; v_it!=v_end; ++v_it)
 	{
 		bbMin.minimize(point(v_it));
 		bbMax.maximize(point(v_it));
 	}
 
-	Point translate = (bbMin + bbMax) / 2;
-
+	Point translation = (bbMin + bbMax) / 2;
 	bbMax -= bbMin;
-
 	scaleFactor = std::max(bbMax[0], std::max(bbMax[1], bbMax[2])) / 2;
 
 	v_it = vertices_begin();
 	v_end = vertices_end();
 	for (; v_it!=v_end; ++v_it)
 	{
-		set_point(v_it, (point(v_it) + translate) / scaleFactor);
-	}
-
-	v_it = vertices_begin();
-	v_end = vertices_end();
-	bbMin = bbMax = point(++v_it);
-	for (; v_it!=v_end; ++v_it)
-	{
-		bbMin.minimize(point(v_it));
-		bbMax.maximize(point(v_it));
+		set_point(v_it, (point(v_it) + translation) / scaleFactor);
 	}
 }
 
@@ -272,7 +270,7 @@ const vector<VectorFieldTimeVal>& FieldedMesh::vertexField(const Mesh::VertexHan
 //	return result;
 //}
 
-bool FieldedMesh::isLoaded()
+bool FieldedMesh::isLoaded() const
 {
 	return isLoaded_;
 }
@@ -296,7 +294,7 @@ void FieldedMesh::readFieldFile(const char* path, vector<vector<Vec3f>>& fieldPe
 	{
 		vector<Vec3f> constField = readConstFieldFile(timePath.c_str());
 		assert(constField.size() == n_faces());
-		for (int i = 0; i < constField.size(); i++)
+		for (unsigned int i = 0; i < constField.size(); i++)
 		{
 			fieldPerFace[i].push_back(constField[i]);
 		}
@@ -321,31 +319,32 @@ vector<Vec3f> FieldedMesh::readConstFieldFile(const char* path)
 	return fieldPerFace;
 }
 
-bool FieldedMesh::assignFieldToFaces(const vector<vector<Vec3f>>& fieldPerFace, const vector<Time>& times)
-{
-	if (!isLoaded())
-	{
-		std::cerr << "Failed to assign vector field: mesh not loaded" << std::endl;
-		return false;
-	}
-	int timeSize = times.size();
-	int i = 0;
-	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit, ++i) 
-	{
-		vector<VectorFieldTimeVal> faceVectorField;
-		for(int t = 0; t < timeSize; ++t)
-		{
-			faceVectorField.push_back(VectorFieldTimeVal(fieldPerFace[i][t], times[t]));
-		}
-		//property(vectorFieldFaceProperty, cfit) = faceVectorField;
-	}
-	_minTime = times[0];
-	_maxTime = times[timeSize - 1];
-	return true;
-}
+//bool FieldedMesh::assignFieldToFaces(const vector<vector<Vec3f>>& fieldPerFace, const vector<Time>& times)
+//{
+//	if (!isLoaded())
+//	{
+//		std::cerr << "Failed to assign vector field: mesh not loaded" << std::endl;
+//		return false;
+//	}
+//	int timeSize = times.size();
+//	int i = 0;
+//	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit, ++i) 
+//	{
+//		vector<VectorFieldTimeVal> faceVectorField;
+//		for(int t = 0; t < timeSize; ++t)
+//		{
+//			faceVectorField.push_back(VectorFieldTimeVal(fieldPerFace[i][t], times[t]));
+//		}
+//		//property(vectorFieldFaceProperty, cfit) = faceVectorField;
+//	}
+//	_minTime = times[0];
+//	_maxTime = times[timeSize - 1];
+//	return true;
+//}
 
 bool FieldedMesh::assignFieldToVertices(const vector<vector<Vec3f>>& fieldPerFace, const vector<Time>& times)
 {
+	isFieldAssigned = false;
 	if (!isLoaded())
 	{
 		std::cerr << "Failed to assign vector field: mesh not loaded" << std::endl;
@@ -391,6 +390,11 @@ bool FieldedMesh::assignFieldToVertices(const vector<vector<Vec3f>>& fieldPerFac
 	}
 	remove_property(tmpFaceFieldProp);
 	std::cout << "Finished assigning vector field to vertices" << std::endl;
+	isFieldAssigned = true;
 	return true;
 }
 
+bool FieldedMesh::hasField() const
+{
+	return isFieldAssigned;
+}
