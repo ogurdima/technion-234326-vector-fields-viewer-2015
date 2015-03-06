@@ -1,66 +1,126 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace ParameterWindow
 {
     /// <summary>
     /// Interaction logic for ParameterWindow.xaml
     /// </summary>
-    public partial class ParameterWindow : Window
+    public sealed partial class ParameterWindow : Window, INotifyPropertyChanged
     {
-
-
         public ParameterWindow()
         {
+            _selectedDrawState = DrawState.Field;
             InitializeComponent();
-            Closed += OnClosed;
+
         }
 
-        private void OnClosed(object sender, EventArgs eventArgs)
+        #region INotifyPropertyChanged
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
         {
-            WindowClosed();
-        }
+            var handler = PropertyChanged;
+            if (handler != null)
+                handler(this, new PropertyChangedEventArgs(propertyName));
+        } 
+        #endregion
 
+        public event IntParameterCallback DrawStateChanged;
+        public event MeshPathParameterCallback OpenMesh;
+        public event FieldPathParameterCallback OpenField;
+        public event ColorParameterCallback MeshColorChanged;
+        public event ColorParameterCallback FieldColorChanged;
 
-        public event IntParameterCallback TimeoutChanged = delegate { };
-
-        private int _timeout = 100;
-
-        public int Timeout
+        private DrawState _selectedDrawState;
+        public DrawState SelectedDrawState
         {
-            get { return _timeout; }
+            get { return _selectedDrawState; }
             set
             {
-                _timeout = value;
-                TimeoutChanged(_timeout);
+                if (value == null)
+                {
+                    return;
+                }
+                _selectedDrawState = value;
+                if (DrawStateChanged != null)
+                {
+                    DrawStateChanged(_selectedDrawState.Value);
+                }
+                OnPropertyChanged("SelectedDrawState");
             }
         }
 
-        public event IntParameterCallback PathLengthChanged = delegate { }; 
-
-        private int _maxLength = 10;
-
-        public int MaxLength
+        private Color _meshColor = new Color
         {
-            get { return _maxLength; }
+            ScR = 0.1f,
+            ScG = 0.1f,
+            ScB = 0.1f,
+            ScA = 1f
+        };
+        public Color MeshColor
+        {
+            get { return _meshColor; }
             set
             {
-                _maxLength = value;
-                PathLengthChanged(_maxLength);
+                _meshColor = value;
+                if (MeshColorChanged != null)
+                {
+                    MeshColorChanged(_meshColor.ScR, _meshColor.ScG, _meshColor.ScB, _meshColor.ScA);
+                }
             }
         }
 
+        private Color _fieldColor = new Color
+        {
+            ScR = 0f,
+            ScG = 1f,
+            ScB = 0f,
+            ScA = 1f
+        };
+        public Color FieldColor
+        {
+            get { return _fieldColor; }
+            set
+            {
+                _fieldColor = value;
+                if (FieldColorChanged != null)
+                {
+                    FieldColorChanged(_fieldColor.ScR, _fieldColor.ScG, _fieldColor.ScB, _fieldColor.ScA);
+                }
+            }
+        }
 
-        public event VoidParameterCallback WindowClosed = delegate { };
+        private void LoadMesh(object sender, RoutedEventArgs e)
+        {
+            var fd = new OpenFileDialog {CheckFileExists = true, CheckPathExists = true};
+            if (fd.ShowDialog() != true)
+            {
+                return;
+            }
+            if (OpenMesh == null)
+                return;
+            MeshPath.Text = fd.FileName;
+            OpenMesh(new StringBuilder(fd.FileName));
+        }
+
+        private void LoadField(object sender, RoutedEventArgs e)
+        {
+            var fd = new OpenFileDialog {CheckFileExists = true, CheckPathExists = true};
+            if (fd.ShowDialog() != true)
+            {
+                return;
+            }
+            if (OpenField == null)
+                return;
+            FieldPath.Text = fd.FileName;
+            OpenField(new StringBuilder(fd.FileName), !fd.FileName.EndsWith(".txt"));
+        }
+
+        
     }
 }

@@ -3,44 +3,78 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:parameterWindow="clr-namespace:ParameterWindow"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        Width="300"
-        Height="200"
+        Width="400"
+        Height="300"
         MinWidth="300"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         ResizeMode="NoResize"
+        ShowInTaskbar="True"
         WindowStyle="ToolWindow"
         d:DesignHeight="300"
         d:DesignWidth="300"
         mc:Ignorable="d">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <TextBlock Margin="2" Text="Timeout(milliseconds):" />
-        <xctk:IntegerUpDown Grid.Row="0"
-                            Grid.Column="1"
-                            Margin="2"
-                            Increment="5"
-                            Maximum="2000"
-                            Minimum="10"
-                            Value="{Binding Timeout}" />
 
-        <TextBlock Grid.Row="1"
-                   Grid.Column="0"
-                   Margin="2"
-                   Text="Maximum path length:" />
-        <xctk:IntegerUpDown Grid.Row="1"
-                            Grid.Column="1"
-                            Margin="2"
-                            Increment="1"
-                            Maximum="200"
-                            Minimum="5"
-                            Value="{Binding MaxLength}" />
-    </Grid>
+    <Window.Resources>
+        <Style TargetType="{x:Type ListViewItem}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListViewItem}">
+                        <ContentPresenter Margin="5,1"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top" LastChildFill="True">
+            <Label HorizontalAlignment="Left"
+                   Content="Mesh:"
+                   DockPanel.Dock="Top" />
+            <xctk:ColorPicker Width="70"
+                              HorizontalAlignment="Left"
+                              ColorMode="ColorCanvas"
+                              DockPanel.Dock="Bottom"
+                              SelectedColor="{Binding MeshColor,Mode=TwoWay}" />
+            <Button Click="LoadMesh" DockPanel.Dock="Right">Load . . .</Button>
+            <TextBox Name="MeshPath" IsReadOnly="True" />
+        </DockPanel>
+        <DockPanel DockPanel.Dock="Top" LastChildFill="True">
+            <Label HorizontalAlignment="Left"
+                   Content="Field:"
+                   DockPanel.Dock="Top" />
+            <xctk:ColorPicker Width="70"
+                              HorizontalAlignment="Left"
+                              ColorMode="ColorCanvas"
+                              DockPanel.Dock="Bottom"
+                              SelectedColor="{Binding FieldColor,
+                                                      Mode=TwoWay}" />
+            <Button Click="LoadField" DockPanel.Dock="Right">Load . . .</Button>
+            <TextBox Name="FieldPath" IsReadOnly="True" />
+        </DockPanel>
+
+        <ListView ItemsSource="{Binding Source={x:Static parameterWindow:DrawState.Values}}"
+                  SelectedItem="{Binding SelectedDrawState,
+                                         Mode=TwoWay}"
+                  SelectionMode="Single">
+            <ListView.ItemTemplate>
+                <DataTemplate DataType="parameterWindow:DrawState">
+                    <RadioButton Content="{Binding Name}"
+                                 GroupName="state"
+                                 IsChecked="{Binding RelativeSource={RelativeSource FindAncestor,
+                                                                                    AncestorType={x:Type ListViewItem}},
+                                                     Path=IsSelected,
+                                                     Mode=TwoWay}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+        </ListView>
+
+    </DockPanel>
 </Window>

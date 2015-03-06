@@ -21,8 +21,8 @@ _declspec(dllexport) void OpenWindow(
 	void (*changedDrawStateCallback)(int),
 	void (*changedMeshColorCallback)(float,float,float,float),
 	void (*changedFieldColorCallback)(float,float,float,float),
-	void (*openMeshCallback)(std::string),
-	void (*openFieldCallback)(std::string, bool));
+	void (*openMeshCallback)(char*),
+	void (*openFieldCallback)(char*, bool));
 
 class VectorFieldsViewer
 {
@@ -37,14 +37,14 @@ private:
 #pragma region Callbacks
 private:
 	static void				changedRangeCallback(double range);
-	static void				openMeshCallback(string path);
-	static void				openFieldCallback(string path, bool isConst);
+	static void				openMeshCallback(char* path);
+	static void				openFieldCallback(char* path, bool isConst);
 	static void				changedDrawStateCallback(int);
 	static void				changedMeshColorCallback(float,float,float,float);
 	static void				changedFieldColorCallback(float,float,float,float);
 	// callback handlers
-	void					openField(string path, bool isConst);
-	void					openMesh(string path);
+	void					openField(char* path, bool isConst);
+	void					openMesh(char* path);
 	void					changeRange(double range);
 	// events
 	void					(*redrawEvent)(void);
@@ -54,7 +54,8 @@ private:
 #pragma region Fields
 private:
 	DrawStateType			drawState;
-	Vec3f					color;
+	Vec4f					meshColor;
+	Vec4f					fieldColor;
 	double					fieldSimulationTimeInterval;
 
 	FieldedMesh				fieldedMesh;
@@ -82,8 +83,12 @@ public:
 
 	// api
 	const FieldedMesh&				getMesh();
+	const Vec4f&					getMeshColor();
+	const Vec4f&					getFieldColor();
 	void							onTimer(int val);
 	DrawStateType					getDrawState();
+	const vector<ParticlePath>&		VectorFieldsViewer::getPaths();
+
 
 };
 

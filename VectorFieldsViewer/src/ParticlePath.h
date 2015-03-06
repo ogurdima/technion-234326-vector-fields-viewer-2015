@@ -49,7 +49,7 @@ public:
 		times.clear();
 	}
 
-	const Point* getActivePathPoints(int requestedLength, int* actualLength)
+	const Point* getActivePathPoints(int requestedLength, int* actualLength) const
 	{
 		int firstIndex = particleLoc - requestedLength + 1;
 		if (firstIndex < 0) 

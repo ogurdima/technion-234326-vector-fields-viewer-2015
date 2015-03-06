@@ -13,7 +13,7 @@ VectorFieldsWindow::VectorFieldsWindow(const char* _title, int _width, int _heig
 	clear_draw_modes();
 	initDefaultData();
 	//set_draw_mode(HIDDEN_FIELD_KEY);
-
+	VectorFieldsViewer::getInstance().AddRedrawHandler(&VectorFieldsWindow::redrawHandler);
 	resetTimer();
 }
 
@@ -57,63 +57,6 @@ void VectorFieldsWindow::timerCallback(int val)
 	resetTimer();
 }
 
-//void VectorFieldsWindow::processmenu(int i) 
-//{
-//	if(LOAD_GEOMETRY_KEY == i)
-//	{
-//		OPENFILENAME ofn={0};
-//		char szFileName[MAX_PATH]={0};
-//		ofn.lStructSize=sizeof(OPENFILENAME);
-//		ofn.Flags=OFN_ALLOWMULTISELECT|OFN_EXPLORER;
-//		ofn.lpstrFilter="OFF Files (*.off)\0*.off\0";
-//		ofn.lpstrFile=szFileName;
-//		ofn.nMaxFile=MAX_PATH;
-//		if(GetOpenFileName(&ofn)) {
-//			particlePaths.clear();
-//			std::cout << "Opening Mesh File " << ofn.lpstrFile << std::endl;
-//			bool success = open_mesh(szFileName);
-//			
-//			if (!success)
-//			{
-//				std::cout << "Failed to read mesh" << std::endl;
-//			}
-//			else
-//			{
-//				computeVectorFieldLines();
-//			}
-//		}
-//	}
-//	else if (LOAD_CONST_FIELD_KEY == i || LOAD_VAR_FIELD_KEY == i)
-//	{
-//		bool isConstField = (LOAD_CONST_FIELD_KEY == i);
-//		OPENFILENAME ofn = {0};
-//		char szFileName[MAX_PATH] = {0};
-//		ofn.lStructSize = sizeof(OPENFILENAME);
-//		ofn.Flags = OFN_EXPLORER;
-//		ofn.lpstrFilter = isConstField ? "VF Files (*.vf)\0*.vf\0" : "TXT Files (*.txt)\0*.txt\0";
-//		
-//		ofn.lpstrFile = szFileName;
-//		ofn.nMaxFile = MAX_PATH;
-//		if(GetOpenFileName(&ofn)) 
-//		{
-//			std::cout << "Opening Field File " << ofn.lpstrFile << std::endl;
-//			bool success = fieldedMesh.assignVectorField(szFileName, isConstField);
-//			if (!success) 
-//			{
-//				std::cout << "Failed to read field" << std::endl;
-//			}
-//			else
-//			{
-//				computeVectorFieldLines();
-//			}
-//		}
-//	}
-//	else 
-//	{
-//		set_draw_mode(i);
-//	}
-//}
-
 void VectorFieldsWindow::keyboard(int key, int x, int y)
 {
 	switch (key)
@@ -147,93 +90,39 @@ void VectorFieldsWindow::keyboard(int key, int x, int y)
 
 void VectorFieldsWindow::draw(const std::string& _draw_mode)
 {
-	if (_draw_mode == "Wireframe")
-	{
-		drawWireframe();
-	}
-	else if (_draw_mode == "Hidden Line")
-	{
-		drawSolid(true, false, Vec3f(0,0,0));
-		drawWireframe();
-	}
-	else if (_draw_mode == "Solid Flat")
-	{
-		drawSolid(false, true);
-	}
-	else if (_draw_mode == "Solid Smooth")
-	{
-		drawSolid(true, true);
-	} 
-	else if (_draw_mode == "Only Lines" || _draw_mode == "Vector Field" || _draw_mode == "Hidden Field" )
-	{
-		if (_draw_mode == "Vector Field")
-		{
-			drawSolid(true, false, Vec3f(0.3f,0.3f,0.3f));
-			drawWireframe(Vec3f(0.5f,0.5f,0.2f));
-		}
-		else if (_draw_mode == "Hidden Field")
-		{
-			drawSolid(true, false, Vec3f(0.05f, 0.05f, 0.05f));
-		}
-		drawVectorField();
-	}
-	else // call parent method
-	{
-		GlutExaminer::draw(_draw_mode);
-	}
+	
 }
 
 void VectorFieldsWindow::display()
 {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	switch(VectorFieldsViewer::getInstance().getDrawState())
 	{
 	case(DrawStateType::NONE):
-		return;
+		break;
 	case(DrawStateType::WIREFRAME):
-		drawWireframe();
-		return;
+		drawWireframe(VectorFieldsViewer::getInstance().getMeshColor());
+		break;
 	case(DrawStateType::SOLID_FLAT):
-		drawSolid(false, true);
-		return;
+		drawSolid(false, true, VectorFieldsViewer::getInstance().getMeshColor());
+		break;
 	case(DrawStateType::SOLID_SMOOTH):
-		drawSolid(true, true);
-		return;
+		drawSolid(true, true, VectorFieldsViewer::getInstance().getMeshColor());
+		break;
 	case(DrawStateType::FRONT_FIELD):
-		drawSolid(true, false, Vec3f(0.3f,0.3f,0.3f));
+		drawSolid(true, false, VectorFieldsViewer::getInstance().getMeshColor());
 	case(DrawStateType::FIELD):
 		drawVectorField();
-		return;
+		break;
 	}
-
-	//else if (_draw_mode == "Hidden Line")
-	//{
-	//	drawSolid(true, false, Vec3f(0,0,0));
-	//	drawWireframe();
-	//}
-
-	//else if (_draw_mode == "Only Lines" || _draw_mode == "Vector Field" || _draw_mode == "Hidden Field" )
-	//{
-	//	if (_draw_mode == "Vector Field")
-	//	{
-	//		drawSolid(true, false, Vec3f(0.3f,0.3f,0.3f));
-	//		drawWireframe(Vec3f(0.5f,0.5f,0.2f));
-	//	}
-	//	else if (_draw_mode == "Hidden Field")
-	//	{
-	//		drawSolid(true, false, Vec3f(0.05f, 0.05f, 0.05f));
-	//	}
-	//	drawVectorField();
-	//}
-	//else // call parent method
-	//{
-	//	GlutExaminer::draw(_draw_mode);
-	//}
+	glutSwapBuffers();
 }
 
-void VectorFieldsWindow::drawWireframe(Vec3f color)
+void VectorFieldsWindow::drawWireframe(const Vec4f color)
 {
 	glDisable(GL_LIGHTING);
-	glColor3f(color[0], color[1], color[2]);
+	glColor4f(color[0], color[1], color[2], color[3]);
 	glDepthFunc(GL_LEQUAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -245,7 +134,7 @@ void VectorFieldsWindow::drawWireframe(Vec3f color)
 
 }
 
-void VectorFieldsWindow::drawSolid(bool isSmooth, bool useLighting, Vec3f color)
+void VectorFieldsWindow::drawSolid(bool isSmooth, bool useLighting,const Vec4f color)
 {
 	glDepthRange(0.01, 1.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -261,13 +150,15 @@ void VectorFieldsWindow::drawSolid(bool isSmooth, bool useLighting, Vec3f color)
 	}
 	else {
 		glDisable(GL_LIGHTING);
-		glColor3f(color[0], color[1], color[2]);
+		
 	}
+	
 	const FieldedMesh& fieldedMesh = VectorFieldsViewer::getInstance().getMesh();
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	GL::glVertexPointer(fieldedMesh.points());
 	GL::glNormalPointer(fieldedMesh.vertex_normals());
+	glColor4f(color[0], color[1], color[2], color[3]);
 	glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
@@ -287,13 +178,12 @@ void VectorFieldsWindow::drawVectorField()
 	vector<Point> paths;
 	vector<float> tmpColors;
 	//paths.resize(particlePaths.size());
-	vector<ParticlePath> particlePaths;
-	VectorFieldsViewer::getInstance();
+	const vector<ParticlePath>& particlePaths = VectorFieldsViewer::getInstance().getPaths();
 	int pathIdx = 0;
 	for (uint i = 0; i < particlePaths.size(); i++) 
 	{
 		int visiblePathLen = 0;
-		const Point* first = particlePaths[i].getActivePathPoints(20, &visiblePathLen);
+		const Point* first = particlePaths[i].getActivePathPoints(50, &visiblePathLen);
 		if(visiblePathLen <= 0)
 		{
 			continue;

@@ -7,6 +7,7 @@
 #pragma region using
 
 using OpenMesh::Vec3f;
+using OpenMesh::Vec4f;
 using OpenMesh::TriMesh_ArrayKernelT;
 using OpenMesh::FPropHandleT;
 using OpenMesh::AttribKernelT;

@@ -20,11 +20,12 @@ private:
 
 	static void redrawHandler();
 	static void resetSceneHandler();
-	
+protected:
 	virtual void				draw(const std::string& _draw_mode);
 	virtual void				display(void);
-	virtual void				drawWireframe(Vec3f color = Vec3f(1,1,1)); 
-	virtual void				drawSolid(bool isSmooth, bool useLighting, Vec3f color = Vec3f(0,0,0)); 
+private:
+	virtual void				drawWireframe(const Vec4f color = Vec4f(1,1,1,1)); 
+	virtual void				drawSolid(bool isSmooth, bool useLighting, const Vec4f color = Vec4f(0,0,0)); 
 	virtual void				drawVectorField(); 
 	virtual void				keyboard(int key, int x, int y);
 

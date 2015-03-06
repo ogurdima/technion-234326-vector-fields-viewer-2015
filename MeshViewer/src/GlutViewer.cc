@@ -71,6 +71,14 @@ height_(_height)
 	}
 	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 	std::cout <<  "OpenGL version: " << (char*) glGetString(GL_VERSION) << std::endl;
+	
+
+
+	// create menu
+	n_draw_modes_ = 0;
+	menuID_ = glutCreateMenu(processmenu__);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+
 	// register callbacks
 	glutDisplayFunc(display__);
 	glutKeyboardFunc(keyboard__);
@@ -80,12 +88,6 @@ height_(_height)
 	glutPassiveMotionFunc(passivemotion__);
 	glutReshapeFunc(reshape__); 
 	glutVisibilityFunc(visibility__);
-
-
-	// create menu
-	n_draw_modes_ = 0;
-	menuID_ = glutCreateMenu(processmenu__);
-	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 

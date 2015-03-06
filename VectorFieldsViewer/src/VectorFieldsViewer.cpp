@@ -4,10 +4,18 @@ VectorFieldsViewer VectorFieldsViewer::instance;
 
 VectorFieldsViewer::VectorFieldsViewer(void) :
 	fieldSimulationTimeInterval(0.001),
-	color(0.1,1,0.1),
+	drawState(DrawStateType::NONE),
+	fieldColor(1,1,1,0),
+	meshColor(0.1,0.1,0.1,1),
 	resetSceneEvent(NULL),
 	redrawEvent(NULL)
 {
+	OpenWindow(&VectorFieldsViewer::changedRangeCallback,
+		&VectorFieldsViewer::changedDrawStateCallback,
+		&VectorFieldsViewer::changedMeshColorCallback,
+		&VectorFieldsViewer::changedFieldColorCallback,
+		&VectorFieldsViewer::openMeshCallback,
+		&VectorFieldsViewer::openFieldCallback);
 }
 
 VectorFieldsViewer::~VectorFieldsViewer(void)
@@ -15,7 +23,7 @@ VectorFieldsViewer::~VectorFieldsViewer(void)
 	resetColorAndIndices();
 }
 
-void VectorFieldsViewer::openMeshCallback(string path)
+void VectorFieldsViewer::openMeshCallback(char* path)
 {
 	instance.openMesh(path);
 }
@@ -46,14 +54,21 @@ void VectorFieldsViewer::changedDrawStateCallback(int val)
 
 void VectorFieldsViewer::changedMeshColorCallback(float r, float g, float b, float a)
 {
-	
+	instance.meshColor = Vec4f(r,g,b,a);
+	if(instance.redrawEvent != NULL)
+	{
+		instance.redrawEvent();
+	}
 }
 
-
-
-void VectorFieldsViewer::openMesh(string path)
+void VectorFieldsViewer::changedFieldColorCallback(float r, float g, float b, float a)
 {
-	if (fieldedMesh.load(path.c_str()))
+	instance.fieldColor = Vec4f(r,g,b,a);
+}
+
+void VectorFieldsViewer::openMesh(char* path)
+{
+	if (fieldedMesh.load(path))
 	{
 		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
 		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 1000.;
@@ -61,6 +76,7 @@ void VectorFieldsViewer::openMesh(string path)
 		{
 			(*resetSceneEvent)();
 		}
+		computePaths();
 	}
 	else
 	{
@@ -77,15 +93,15 @@ void VectorFieldsViewer::onTimer(int val)
 	evolvePaths();
 }
 
-void VectorFieldsViewer::openFieldCallback(string path, bool isConst)
+void VectorFieldsViewer::openFieldCallback(char* path, bool isConst)
 {
 	instance.openField(path, isConst);
 }
 
-void VectorFieldsViewer::openField(string path, bool isConst)
+void VectorFieldsViewer::openField(char* path, bool isConst)
 {
 	std::cout << "Opening Field File " << path << std::endl;
-	bool success = fieldedMesh.assignVectorField(path.c_str(), isConst);
+	bool success = fieldedMesh.assignVectorField(path, isConst);
 	if (!success) 
 	{
 		std::cout << "Failed to read field" << std::endl;
@@ -124,10 +140,10 @@ void VectorFieldsViewer::resetColorAndIndices()
 	for(uint i = 0; i < maxActivePathLength; ++i)
 	{
 		indices[i] = i;
-		colors[i * 4] = color[0];
-		colors[i * 4 + 1] = color[1];
-		colors[i * 4 + 2] = color[2];
-		colors[i * 4 + 3] = std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 3;
+		colors[i * 4] = fieldColor[0];
+		colors[i * 4 + 1] = fieldColor[1];
+		colors[i * 4 + 2] = fieldColor[2];
+		colors[i * 4 + 3] = fieldColor[3] * std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 3;
 	}
 }
 
@@ -177,6 +193,16 @@ const FieldedMesh& VectorFieldsViewer::getMesh()
 	return fieldedMesh;
 }
 
+const Vec4f& VectorFieldsViewer::getMeshColor()
+{
+	return meshColor;
+}
+
+const Vec4f& VectorFieldsViewer::getFieldColor()
+{
+	return fieldColor;
+}
+
 DrawStateType VectorFieldsViewer::getDrawState()
 {
 	if(!fieldedMesh.isLoaded())
@@ -194,4 +220,9 @@ DrawStateType VectorFieldsViewer::getDrawState()
 		break;
 	}
 	return drawState;
+}
+
+const vector<ParticlePath>& VectorFieldsViewer::getPaths()
+{
+	return particlePaths;
 }
