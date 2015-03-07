@@ -7,7 +7,3 @@ MeshCourse.opensdf
 MeshCourse.sdf
 Debug
 Release
-!Debug\glew32.dll
-!Debug\freeglut.dll
-!Release\glew32.dll
-!Release\freeglut.dll
