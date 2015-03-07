@@ -7,9 +7,9 @@ class ParticlePath
 {
 
 private:
-	vector<Point> points;
-	vector<Time> times;
-	int particleLoc;
+	vector<Point>	points;
+	vector<Time>	times;
+	int				particleLoc;
 public:
 
 	ParticlePath():

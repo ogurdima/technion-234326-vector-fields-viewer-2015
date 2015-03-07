@@ -10,41 +10,17 @@ VectorFieldsWindow::VectorFieldsWindow(const char* _title, int _width, int _heig
 	GlutExaminer(_title, _width, _height)
 {
 	glutDetachMenu(GLUT_RIGHT_BUTTON);
-	clear_draw_modes();
-	initDefaultData();
-	//set_draw_mode(HIDDEN_FIELD_KEY);
+
 	VectorFieldsViewer::getInstance().AddRedrawHandler(&VectorFieldsWindow::redrawHandler);
+	VectorFieldsViewer::getInstance().AddResetSceneHandler(&VectorFieldsWindow::resetSceneHandler);
+	VectorFieldsViewer::getInstance().openParameterWindow();
+
 	resetTimer();
-}
-
-void VectorFieldsWindow::initContextMenu()
-{
-	clear_draw_modes();
-	/*WIREFRAME_KEY			= add_draw_mode("Wireframe");
-	HIDDEN_LINE_KEY			= add_draw_mode("Hidden Line");
-	SOLID_FLAT_KEY			= add_draw_mode("Solid Flat");
-	SOLID_SMOOTH_KEY		= add_draw_mode("Solid Smooth");
-	VECTOR_FIELDS_KEY		= add_draw_mode("Vector Field");
-	ONLY_LINES_KEY			= add_draw_mode("Only Lines");
-	HIDDEN_FIELD_KEY		= add_draw_mode("Hidden Field");
-	LOAD_GEOMETRY_KEY		= add_draw_mode("Load Geometry");
-	LOAD_CONST_FIELD_KEY	= add_draw_mode("Load Constant Field");
-	LOAD_VAR_FIELD_KEY		= add_draw_mode("Load Variable Field");*/
-}
-
-void VectorFieldsWindow::initDefaultData()
-{
-	//const char initPath[] = "..\\Data\\miri\\teddy171.off";
-	//const char initPath[] = "..\\Data\\miri\\frog\\frog_s5.off";
-	const char initPath[] = "..\\Data\\old\\Horse.off";
-	//open_mesh(initPath);
-	//fieldedMesh.assignVectorField("..\\Data\\miri\\frog\\frog_s5_times.txt", false);
-
 }
 
 void VectorFieldsWindow::resetTimer()
 {
-	glutTimerFunc(40, &VectorFieldsWindow::timerCallback, 0);
+	glutTimerFunc(60, &VectorFieldsWindow::timerCallback, 0);
 }
 
 void VectorFieldsWindow::timerCallback(int val)
@@ -81,16 +57,10 @@ void VectorFieldsWindow::keyboard(int key, int x, int y)
 		return;
 	default:
 		{
-
 			GlutExaminer::keyboard(key, x, y);
 			break;
 		}
 	}
-}
-
-void VectorFieldsWindow::draw(const std::string& _draw_mode)
-{
-	
 }
 
 void VectorFieldsWindow::display()
@@ -119,14 +89,15 @@ void VectorFieldsWindow::display()
 	glutSwapBuffers();
 }
 
-void VectorFieldsWindow::drawWireframe(const Vec4f color)
+void VectorFieldsWindow::drawWireframe(const Vec4f& color)
 {
 	glDisable(GL_LIGHTING);
-	glColor4f(color[0], color[1], color[2], color[3]);
 	glDepthFunc(GL_LEQUAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	GL::glColor(color);
 
 	const FieldedMesh& fieldedMesh = VectorFieldsViewer::getInstance().getMesh();
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	GL::glVertexPointer(fieldedMesh.points());
 	glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
@@ -134,34 +105,49 @@ void VectorFieldsWindow::drawWireframe(const Vec4f color)
 
 }
 
-void VectorFieldsWindow::drawSolid(bool isSmooth, bool useLighting,const Vec4f color)
+void setShadeMode(bool isSmooth)
+{
+	if(isSmooth) 
+	{
+		glShadeModel(GL_SMOOTH);
+	}
+	else 
+	{
+		glShadeModel(GL_FLAT);
+	}
+}
+
+void setLighting(bool useLighting)
+{
+	if (useLighting) 
+	{
+		glEnable(GL_LIGHTING);
+	}
+	else 
+	{
+		glDisable(GL_LIGHTING);
+	}
+}
+
+void VectorFieldsWindow::drawSolid(bool isSmooth, bool useLighting, const Vec4f& color)
 {
 	glDepthRange(0.01, 1.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	if(isSmooth) {
-		glShadeModel(GL_SMOOTH);
-	}
-	else {
-		glShadeModel(GL_FLAT);
-	}
-
-	if (useLighting) {
-		glEnable(GL_LIGHTING);
-	}
-	else {
-		glDisable(GL_LIGHTING);
-		
-	}
+	
+	setShadeMode(isSmooth);
+	setLighting(useLighting);
 	
 	const FieldedMesh& fieldedMesh = VectorFieldsViewer::getInstance().getMesh();
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
 	GL::glVertexPointer(fieldedMesh.points());
 	GL::glNormalPointer(fieldedMesh.vertex_normals());
-	glColor4f(color[0], color[1], color[2], color[3]);
+	GL::glColorPointer(fieldedMesh.getVertexColors());
 	glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 	glDepthRange(0, 1.0);
 }
 

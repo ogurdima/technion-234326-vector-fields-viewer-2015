@@ -32,7 +32,7 @@
         </Style>
     </Window.Resources>
 
-    <DockPanel>
+    <DockPanel Loaded="LoadedWindow">
         <DockPanel DockPanel.Dock="Top" LastChildFill="True">
             <Label HorizontalAlignment="Left"
                    Content="Mesh:"
@@ -41,7 +41,8 @@
                               HorizontalAlignment="Left"
                               ColorMode="ColorCanvas"
                               DockPanel.Dock="Bottom"
-                              SelectedColor="{Binding MeshColor,Mode=TwoWay}" />
+                              SelectedColor="{Binding MeshColor,
+                                                      Mode=TwoWay}" />
             <Button Click="LoadMesh" DockPanel.Dock="Right">Load . . .</Button>
             <TextBox Name="MeshPath" IsReadOnly="True" />
         </DockPanel>

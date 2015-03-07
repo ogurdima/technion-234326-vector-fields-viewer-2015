@@ -24,11 +24,15 @@ public:
 	Time									maxTime();
 
 	const vector<VectorFieldTimeVal>&		vertexField(const VertexHandle& vertex) const;
+	void									setMeshColor(const Vec4f& color);
+	const Vec4f*							getVertexColors() const;
 
 protected:
 	bool									isLoaded_;
 	bool									isFieldAssigned;
 	vector<unsigned int>					faceIndices;
+	Vec4f									meshColor;
+	vector<Vec4f>							vertexColors;
 
 	VertexFieldHandleT						vertexFieldProperty;
 	float									scaleFactor;

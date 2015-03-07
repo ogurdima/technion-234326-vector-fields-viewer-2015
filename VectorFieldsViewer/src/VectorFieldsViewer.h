@@ -31,46 +31,46 @@ private:
 	VectorFieldsViewer(void);
 	~VectorFieldsViewer(void);
 
-	static VectorFieldsViewer instance;
+	static VectorFieldsViewer		instance;
 #pragma endregion
 
 #pragma region Callbacks
 private:
-	static void				changedRangeCallback(double range);
-	static void				openMeshCallback(char* path);
-	static void				openFieldCallback(char* path, bool isConst);
-	static void				changedDrawStateCallback(int);
-	static void				changedMeshColorCallback(float,float,float,float);
-	static void				changedFieldColorCallback(float,float,float,float);
+	static void						changedRangeCallback(double range);
+	static void						openMeshCallback(char* path);
+	static void						openFieldCallback(char* path, bool isConst);
+	static void						changedDrawStateCallback(int);
+	static void						changedMeshColorCallback(float,float,float,float);
+	static void						changedFieldColorCallback(float,float,float,float);
 	// callback handlers
-	void					openField(char* path, bool isConst);
-	void					openMesh(char* path);
-	void					changeRange(double range);
+	void							openField(char* path, bool isConst);
+	void							openMesh(char* path);
+	void							changeRange(double range);
 	// events
-	void					(*redrawEvent)(void);
-	void					(*resetSceneEvent)(void);
+	void							(*redrawEvent)(void);
+	void							(*resetSceneEvent)(void);
 #pragma endregion
 
 #pragma region Fields
 private:
-	DrawStateType			drawState;
-	Vec4f					meshColor;
-	Vec4f					fieldColor;
-	double					fieldSimulationTimeInterval;
+	DrawStateType					drawState;
+	Vec4f							meshColor;
+	Vec4f							fieldColor;
+	double							fieldSimulationTimeInterval;
 
-	FieldedMesh				fieldedMesh;
-	PathFinder				pathFinder;
-	vector<ParticlePath>	particlePaths;
+	FieldedMesh						fieldedMesh;
+	PathFinder						pathFinder;
+	vector<ParticlePath>			particlePaths;
 
-	vector<uint>			indices;
-	vector<float>			colors;
+	vector<uint>					indices;
+	vector<float>					colors;
 #pragma endregion
 
 private:
-	void					computePaths();
-	void					evolvePaths();
-	void					resetColorAndIndices();
-	void					openParameterWindow();
+	void							computePaths();
+	void							evolvePaths();
+	void							resetColorAndIndices();
+	
 
 
 public:
@@ -88,7 +88,7 @@ public:
 	void							onTimer(int val);
 	DrawStateType					getDrawState();
 	const vector<ParticlePath>&		VectorFieldsViewer::getPaths();
-
+	void							openParameterWindow();
 
 };
 

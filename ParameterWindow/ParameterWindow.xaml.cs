@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
@@ -14,9 +15,7 @@ namespace ParameterWindow
     {
         public ParameterWindow()
         {
-            _selectedDrawState = DrawState.Field;
             InitializeComponent();
-
         }
 
         #region INotifyPropertyChanged
@@ -55,13 +54,7 @@ namespace ParameterWindow
             }
         }
 
-        private Color _meshColor = new Color
-        {
-            ScR = 0.1f,
-            ScG = 0.1f,
-            ScB = 0.1f,
-            ScA = 1f
-        };
+        private Color _meshColor;
         public Color MeshColor
         {
             get { return _meshColor; }
@@ -72,16 +65,11 @@ namespace ParameterWindow
                 {
                     MeshColorChanged(_meshColor.ScR, _meshColor.ScG, _meshColor.ScB, _meshColor.ScA);
                 }
+                OnPropertyChanged("MeshColor");
             }
         }
 
-        private Color _fieldColor = new Color
-        {
-            ScR = 0f,
-            ScG = 1f,
-            ScB = 0f,
-            ScA = 1f
-        };
+        private Color _fieldColor;
         public Color FieldColor
         {
             get { return _fieldColor; }
@@ -92,6 +80,7 @@ namespace ParameterWindow
                 {
                     FieldColorChanged(_fieldColor.ScR, _fieldColor.ScG, _fieldColor.ScB, _fieldColor.ScA);
                 }
+                OnPropertyChanged("FieldColor");
             }
         }
 
@@ -102,10 +91,15 @@ namespace ParameterWindow
             {
                 return;
             }
+            CallOpenMesh(fd.FileName);
+        }
+
+        private void CallOpenMesh(string fileName)
+        {
             if (OpenMesh == null)
                 return;
-            MeshPath.Text = fd.FileName;
-            OpenMesh(new StringBuilder(fd.FileName));
+            MeshPath.Text = fileName;
+            OpenMesh(new StringBuilder(fileName));
         }
 
         private void LoadField(object sender, RoutedEventArgs e)
@@ -121,6 +115,25 @@ namespace ParameterWindow
             OpenField(new StringBuilder(fd.FileName), !fd.FileName.EndsWith(".txt"));
         }
 
-        
+        private void LoadedWindow(object sender, RoutedEventArgs e)
+        {
+            SelectedDrawState = DrawState.Field;
+            MeshColor = new Color
+            {
+                ScR = 0.1f,
+                ScG = 0.1f,
+                ScB = 0.1f,
+                ScA = 1f
+            };
+            FieldColor = new Color
+            {
+                ScR = 0f,
+                ScG = 1f,
+                ScB = 0f,
+                ScA = 1f
+            };
+            var fileInfo = new FileInfo(@"..\Data\old\Horse.off");
+            CallOpenMesh(fileInfo.FullName);
+        }
     }
 }

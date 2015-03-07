@@ -6,9 +6,6 @@
 
 #include "VectorFieldsWindow.h"
 
-
-
-
 [System::STAThread]
 int main(int argc, char **argv)
 {

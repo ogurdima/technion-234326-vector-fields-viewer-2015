@@ -10,12 +10,6 @@ VectorFieldsViewer::VectorFieldsViewer(void) :
 	resetSceneEvent(NULL),
 	redrawEvent(NULL)
 {
-	OpenWindow(&VectorFieldsViewer::changedRangeCallback,
-		&VectorFieldsViewer::changedDrawStateCallback,
-		&VectorFieldsViewer::changedMeshColorCallback,
-		&VectorFieldsViewer::changedFieldColorCallback,
-		&VectorFieldsViewer::openMeshCallback,
-		&VectorFieldsViewer::openFieldCallback);
 }
 
 VectorFieldsViewer::~VectorFieldsViewer(void)
@@ -55,7 +49,8 @@ void VectorFieldsViewer::changedDrawStateCallback(int val)
 void VectorFieldsViewer::changedMeshColorCallback(float r, float g, float b, float a)
 {
 	instance.meshColor = Vec4f(r,g,b,a);
-	if(instance.redrawEvent != NULL)
+	getInstance().fieldedMesh.setMeshColor(Vec4f(r,g,b,a));
+	if(getInstance().redrawEvent != NULL)
 	{
 		instance.redrawEvent();
 	}
@@ -71,7 +66,7 @@ void VectorFieldsViewer::openMesh(char* path)
 	if (fieldedMesh.load(path))
 	{
 		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
-		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 1000.;
+		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 100.f;
 		if(resetSceneEvent != NULL)
 		{
 			(*resetSceneEvent)();

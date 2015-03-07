@@ -30,6 +30,7 @@ bool FieldedMesh::load(const char* path)
 	}
 	if(isLoaded_)
 	{
+		setMeshColor(meshColor);
 		assignRotatingVectorFieldPerVertex();
 	}
 	return isLoaded_;
@@ -89,73 +90,6 @@ void FieldedMesh::updateFaceIndices()
 	}
 }
 
-//void FieldedMesh::assignRotatingVectorField(const Vec3f& rotationAxis)
-//{
-//	vector<Vec3f> constField;
-//	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
-//	{
-//		constField.push_back(normal(cfit.handle()) % rotationAxis);
-//	}
-//
-//	vector<vector<Vec3f>> fields;
-//	vector<Time> times;
-//
-//	fields.resize(constField.size());
-//	for(unsigned int i = 0; i < constField.size(); i++)
-//	{
-//		fields[i].push_back(constField[i]);
-//		fields[i].push_back(constField[i]);
-//	}
-//	times.push_back(Time(0));
-//	times.push_back(Time(1));
-//
-//	assignFieldToVertices(fields, times);
-//	//assignFieldToFaces(fields, times);
-//}
-
-//void FieldedMesh::assignRandVectorField()
-//{
-//	srand((uint)time(0));
-//	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit) 
-//	{
-//		float x = VectorFieldsUtils::fRand(0,1);
-//		float y = VectorFieldsUtils::fRand(0,(1-x));
-//		float z = 1 - x - y;
-//		Point inBarycentric = Vec3f(x,y,z);
-//		// For now we make this vector field constant in time
-//		Triangle triangle = getFacePoints(cfit);
-//		
-//		Point inStd = VectorFieldsUtils::barycentricToStd(inBarycentric, triangle);
-//		Point center = VectorFieldsUtils::barycentricToStd(Vec3f(float(1/3.)), triangle);
-//
-//		vector<VectorFieldTimeVal> faceVectorField;
-//		Vec3f field = inStd - center;
-//		field.normalize();
-//		faceVectorField.push_back(VectorFieldTimeVal(field,0));
-//		faceVectorField.push_back(VectorFieldTimeVal(field,1));
-//
-//		property(vectorFieldFaceProperty, cfit.handle()) = faceVectorField;
-//
-//	}
-//}
-
-//bool FieldedMesh::assignRandVectorFieldPerVertex()
-//{
-//	srand((uint)time(0));
-//	for(VertexIter vit(vertices_begin()), vend(vertices_end()); vit != vend; ++vit)
-//	{
-//		const Normal& vn = normal(vit);
-//		vector<Normal> faceNormals;
-//		for(VertexFaceIter vfit(vf_begin(vit)), vfend(vf_end(vit)); vfit != vfend; ++vfit)
-//		{
-//			faceNormals.push_back(normal(vfit));
-//		}
-//		int size = faceNormals.size();
-//		property(vertexFieldProperty, vit) = size == 0 ? Vec3f(0.) :  vn % faceNormals[ rand() % size];
-//	}
-//	return true;
-//}
-
 bool FieldedMesh::assignRotatingVectorFieldPerVertex(const Vec3f& axis)
 {
 	isFieldAssigned = false;
@@ -188,16 +122,6 @@ Time FieldedMesh::minTime()
 	return _minTime;
 }
 
-//const Point& FieldedMesh::boundingBoxMin()
-//{
-//	return bbMin;
-//}
-//
-//const Point& FieldedMesh::boundingBoxMax()
-//{
-//	return bbMax;
-//}
-
 void FieldedMesh::normalizeMesh()
 {
 	ConstVertexIter  v_it(vertices_begin()), v_end(vertices_end());
@@ -221,54 +145,10 @@ void FieldedMesh::normalizeMesh()
 	}
 }
 
-//const vector<VectorFieldTimeVal>& FieldedMesh::getVectorField(const FaceHandle& handle) const
-//{
-//	return property(vectorFieldFaceProperty, handle);
-//}
-
 const vector<VectorFieldTimeVal>& FieldedMesh::vertexField(const Mesh::VertexHandle& vertexHandle) const
 {
 	return property(vertexFieldProperty, vertexHandle);
 }
-
-//Vec3f FieldedMesh::faceVectorField(const Mesh::FaceHandle& faceHandle, const Time& time) const
-//{
-//	const vector<VectorFieldTimeVal>& fieldSamples = property(vectorFieldFaceProperty, faceHandle);
-//	if (fieldSamples.size() == 0) 
-//	{
-//		return Vec3f(0,0,0);
-//	}
-//
-//	// assuming samples are listed in increasing time order
-//	Time	prevTime = fieldSamples[0].time;
-//	Time	nextTime = fieldSamples[0].time;
-//	Vec3f	prevField = fieldSamples[0].field;
-//	Vec3f	nextField = fieldSamples[0].field;
-//
-//	for (uint i = 0; i < fieldSamples.size(); i++) {
-//		nextTime = fieldSamples[i].time;
-//		nextField = fieldSamples[i].field;
-//		if (nextTime >= time) {
-//			break;
-//		}
-//		prevTime = fieldSamples[i].time;
-//		prevField = fieldSamples[i].field;
-//	}
-//	Vec3f result;
-//	if (abs(nextTime - prevTime) < NUMERICAL_ERROR_THRESH) 
-//	{
-//		result = (nextField + prevField) / 2.0;
-//	}
-//	else 
-//	{
-//		result = (prevField * (time - prevTime) + nextField * (nextTime - time)) / (nextTime - prevTime);
-//	}
-//	if (!_finite(result[0]))
-//	{
-//		bool debug = true;
-//	}
-//	return result;
-//}
 
 bool FieldedMesh::isLoaded() const
 {
@@ -318,29 +198,6 @@ vector<Vec3f> FieldedMesh::readConstFieldFile(const char* path)
 	std::cout << "Read " << fieldPerFace.size() << " vectors" << std::endl;
 	return fieldPerFace;
 }
-
-//bool FieldedMesh::assignFieldToFaces(const vector<vector<Vec3f>>& fieldPerFace, const vector<Time>& times)
-//{
-//	if (!isLoaded())
-//	{
-//		std::cerr << "Failed to assign vector field: mesh not loaded" << std::endl;
-//		return false;
-//	}
-//	int timeSize = times.size();
-//	int i = 0;
-//	for(ConstFaceIter cfit(faces_begin()), cfitEnd(faces_end()); cfit != cfitEnd; ++cfit, ++i) 
-//	{
-//		vector<VectorFieldTimeVal> faceVectorField;
-//		for(int t = 0; t < timeSize; ++t)
-//		{
-//			faceVectorField.push_back(VectorFieldTimeVal(fieldPerFace[i][t], times[t]));
-//		}
-//		//property(vectorFieldFaceProperty, cfit) = faceVectorField;
-//	}
-//	_minTime = times[0];
-//	_maxTime = times[timeSize - 1];
-//	return true;
-//}
 
 bool FieldedMesh::assignFieldToVertices(const vector<vector<Vec3f>>& fieldPerFace, const vector<Time>& times)
 {
@@ -397,4 +254,23 @@ bool FieldedMesh::assignFieldToVertices(const vector<vector<Vec3f>>& fieldPerFac
 bool FieldedMesh::hasField() const
 {
 	return isFieldAssigned;
+}
+
+void FieldedMesh::setMeshColor(const Vec4f& color)
+{
+	meshColor = color;
+	uint size = n_vertices();
+	if(vertexColors.size() < size) 
+	{	
+		vertexColors.resize(size);
+	}
+	for(int i = 0; i < size; ++i)
+	{
+		vertexColors[i] = color;
+	}
+}
+
+const Vec4f* FieldedMesh::getVertexColors() const
+{
+	return &vertexColors[0];
 }
