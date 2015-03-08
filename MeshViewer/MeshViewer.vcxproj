@@ -98,7 +98,7 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PreBuildEvent>
-      <Command>xcopy /d /y  $(SolutionDir)dlls\*.dll  "$(OutDir)"</Command>
+      <Command>xcopy /d /y  "$(SolutionDir)dlls\*.dll"  "$(OutDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -127,7 +127,7 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PreBuildEvent>
-      <Command>xcopy /d /y  $(SolutionDir)dlls\*.dll  "$(OutDir)"</Command>
+      <Command>xcopy /d /y  "$(SolutionDir)dlls\*.dll"  "$(OutDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
