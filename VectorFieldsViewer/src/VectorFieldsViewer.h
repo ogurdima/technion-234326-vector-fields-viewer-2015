@@ -3,6 +3,7 @@
 #include <string>
 #include "FieldedMesh.h"
 #include "PathFinder.h"
+#include "PathsManager.h"
 
 using std::string;
 
@@ -61,6 +62,7 @@ private:
 	FieldedMesh						fieldedMesh;
 	PathFinder						pathFinder;
 	vector<ParticlePath>			particlePaths;
+	PathsManager					pathsMgr;
 
 	vector<uint>					indices;
 	vector<float>					colors;
@@ -82,6 +84,7 @@ public:
 	void							AddResetSceneHandler(void (*resetSceneCallback)(void));
 
 	// api
+	void							GetCurrentPaths(float*& dataArray, unsigned int**& indices, unsigned int*& counts, unsigned int& pathCount);
 	const FieldedMesh&				getMesh();
 	const Vec4f&					getMeshColor();
 	const Vec4f&					getFieldColor();

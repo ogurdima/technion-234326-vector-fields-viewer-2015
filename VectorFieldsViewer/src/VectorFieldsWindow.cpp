@@ -164,6 +164,14 @@ void VectorFieldsWindow::drawVectorField()
 	vector<Point> paths;
 	vector<float> tmpColors;
 	//paths.resize(particlePaths.size());
+	
+	float* dataArray;
+	unsigned int** indices;
+	unsigned int* counts;
+	unsigned int primCount;
+
+	VectorFieldsViewer::getInstance().GetCurrentPaths(dataArray, indices, counts, primCount);
+
 	const vector<ParticlePath>& particlePaths = VectorFieldsViewer::getInstance().getPaths();
 	int pathIdx = 0;
 	for (uint i = 0; i < particlePaths.size(); i++) 

@@ -156,6 +156,7 @@ void VectorFieldsViewer::evolvePaths()
 	{
 		particlePaths[i].evolveParticleLoc(dt);
 	}
+	pathsMgr.Evolve(dt);
 }
 
 void VectorFieldsViewer::computePaths()
@@ -171,6 +172,7 @@ void VectorFieldsViewer::computePaths()
 		std::cerr << "Failed to properly configure PathFinder" << std::endl;
 		particlePaths = vector<ParticlePath>();
 	}
+	pathsMgr.Configure(20, Vec3f(0,1,0), particlePaths);
 }
 
 void VectorFieldsViewer::AddRedrawHandler(void (*redrawCallback)(void))
@@ -220,4 +222,9 @@ DrawStateType VectorFieldsViewer::getDrawState()
 const vector<ParticlePath>& VectorFieldsViewer::getPaths()
 {
 	return particlePaths;
+}
+
+void VectorFieldsViewer::GetCurrentPaths(float*& dataArray, unsigned int**& indices, unsigned int*& counts, unsigned int& pathCount)
+{
+	return pathsMgr.GetCurrentPaths(dataArray, indices, counts, pathCount);
 }
