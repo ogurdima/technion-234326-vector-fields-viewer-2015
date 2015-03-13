@@ -35,7 +35,7 @@ public:
 		baseAlpha(1)
 	{}
 
-	PathHandle(unsigned int _dataIndex, unsigned int _dataSize, unsigned int _maxPathLength) :
+	PathHandle(unsigned int _dataIndex, unsigned int _dataSize, unsigned int _maxPathLength, float _baseAlpha) :
 		data(NULL),
 		globalPointIndex(0),
 		numPoints(0),
@@ -47,6 +47,7 @@ public:
 		globalPointIndex = _dataIndex;
 		numPoints = _dataSize;
 		maxPathLength = _maxPathLength;
+		baseAlpha = _baseAlpha;
 	}
 
 	void evolve(float dt);
@@ -84,7 +85,6 @@ protected:
 	int						numOfPoints;
 	float*					data;
 	vector<PathHandle>		handles;
-	//vector<unsigned int *>	indices;
 	vector<unsigned int>	counts;
 	vector<unsigned int>	starts;
 

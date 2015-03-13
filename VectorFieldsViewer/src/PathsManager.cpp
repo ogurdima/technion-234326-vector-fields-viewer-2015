@@ -3,7 +3,7 @@
 const unsigned int PathHandle::UnitSize		= 8;
 const unsigned int PathHandle::TimeOffset	= 3;
 const unsigned int PathHandle::ColorOffset	= 4;
-const unsigned int PathHandle::AlphaOffset	= 6;
+const unsigned int PathHandle::AlphaOffset	= 7;
 
 
 #pragma region PathsManager
@@ -24,7 +24,7 @@ void PathsManager::Configure(int _maxPathLength, Vec4f _baseColor, vector<Partic
 	int pointsProcessedSoFar = 0;
 	for (unsigned int pathIdx = 0; pathIdx < paths.size(); pathIdx++)
 	{
-		PathHandle h(pointsProcessedSoFar, paths[pathIdx].size(), maxPathLength);
+		PathHandle h(pointsProcessedSoFar, paths[pathIdx].size(), maxPathLength, baseColor[3]);
 		handles[pathIdx] = h;
 		pointsProcessedSoFar += paths[pathIdx].size();
 	}
@@ -154,6 +154,10 @@ void PathsManager::ChangeBaseColor(const Vec4f& rgba)
 		data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 2] = baseColor[2];
 		data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 3] = baseColor[3];
 	}
+	for (unsigned int pathIdx = 0; pathIdx < handles.size(); pathIdx++)
+	{
+		handles[pathIdx].baseAlpha = baseColor[3];
+	}
 }
 
 #pragma endregion
@@ -226,5 +230,20 @@ unsigned int PathHandle::lastIdx()
 
 void PathHandle::updateAlphaValues()
 {
-
+	data[head + AlphaOffset] = baseAlpha;
+	data[tail + AlphaOffset] = 0;
+	if (head == tail)
+	{
+		return;
+	}
+	float pathMaxTime = data[head + TimeOffset];
+	float pathMinTime = data[tail + TimeOffset];
+	float timeSpan = pathMaxTime - pathMinTime;
+	assert(timeSpan > 0);
+	for (unsigned int i = tail + UnitSize; i < head; i+=UnitSize)
+	{
+		float strength = (data[i + TimeOffset] - pathMinTime) / timeSpan;
+		assert(strength < 1);
+		data[i + AlphaOffset] = strength * baseAlpha;
+	}
 }
