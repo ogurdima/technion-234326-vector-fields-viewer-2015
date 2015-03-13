@@ -20,7 +20,7 @@ VectorFieldsWindow::VectorFieldsWindow(const char* _title, int _width, int _heig
 
 void VectorFieldsWindow::resetTimer()
 {
-	glutTimerFunc(60, &VectorFieldsWindow::timerCallback, 0);
+	glutTimerFunc(VectorFieldsViewer::getDrawingTimeout(), &VectorFieldsWindow::timerCallback, 0);
 }
 
 void VectorFieldsWindow::timerCallback(int val)

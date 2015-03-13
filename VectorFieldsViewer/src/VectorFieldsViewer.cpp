@@ -1,6 +1,8 @@
 #include "VectorFieldsViewer.h"
 
 VectorFieldsViewer VectorFieldsViewer::instance;
+int VectorFieldsViewer::drawingTimeout;
+
 
 VectorFieldsViewer::VectorFieldsViewer(void) :
 	fieldSimulationTimeInterval(0.001),
@@ -122,24 +124,25 @@ void VectorFieldsViewer::openField(char* path, bool isConst)
 	}
 }
 
-void VectorFieldsViewer::changedRangeCallback(double range)
+void VectorFieldsViewer::changeDrawingTimeout(int range)
 {
-	instance.changeRange(range);
-}
-
-void VectorFieldsViewer::changeRange(double range)
-{
-	throw std::exception();
+	drawingTimeout = range;
 }
 
 void VectorFieldsViewer::openParameterWindow()
 {
-	OpenWindow(&VectorFieldsViewer::changedRangeCallback,
+	OpenWindow(&VectorFieldsViewer::changeDrawingTimeout,
 		&VectorFieldsViewer::changedDrawStateCallback, 
 		&VectorFieldsViewer::changedMeshColorCallback, 
 		&VectorFieldsViewer::changedFieldColorCallback, 
 		&VectorFieldsViewer::openMeshCallback, 
-		&VectorFieldsViewer::openFieldCallback);
+		&VectorFieldsViewer::openFieldCallback,
+		&VectorFieldsViewer::changedPathWindowCallback);
+}
+
+void VectorFieldsViewer::changedPathWindowCallback(double val)
+{
+
 }
 
 void VectorFieldsViewer::resetColorAndIndices()
@@ -160,6 +163,11 @@ void VectorFieldsViewer::resetColorAndIndices()
 VectorFieldsViewer& VectorFieldsViewer::getInstance()
 {
 	return instance;
+}
+
+int VectorFieldsViewer::getDrawingTimeout()
+{
+	return drawingTimeout;
 }
 
 void VectorFieldsViewer::evolvePaths()

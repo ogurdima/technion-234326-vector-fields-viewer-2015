@@ -17,13 +17,13 @@ typedef enum DrawStateType
 	FIELD			= 5,
 } DrawStateType;
 
-_declspec(dllexport) void OpenWindow(
-	void (*changedRangeCallback)(double),
-	void (*changedDrawStateCallback)(int),
-	void (*changedMeshColorCallback)(float,float,float,float),
-	void (*changedFieldColorCallback)(float,float,float,float),
-	void (*openMeshCallback)(char*),
-	void (*openFieldCallback)(char*, bool));
+_declspec(dllexport) void OpenWindow(	void (*changedDrawingTimeout)(int),
+										void (*changedDrawStateCallback)(int),
+										void (*changedMeshColorCallback)(float,float,float,float),
+										void (*changedFieldColorCallback)(float,float,float,float),
+										void (*openMeshCallback)(char*),
+										void (*openFieldCallback)(char*, bool),
+										void (*changedPathWindow)(double));
 
 class VectorFieldsViewer
 {
@@ -33,20 +33,21 @@ private:
 	~VectorFieldsViewer(void);
 
 	static VectorFieldsViewer		instance;
+	static int						drawingTimeout;
 #pragma endregion
 
 #pragma region Callbacks
 private:
-	static void						changedRangeCallback(double range);
+	static void						changeDrawingTimeout(int timeout);
 	static void						openMeshCallback(char* path);
 	static void						openFieldCallback(char* path, bool isConst);
 	static void						changedDrawStateCallback(int);
 	static void						changedMeshColorCallback(float,float,float,float);
 	static void						changedFieldColorCallback(float,float,float,float);
+	static void						changedPathWindowCallback(double val);
 	// callback handlers
 	void							openField(char* path, bool isConst);
 	void							openMesh(char* path);
-	void							changeRange(double range);
 	// events
 	void							(*redrawEvent)(void);
 	void							(*resetSceneEvent)(void);
@@ -88,6 +89,8 @@ public:
 	void							AddResetSceneHandler(void (*resetSceneCallback)(void));
 
 	// api
+	static int						getDrawingTimeout();
+
 	void							GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount);
 	const FieldedMesh&				getMesh();
 	const Vec4f&					getMeshColor();

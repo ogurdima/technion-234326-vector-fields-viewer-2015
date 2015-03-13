@@ -14,38 +14,42 @@ namespace ManagedDll {
 	{
 	public:
 
-		void OpenWindow(void (*changedRangeCallback)(double),
+		void OpenWindow(void (*changedDrawingTimeout)(int),
 						void (*changedDrawStateCallback)(int),
 						void (*changedMeshColorCallback)(float,float,float,float),
 						void (*changedFieldColorCallback)(float,float,float,float),
 						void (*openMeshCallback)(char*),
-						void (*openFieldCallback)(char*, bool))
+						void (*openFieldCallback)(char*, bool),
+						void (*changedPathWindow)(double))
 		{
-			ParameterWindow::ManagedClass::OpenParameterWindow(	changedRangeCallback, 
+			ParameterWindow::ManagedClass::OpenParameterWindow(	changedDrawingTimeout, 
 																changedDrawStateCallback, 
 																changedMeshColorCallback,
 																changedFieldColorCallback,
 																openMeshCallback,
-																openFieldCallback);
+																openFieldCallback,
+																changedPathWindow);
 		}
 	};
 }
 
 
-__declspec(dllexport) void OpenWindow(	void (*changedRangeCallback)(double),
+__declspec(dllexport) void OpenWindow(	void (*changedDrawingTimeout)(int),
 										void (*changedDrawStateCallback)(int),
 										void (*changedMeshColorCallback)(float,float,float,float),
 										void (*changedFieldColorCallback)(float,float,float,float),
 										void (*openMeshCallback)(char*),
-										void (*openFieldCallback)(char*, bool))
+										void (*openFieldCallback)(char*, bool),
+										void (*changedPathWindow)(double))
 {
 	ManagedDll::DoWork work;
-	work.OpenWindow(changedRangeCallback, 
+	work.OpenWindow(changedDrawingTimeout, 
 					changedDrawStateCallback, 
 					changedMeshColorCallback,
 					changedFieldColorCallback,
 					openMeshCallback,
-					openFieldCallback);
+					openFieldCallback,
+					changedPathWindow);
 }
 
 

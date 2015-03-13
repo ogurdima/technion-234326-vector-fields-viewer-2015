@@ -29,7 +29,9 @@ namespace ParameterWindow
         } 
         #endregion
 
+        public event IntParameterCallback TimeoutChanged;
         public event IntParameterCallback DrawStateChanged;
+        public event DoubleParameterCallback PathWindowChanged;
         public event MeshPathParameterCallback OpenMesh;
         public event FieldPathParameterCallback OpenField;
         public event ColorParameterCallback MeshColorChanged;
@@ -84,6 +86,37 @@ namespace ParameterWindow
             }
         }
 
+        private int _timeout;
+        private double _pathWindow;
+
+        public int Timeout
+        {
+            get { return _timeout; }
+            set
+            {
+                _timeout = value;
+                OnPropertyChanged("Timeout");
+                if (TimeoutChanged != null)
+                {
+                    TimeoutChanged(_timeout);
+                }
+            }
+        }
+
+        public double PathWindow
+        {
+            get { return _pathWindow; }
+            set
+            {
+                _pathWindow = value;
+                OnPropertyChanged("PathWindow");
+                if (PathWindowChanged != null)
+                {
+                    PathWindowChanged(_pathWindow);
+                }
+            }
+        }
+
         private void LoadMesh(object sender, RoutedEventArgs e)
         {
             var fd = new OpenFileDialog {CheckFileExists = true, CheckPathExists = true};
@@ -132,8 +165,12 @@ namespace ParameterWindow
                 ScB = 0f,
                 ScA = 1f
             };
+            Timeout = 60;
+
             var fileInfo = new FileInfo(@"..\Data\old\Horse.off");
             CallOpenMesh(fileInfo.FullName);
         }
+
+        
     }
 }
