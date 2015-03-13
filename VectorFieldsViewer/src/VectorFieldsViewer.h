@@ -57,7 +57,11 @@ private:
 	DrawStateType					drawState;
 	Vec4f							meshColor;
 	Vec4f							fieldColor;
-	double							fieldSimulationTimeInterval;
+
+	Time							curTime;
+	Time							maxTime;
+	Time							minTime;
+	Time							fieldSimulationTimeInterval;
 
 	FieldedMesh						fieldedMesh;
 	PathFinder						pathFinder;
@@ -84,7 +88,7 @@ public:
 	void							AddResetSceneHandler(void (*resetSceneCallback)(void));
 
 	// api
-	void							GetCurrentPaths(float*& dataArray, unsigned int**& indices, unsigned int*& counts, unsigned int& pathCount);
+	void							GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount);
 	const FieldedMesh&				getMesh();
 	const Vec4f&					getMeshColor();
 	const Vec4f&					getFieldColor();

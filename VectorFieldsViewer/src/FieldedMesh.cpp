@@ -164,15 +164,20 @@ void FieldedMesh::readFieldFile(const char* path, vector<vector<Vec3f>>& fieldPe
 {
 	times.clear();
 	fieldPerFace.clear();
-	
 	fieldPerFace.resize(n_faces());
+	
+	
+	std::string pathString(path);
+	int idx = pathString.find_last_of('\\');
+	std::string start = std::string(path).substr(0, idx + 1);
 	
 	float t;
 	std::string timePath;
 	std::ifstream file = std::ifstream(path);
 	while (file >> t >> timePath)
 	{
-		vector<Vec3f> constField = readConstFieldFile(timePath.c_str());
+		std::string fullPath = start + timePath;
+		vector<Vec3f> constField = readConstFieldFile(fullPath.c_str());
 		assert(constField.size() == n_faces());
 		for (unsigned int i = 0; i < constField.size(); i++)
 		{

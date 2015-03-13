@@ -11,10 +11,10 @@ const unsigned int PathHandle::AlphaOffset	= 6;
 PathsManager::PathsManager() :
 	data(NULL)
 {
-	indices.clear();
+
 }
 
-void PathsManager::Configure(int _maxPathLength, Vec3f _baseColor, vector<ParticlePath> paths)
+void PathsManager::Configure(int _maxPathLength, Vec4f _baseColor, vector<ParticlePath> paths)
 {
 	maxPathLength = _maxPathLength;
 	baseColor = _baseColor;
@@ -24,7 +24,7 @@ void PathsManager::Configure(int _maxPathLength, Vec3f _baseColor, vector<Partic
 	int pointsProcessedSoFar = 0;
 	for (unsigned int pathIdx = 0; pathIdx < paths.size(); pathIdx++)
 	{
-		PathHandle h(PathHandle::UnitSize * pointsProcessedSoFar, PathHandle::UnitSize * paths[pathIdx].size(), maxPathLength);
+		PathHandle h(pointsProcessedSoFar, paths[pathIdx].size(), maxPathLength);
 		handles[pathIdx] = h;
 		pointsProcessedSoFar += paths[pathIdx].size();
 	}
@@ -39,13 +39,13 @@ void PathsManager::Configure(int _maxPathLength, Vec3f _baseColor, vector<Partic
 
 	for (unsigned int pathIdx = 0; pathIdx < handles.size(); pathIdx++)
 	{
-		handles[pathIdx].data = &data[handles[pathIdx].dataIndex];
+		handles[pathIdx].data = &data[handles[pathIdx].globalPointIndex * PathHandle::UnitSize];
 	}
 
 	for (unsigned int pathIdx = 0; pathIdx < paths.size(); pathIdx++)
 	{
-		vector<Vec3f> pathPoints = paths[pathIdx].getPoints();
-		vector<Time> pathTimes = paths[pathIdx].getTimes();
+		const vector<Vec3f>& pathPoints = paths[pathIdx].getPoints();
+		const vector<Time>& pathTimes = paths[pathIdx].getTimes();
 		for (unsigned int pointIdx = 0; pointIdx < pathPoints.size(); pointIdx++)
 		{
 			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 0] = pathPoints[pointIdx][0];
@@ -55,26 +55,29 @@ void PathsManager::Configure(int _maxPathLength, Vec3f _baseColor, vector<Partic
 			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 4] = baseColor[0];
 			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 5] = baseColor[1];
 			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 6] = baseColor[2];
-			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 7] = 1.f;
+			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 7] = baseColor[3];
 		}
 	}
 
-	for (unsigned int pathIdx = 0; pathIdx < indices.size(); pathIdx++)
-	{
-		if (NULL != indices[pathIdx])
-		{
-			delete[] indices[pathIdx];
-			indices[pathIdx] = NULL;
-		}
-	}
-	indices.clear();
-	indices.resize(handles.size());
+	//for (unsigned int pathIdx = 0; pathIdx < indices.size(); pathIdx++)
+	//{
+	//	if (NULL != indices[pathIdx])
+	//	{
+	//		delete[] indices[pathIdx];
+	//		indices[pathIdx] = NULL;
+	//	}
+	//}
+	//indices.clear();
+	//indices.resize(handles.size());
+
+	starts.clear();
+	starts.resize(handles.size());
 	counts.clear();
 	counts.resize(handles.size());
-	for (unsigned int pathIdx = 0; pathIdx < indices.size(); pathIdx++)
+	for (unsigned int pathIdx = 0; pathIdx < handles.size(); pathIdx++)
 	{
-		indices[pathIdx] = new unsigned int[maxPathLength];
-		counts[pathIdx] = 0;
+		//indices[pathIdx] = new unsigned int[maxPathLength];
+		starts[pathIdx] = counts[pathIdx] = 0;
 	}
 
 }
@@ -86,7 +89,7 @@ void PathsManager::Evolve(Time dt)
 		handles[pathIdx].evolve((float)dt);
 		unsigned int first = handles[pathIdx].tailGlobIdx();
 		unsigned int last = handles[pathIdx].headGlobIdx();
-		UpdateIndecesAndCounts(pathIdx, first, last);
+		UpdateStartsAndCounts(pathIdx, first, last);
 	}
 }
 
@@ -97,19 +100,33 @@ void PathsManager::SetTime(Time t)
 		handles[pathIdx].setTime((float)t);
 		unsigned int first = handles[pathIdx].tailGlobIdx();
 		unsigned int last = handles[pathIdx].headGlobIdx();
-		UpdateIndecesAndCounts(pathIdx, first, last);
+		UpdateStartsAndCounts(pathIdx, first, last);
 	}
 }
 
-void PathsManager::UpdateIndecesAndCounts(unsigned int pathIdx, unsigned int first, unsigned int last)
+//void PathsManager::UpdateIndecesAndCounts(unsigned int pathIdx, unsigned int first, unsigned int last)
+//{
+//	if (first != last)
+//	{
+//		int count = 0;
+//		for (unsigned int i = first; i <= last; i+=PathHandle::UnitSize, count++)
+//		{
+//			indices[pathIdx][count] = i;
+//		}
+//		counts[pathIdx] = count;
+//	}
+//	else
+//	{
+//		counts[pathIdx] = 0;
+//	}
+//}
+
+void PathsManager::UpdateStartsAndCounts(unsigned int pathIdx, unsigned int first, unsigned int last)
 {
 	if (first != last)
 	{
-		int count = 0;
-		for (unsigned int i = first; i <= last; i+=PathHandle::UnitSize, count++)
-		{
-			indices[pathIdx][count] = i;
-		}
+		int count = last - first + 1;
+		starts[pathIdx] = first;
 		counts[pathIdx] = count;
 	}
 	else
@@ -118,12 +135,25 @@ void PathsManager::UpdateIndecesAndCounts(unsigned int pathIdx, unsigned int fir
 	}
 }
 
-void PathsManager::GetCurrentPaths(float*& dataArray, unsigned int**& indices, unsigned int*& counts, unsigned int& pathCount)
+void PathsManager::GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount)
 {
 	dataArray = data;
-	indices = &(this->indices[0]);
+	//indices = &(this->indices[0]);
 	counts = &(this->counts[0]);
+	starts = &(this->starts[0]);
 	pathCount = handles.size();
+}
+
+void PathsManager::ChangeBaseColor(const Vec4f& rgba)
+{
+	baseColor = rgba;
+	for (int pointIdx = 0; pointIdx < numOfPoints; pointIdx++)
+	{
+		data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 0] = baseColor[0];
+		data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 1] = baseColor[1];
+		data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 2] = baseColor[2];
+		data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 3] = baseColor[3];
+	}
 }
 
 #pragma endregion
@@ -137,7 +167,7 @@ void PathHandle::evolve(float dt)
 		head = tail = lastIdx();
 		return;
 	}
-	if (curTime < minTime())
+	if (curTime <= minTime())
 	{
 		head = tail = 0;
 		return;
@@ -145,13 +175,11 @@ void PathHandle::evolve(float dt)
 	while (data[head + TimeOffset] < curTime)
 	{
 		head += UnitSize;
-		assert(head < dataSize);
+		assert(head <= lastIdx());
 	}
 	head -= UnitSize;
-
-	int offset = -(int)maxPathLength * UnitSize;
-	offset += head;
-	tail = max(0,offset);
+	tail = max(0, (int)head - (int)(maxPathLength * UnitSize));
+	updateAlphaValues();
 }
 
 void PathHandle::setTime(float t)
@@ -163,12 +191,12 @@ void PathHandle::setTime(float t)
 
 unsigned int PathHandle::headGlobIdx()
 {
-	return dataIndex + head;
+	return globalPointIndex + head / UnitSize;
 }
 
 unsigned int PathHandle::tailGlobIdx()
 {
-	return dataIndex + tail;
+	return globalPointIndex + tail / UnitSize;
 }
 
 float PathHandle::maxTime()
@@ -186,8 +214,17 @@ float* PathHandle::last()
 	return &data[lastIdx()];
 }
 
-unsigned int PathHandle::lastIdx()
+float* PathHandle::at(unsigned int pointIndex)
 {
-	return (dataSize - UnitSize);
+	return &data[pointIndex *UnitSize];
 }
 
+unsigned int PathHandle::lastIdx()
+{
+	return ((numPoints - 1) * UnitSize);
+}
+
+void PathHandle::updateAlphaValues()
+{
+
+}

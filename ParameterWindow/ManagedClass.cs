@@ -22,7 +22,7 @@ namespace ParameterWindow
             window.OpenMesh += (MeshPathParameterCallback)
                     Marshal.GetDelegateForFunctionPointer((IntPtr)openMeshCallback, typeof(MeshPathParameterCallback));
             window.OpenField += (FieldPathParameterCallback)
-                    Marshal.GetDelegateForFunctionPointer((IntPtr)openMeshCallback, typeof(FieldPathParameterCallback));
+                    Marshal.GetDelegateForFunctionPointer((IntPtr)openFieldCallback, typeof(FieldPathParameterCallback));
             window.MeshColorChanged += (ColorParameterCallback)
                     Marshal.GetDelegateForFunctionPointer((IntPtr)changedMeshColorCallback, typeof(ColorParameterCallback));
             window.FieldColorChanged += (ColorParameterCallback)

@@ -8,7 +8,10 @@ VectorFieldsViewer::VectorFieldsViewer(void) :
 	fieldColor(1,1,1,0),
 	meshColor(0.1,0.1,0.1,1),
 	resetSceneEvent(NULL),
-	redrawEvent(NULL)
+	redrawEvent(NULL),
+	maxTime(1),
+	minTime(0),
+	curTime(0)
 {
 }
 
@@ -59,6 +62,7 @@ void VectorFieldsViewer::changedMeshColorCallback(float r, float g, float b, flo
 void VectorFieldsViewer::changedFieldColorCallback(float r, float g, float b, float a)
 {
 	instance.fieldColor = Vec4f(r,g,b,a);
+	instance.pathsMgr.ChangeBaseColor(instance.fieldColor);
 }
 
 void VectorFieldsViewer::openMesh(char* path)
@@ -66,7 +70,10 @@ void VectorFieldsViewer::openMesh(char* path)
 	if (fieldedMesh.load(path))
 	{
 		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
-		fieldSimulationTimeInterval = (fieldedMesh.maxTime() - fieldedMesh.minTime()) / 100.f;
+		maxTime = fieldedMesh.maxTime();
+		minTime = fieldedMesh.minTime();
+		fieldSimulationTimeInterval = (maxTime - minTime) / 100.f;
+		curTime = minTime;
 		if(resetSceneEvent != NULL)
 		{
 			(*resetSceneEvent)();
@@ -103,6 +110,10 @@ void VectorFieldsViewer::openField(char* path, bool isConst)
 	}
 	else
 	{
+		maxTime = fieldedMesh.maxTime();
+		minTime = fieldedMesh.minTime();
+		fieldSimulationTimeInterval = (maxTime - minTime) / 100.f;
+		curTime = minTime;
 		computePaths();
 	}
 }
@@ -149,14 +160,16 @@ VectorFieldsViewer& VectorFieldsViewer::getInstance()
 
 void VectorFieldsViewer::evolvePaths()
 {
-	double dt = fieldSimulationTimeInterval;
-	int s = particlePaths.size();
-#pragma omp parallel for schedule(dynamic, 500)
-	for (int i = 0; i < s; i++) 
+	curTime += fieldSimulationTimeInterval;
+	if (curTime > maxTime)
 	{
-		particlePaths[i].evolveParticleLoc(dt);
+		curTime = minTime;
+		pathsMgr.SetTime(curTime);
 	}
-	pathsMgr.Evolve(dt);
+	else 
+	{
+		pathsMgr.Evolve(fieldSimulationTimeInterval);
+	}
 }
 
 void VectorFieldsViewer::computePaths()
@@ -172,7 +185,7 @@ void VectorFieldsViewer::computePaths()
 		std::cerr << "Failed to properly configure PathFinder" << std::endl;
 		particlePaths = vector<ParticlePath>();
 	}
-	pathsMgr.Configure(20, Vec3f(0,1,0), particlePaths);
+	pathsMgr.Configure(20, fieldColor, particlePaths);
 }
 
 void VectorFieldsViewer::AddRedrawHandler(void (*redrawCallback)(void))
@@ -224,7 +237,7 @@ const vector<ParticlePath>& VectorFieldsViewer::getPaths()
 	return particlePaths;
 }
 
-void VectorFieldsViewer::GetCurrentPaths(float*& dataArray, unsigned int**& indices, unsigned int*& counts, unsigned int& pathCount)
+void VectorFieldsViewer::GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount)
 {
-	return pathsMgr.GetCurrentPaths(dataArray, indices, counts, pathCount);
+	return pathsMgr.GetCurrentPaths(dataArray, starts, counts, pathCount);
 }

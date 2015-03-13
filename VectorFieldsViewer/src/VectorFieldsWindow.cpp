@@ -164,30 +164,33 @@ void VectorFieldsWindow::drawVectorField()
 	float* dataArray;
 	unsigned int** indices;
 	unsigned int* counts;
+	unsigned int* starts;
 	unsigned int primCount;
 
-	VectorFieldsViewer::getInstance().GetCurrentPaths(dataArray, indices, counts, primCount);
+	VectorFieldsViewer::getInstance().GetCurrentPaths(dataArray, starts, counts, primCount);
 
-	glColor3f(1,1,1);
-	glVertexPointer(3, GL_FLOAT, 0, dataArray);
+	//glColor3f(1,1,1);
+	glVertexPointer(3, GL_FLOAT, 8 * sizeof(float), dataArray);
+	glColorPointer(4, GL_FLOAT, 8 * sizeof(float), dataArray + 4);
 
-	vector<float> dump;
-
-	for (int pathIdx = 0; pathIdx < primCount; pathIdx++)
-	{
-		for (int iIdx = 0; iIdx < counts[pathIdx]; iIdx++)
-		{
-			dump.push_back( dataArray[indices[pathIdx][iIdx]] );
-		}
-	}
+	//vector<float> dump;
+	//for (int pathIdx = 0; pathIdx < primCount; pathIdx++)
+	//{
+	//	for (int iIdx = 0; iIdx < counts[pathIdx]; iIdx++)
+	//	{
+	//		dump.push_back( dataArray[indices[pathIdx][iIdx]] );
+	//	}
+	//}
 
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glMultiDrawElements(GL_LINE_STRIP, (GLsizei*) counts, GL_UNSIGNED_INT, (void**) indices, 5);
+	glEnableClientState(GL_COLOR_ARRAY);
+	//glMultiDrawElements(GL_LINE_STRIP, (GLsizei*) counts, GL_UNSIGNED_INT, (void**) indices, 5);
+	glMultiDrawArrays(GL_LINE_STRIP, (GLint*) starts, (GLint*) counts, primCount);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 
 
 	//glEnableClientState(GL_COLOR_ARRAY);
-
 	//vector<int> startIndices;
 	//vector<int> pathLenghts;
 	//vector<Point> paths;
@@ -215,7 +218,6 @@ void VectorFieldsWindow::drawVectorField()
 	//
 	//assert(pathLenghts.size() == startIndices.size());
 	//assert(4 * paths.size() == tmpColors.size());
-
 	//glColor3f(1,1,1);
 	//GL::glVertexPointer(&paths[0]);
 	//GL::glColorPointer(4, GL_FLOAT, 0, &tmpColors[0]);

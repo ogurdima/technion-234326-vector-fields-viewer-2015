@@ -18,31 +18,34 @@ public:
 
 	float							curTime;
 	float*							data;
-	unsigned int					dataIndex;
-	unsigned int					dataSize;
+	unsigned int					globalPointIndex;
+	unsigned int					numPoints;
 	unsigned int					head;
 	unsigned int					tail;
 	unsigned int					maxPathLength;
+	float							baseAlpha;
 
 	PathHandle() :
 		data(NULL),
-		dataIndex(0),
-		dataSize(0),
+		globalPointIndex(0),
+		numPoints(0),
 		curTime(0),
 		head(0),
-		tail(0)
+		tail(0),
+		baseAlpha(1)
 	{}
 
 	PathHandle(unsigned int _dataIndex, unsigned int _dataSize, unsigned int _maxPathLength) :
 		data(NULL),
-		dataIndex(0),
-		dataSize(0),
+		globalPointIndex(0),
+		numPoints(0),
 		curTime(0),
 		head(0),
-		tail(0)
+		tail(0),
+		baseAlpha(1)
 	{
-		dataIndex = _dataIndex;
-		dataSize = _dataSize;
+		globalPointIndex = _dataIndex;
+		numPoints = _dataSize;
 		maxPathLength = _maxPathLength;
 	}
 
@@ -54,11 +57,15 @@ public:
 
 	unsigned int tailGlobIdx();
 
+	
+
 private:
 	float maxTime();
 	float minTime();
 	float* last();
+	float* at(unsigned int pointIndex);
 	unsigned int lastIdx();
+	void updateAlphaValues();
 };
 
 
@@ -66,20 +73,24 @@ class PathsManager
 {
 public:
 	PathsManager();
-	void Configure(int _maxPathLength, Vec3f _baseColor, vector<ParticlePath> paths);
+	void Configure(int _maxPathLength, Vec4f _baseColor, vector<ParticlePath> paths);
 	void Evolve(Time dt);
 	void SetTime(Time t);
-	void GetCurrentPaths(float*& dataArray, unsigned int**& indices, unsigned int*& counts, unsigned int& pathCount);
+	void GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount);
+	void ChangeBaseColor(const Vec4f& rgba);
 protected:
-	Vec3f					baseColor;
+	Vec4f					baseColor;
 	int						maxPathLength;
 	int						numOfPoints;
 	float*					data;
 	vector<PathHandle>		handles;
-	vector<unsigned int *>	indices;
+	//vector<unsigned int *>	indices;
 	vector<unsigned int>	counts;
+	vector<unsigned int>	starts;
 
-	void UpdateIndecesAndCounts(unsigned int pathIdx, unsigned int first, unsigned int last);
+	//void UpdateIndecesAndCounts(unsigned int pathIdx, unsigned int first, unsigned int last);
+	void UpdateStartsAndCounts(unsigned int pathIdx, unsigned int first, unsigned int last);
+
 };
 
 
