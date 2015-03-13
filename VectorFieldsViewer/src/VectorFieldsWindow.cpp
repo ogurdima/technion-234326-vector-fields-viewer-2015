@@ -159,11 +159,7 @@ void VectorFieldsWindow::drawVectorField()
 	glDepthFunc(GL_LEQUAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	vector<int> startIndices;
-	vector<int> pathLenghts;
-	vector<Point> paths;
-	vector<float> tmpColors;
-	//paths.resize(particlePaths.size());
+	
 	
 	float* dataArray;
 	unsigned int** indices;
@@ -172,39 +168,64 @@ void VectorFieldsWindow::drawVectorField()
 
 	VectorFieldsViewer::getInstance().GetCurrentPaths(dataArray, indices, counts, primCount);
 
-	const vector<ParticlePath>& particlePaths = VectorFieldsViewer::getInstance().getPaths();
-	int pathIdx = 0;
-	for (uint i = 0; i < particlePaths.size(); i++) 
-	{
-		int visiblePathLen = 0;
-		const Point* first = particlePaths[i].getActivePathPoints(50, &visiblePathLen);
-		if(visiblePathLen <= 0)
-		{
-			continue;
-		}
-		startIndices.push_back(pathIdx);
-		for (int j = 0; j < visiblePathLen; j++)
-		{
-			paths.push_back(first[j]);
-			pathIdx++;
-			tmpColors.push_back(1); tmpColors.push_back(1); tmpColors.push_back(1); tmpColors.push_back(1);
-		}
-		pathLenghts.push_back(visiblePathLen);
-	}
-	
-	assert(pathLenghts.size() == startIndices.size());
-	assert(4 * paths.size() == tmpColors.size());
-
 	glColor3f(1,1,1);
-	GL::glVertexPointer(&paths[0]);
-	GL::glColorPointer(4, GL_FLOAT, 0, &tmpColors[0]);
+	glVertexPointer(3, GL_FLOAT, 0, dataArray);
+
+	vector<float> dump;
+
+	for (int pathIdx = 0; pathIdx < primCount; pathIdx++)
+	{
+		for (int iIdx = 0; iIdx < counts[pathIdx]; iIdx++)
+		{
+			dump.push_back( dataArray[indices[pathIdx][iIdx]] );
+		}
+	}
+
 	glEnableClientState(GL_VERTEX_ARRAY);
-	//glEnableClientState(GL_COLOR_ARRAY);
-	
-	glMultiDrawArrays(GL_LINE_STRIP, &startIndices[0], &pathLenghts[0], pathLenghts.size());
-	//glMultiDrawArrays(
-	//glDisableClientState(GL_COLOR_ARRAY);
+	glMultiDrawElements(GL_LINE_STRIP, (GLsizei*) counts, GL_UNSIGNED_INT, (void**) indices, 5);
 	glDisableClientState(GL_VERTEX_ARRAY);
+
+
+	//glEnableClientState(GL_COLOR_ARRAY);
+
+	//vector<int> startIndices;
+	//vector<int> pathLenghts;
+	//vector<Point> paths;
+	//vector<float> tmpColors;
+	////paths.resize(particlePaths.size());
+	//const vector<ParticlePath>& particlePaths = VectorFieldsViewer::getInstance().getPaths();
+	//int pathIdx = 0;
+	//for (uint i = 0; i < particlePaths.size(); i++) 
+	//{
+	//	int visiblePathLen = 0;
+	//	const Point* first = particlePaths[i].getActivePathPoints(50, &visiblePathLen);
+	//	if(visiblePathLen <= 0)
+	//	{
+	//		continue;
+	//	}
+	//	startIndices.push_back(pathIdx);
+	//	for (int j = 0; j < visiblePathLen; j++)
+	//	{
+	//		paths.push_back(first[j]);
+	//		pathIdx++;
+	//		tmpColors.push_back(1); tmpColors.push_back(1); tmpColors.push_back(1); tmpColors.push_back(1);
+	//	}
+	//	pathLenghts.push_back(visiblePathLen);
+	//}
+	//
+	//assert(pathLenghts.size() == startIndices.size());
+	//assert(4 * paths.size() == tmpColors.size());
+
+	//glColor3f(1,1,1);
+	//GL::glVertexPointer(&paths[0]);
+	//GL::glColorPointer(4, GL_FLOAT, 0, &tmpColors[0]);
+	//glEnableClientState(GL_VERTEX_ARRAY);
+	////glEnableClientState(GL_COLOR_ARRAY);
+	//
+	//glMultiDrawArrays(GL_LINE_STRIP, &startIndices[0], &pathLenghts[0], pathLenghts.size());
+	////glMultiDrawArrays(
+	////glDisableClientState(GL_COLOR_ARRAY);
+	//glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 void VectorFieldsWindow::initInstance(const char* title, int w, int h)
