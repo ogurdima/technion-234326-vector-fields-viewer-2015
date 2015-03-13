@@ -66,7 +66,6 @@ private:
 
 	FieldedMesh						fieldedMesh;
 	PathFinder						pathFinder;
-	vector<ParticlePath>			particlePaths;
 	PathsManager					pathsMgr;
 
 	vector<uint>					indices;
@@ -95,7 +94,6 @@ public:
 	const Vec4f&					getFieldColor();
 	void							onTimer(int val);
 	DrawStateType					getDrawState();
-	const vector<ParticlePath>&		VectorFieldsViewer::getPaths();
 	void							openParameterWindow();
 
 };

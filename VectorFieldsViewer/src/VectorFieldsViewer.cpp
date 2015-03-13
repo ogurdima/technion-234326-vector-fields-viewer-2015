@@ -178,7 +178,7 @@ void VectorFieldsViewer::evolvePaths()
 
 void VectorFieldsViewer::computePaths()
 {
-	particlePaths.clear();
+	vector<ParticlePath> particlePaths;
 	bool success = pathFinder.configure(fieldedMesh, fieldSimulationTimeInterval);
 	if (success) 
 	{
@@ -234,11 +234,6 @@ DrawStateType VectorFieldsViewer::getDrawState()
 		break;
 	}
 	return drawState;
-}
-
-const vector<ParticlePath>& VectorFieldsViewer::getPaths()
-{
-	return particlePaths;
 }
 
 void VectorFieldsViewer::GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount)
