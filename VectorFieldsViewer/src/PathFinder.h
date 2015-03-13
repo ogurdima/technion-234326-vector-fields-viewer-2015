@@ -11,39 +11,33 @@ typedef struct
 	Mesh::FaceHandle ownerFace;
 }  ParticleSimStateT;
 
+using OpenMesh::VectorT;
+
 class PathFinder
 {
 public:
 	PathFinder();
+	bool												configure(const FieldedMesh& aMesh_, const Time& dt_);
+	vector<ParticlePath>								getParticlePaths();
 
-	bool					configure(const FieldedMesh& aMesh_, const Time& dt_);
+private:
 
-	vector<ParticlePath>	getParticlePaths();
-
-protected:
-
-	FieldedMesh		fieldedMesh;
-	Time			dt;
-	Time			tmin;
-	Time			tmax;
-	bool			hasValidConfig;
-
-	int				pathDepth;
-	int				fuckupCount;
+	FieldedMesh											fieldedMesh;
+	Time												dt;
+	Time												tmin;
+	Time												tmax;
+	bool												hasValidConfig;
+	int													fuckupCount;
 
 	// cache
-	vector<Triangle>						triangles;
-	vector<Point>							centroids;
-	vector<vector<int>>						oneRingFaceIds;
-	//vector<vector<VectorFieldTimeVal>>		faceFields;
-	vector<Normal>							normals;
-
-	vector<OpenMesh::VectorT<Point,3>>		faceVertices;
-	vector<OpenMesh::VectorT<vector<VectorFieldTimeVal>,3>>		faceVertexFields;
+	vector<Triangle>									triangles;
+	vector<Point>										centroids;
+	vector<vector<int>>									oneRingFaceIds;
+	vector<Normal>										normals;
+	vector<VectorT<Point,3>>							faceVertices;
+	vector<VectorT<vector<VectorFieldTimeVal>,3>>		faceVertexFields;
 	
-	ParticlePath getParticlePath(const Mesh::FaceHandle& face_);
-
-	//Vec3f getOneRingLerpField(const Point& p, const int ownerIdx, const Time time);
-	Vec3f getField(const Point& p,const int fid, const Time time);
+	ParticlePath										getParticlePath(const Mesh::FaceHandle& face_);
+	Vec3f												getField(const Point& p,const int fid, const Time time);
 };
 

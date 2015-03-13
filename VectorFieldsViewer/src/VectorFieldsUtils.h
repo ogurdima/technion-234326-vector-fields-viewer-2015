@@ -174,6 +174,12 @@ public:
 		return items[0] * barycentric[0] + items[1] * barycentric[1] + items[2] * barycentric[2];
 	}
 
+	template<class T>
+	static inline T intepolate(const Point& barycentric, const T& item0, const T& item1, const T& item2)
+	{
+		return item0 * barycentric[0] + item1 * barycentric[1] + item2 * barycentric[2];
+	}
+
 	static Vec3f average(const vector<Vec3f>& values)
 	{
 		Vec3f sum = Vec3f(0,0,0);
