@@ -14,9 +14,9 @@ PathsManager::PathsManager() :
 
 }
 
-void PathsManager::Configure(int _maxPathLength, Vec4f _baseColor, vector<ParticlePath> paths)
+void PathsManager::Configure(Vec4f _baseColor, vector<ParticlePath> paths,  float _maxPathTimeSpan)
 {
-	maxPathLength = _maxPathLength;
+	maxPathTimeSpan = _maxPathTimeSpan;
 	baseColor = _baseColor;
 	handles.clear();
 	handles.resize(paths.size());
@@ -24,7 +24,7 @@ void PathsManager::Configure(int _maxPathLength, Vec4f _baseColor, vector<Partic
 	int pointsProcessedSoFar = 0;
 	for (unsigned int pathIdx = 0; pathIdx < paths.size(); pathIdx++)
 	{
-		PathHandle h(pointsProcessedSoFar, paths[pathIdx].size(), maxPathLength, baseColor[3]);
+		PathHandle h(pointsProcessedSoFar, paths[pathIdx].size(), baseColor[3], maxPathTimeSpan);
 		handles[pathIdx] = h;
 		pointsProcessedSoFar += paths[pathIdx].size();
 	}
@@ -76,7 +76,6 @@ void PathsManager::Configure(int _maxPathLength, Vec4f _baseColor, vector<Partic
 	counts.resize(handles.size());
 	for (unsigned int pathIdx = 0; pathIdx < handles.size(); pathIdx++)
 	{
-		//indices[pathIdx] = new unsigned int[maxPathLength];
 		starts[pathIdx] = counts[pathIdx] = 0;
 	}
 
@@ -183,9 +182,23 @@ void PathHandle::evolve(float dt)
 		assert(head <= lastIdx());
 	}
 	head -= UnitSize;
-	tail = max(0, (int)head - (int)(maxPathLength * UnitSize));
+	if (curTime - maxPathTimeSpan < minTime())
+	{
+		tail = 0;
+	}
+	else
+	{
+		while (data[tail + TimeOffset] < curTime - maxPathTimeSpan)
+		{
+			tail += UnitSize;
+		}
+		if (tail != 0)
+		{
+			tail -= UnitSize;
+		}
+	}
+
 	substituteHeadTail();
-	//storeCurrentHeadTail();
 	updateAlphaValues();
 }
 
@@ -291,7 +304,7 @@ void PathHandle::substituteHeadTail()
 	}
 	if (tail != lastIdx() && tail != 0)
 	{
-		// interpolateNeighbors(tail, -1);
+		interpolateNeighbors(tail, -1);
 	}
 }
 

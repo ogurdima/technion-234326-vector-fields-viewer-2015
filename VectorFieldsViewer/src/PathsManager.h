@@ -22,8 +22,9 @@ public:
 	unsigned int					numPoints;
 	unsigned int					head;
 	unsigned int					tail;
-	unsigned int					maxPathLength;
+	float							maxPathTimeSpan;
 	float							baseAlpha;
+	
 
 	PathHandle() :
 		data(NULL),
@@ -34,10 +35,11 @@ public:
 		tail(0),
 		baseAlpha(1),
 		lastStoredHead(-1),
-		lastStoredTail(-1)
+		lastStoredTail(-1),
+		maxPathTimeSpan(1)
 	{}
 
-	PathHandle(unsigned int _dataIndex, unsigned int _dataSize, unsigned int _maxPathLength, float _baseAlpha) :
+	PathHandle(unsigned int _dataIndex, unsigned int _dataSize, float _baseAlpha, float _maxPathTimeSpan) :
 		data(NULL),
 		globalPointIndex(0),
 		numPoints(0),
@@ -46,12 +48,13 @@ public:
 		tail(0),
 		baseAlpha(1),
 		lastStoredHead(-1),
-		lastStoredTail(-1)
+		lastStoredTail(-1),
+		maxPathTimeSpan(1)
 	{
 		globalPointIndex = _dataIndex;
 		numPoints = _dataSize;
-		maxPathLength = _maxPathLength;
 		baseAlpha = _baseAlpha;
+		maxPathTimeSpan = _maxPathTimeSpan;
 	}
 
 	void evolve(float dt);
@@ -88,14 +91,14 @@ class PathsManager
 {
 public:
 	PathsManager();
-	void Configure(int _maxPathLength, Vec4f _baseColor, vector<ParticlePath> paths);
+	void Configure(Vec4f _baseColor, vector<ParticlePath> paths, float _maxPathTimeSpan);
 	void Evolve(Time dt);
 	void SetTime(Time t);
 	void GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount);
 	void ChangeBaseColor(const Vec4f& rgba);
 protected:
 	Vec4f					baseColor;
-	int						maxPathLength;
+	float					maxPathTimeSpan;
 	int						numOfPoints;
 	float*					data;
 	vector<PathHandle>		handles;

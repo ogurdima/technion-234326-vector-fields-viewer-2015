@@ -189,7 +189,7 @@ void VectorFieldsViewer::computePaths()
 		std::cerr << "Failed to properly configure PathFinder" << std::endl;
 		particlePaths = vector<ParticlePath>();
 	}
-	pathsMgr.Configure(20, fieldColor, particlePaths);
+	pathsMgr.Configure(fieldColor, particlePaths, (maxTime - minTime) / 5 );
 }
 
 void VectorFieldsViewer::AddRedrawHandler(void (*redrawCallback)(void))
