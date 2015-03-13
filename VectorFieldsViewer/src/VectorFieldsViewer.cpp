@@ -4,6 +4,7 @@ VectorFieldsViewer VectorFieldsViewer::instance;
 
 VectorFieldsViewer::VectorFieldsViewer(void) :
 	fieldSimulationTimeInterval(0.001),
+	visualisationTimeInterval(0.0001),
 	drawState(DrawStateType::NONE),
 	fieldColor(1,1,1,0),
 	meshColor(0.1,0.1,0.1,1),
@@ -73,7 +74,9 @@ void VectorFieldsViewer::openMesh(char* path)
 		maxTime = fieldedMesh.maxTime();
 		minTime = fieldedMesh.minTime();
 		fieldSimulationTimeInterval = (maxTime - minTime) / 100.f;
+		visualisationTimeInterval = fieldSimulationTimeInterval / 10.f;
 		curTime = minTime;
+
 		if(resetSceneEvent != NULL)
 		{
 			(*resetSceneEvent)();
@@ -113,6 +116,7 @@ void VectorFieldsViewer::openField(char* path, bool isConst)
 		maxTime = fieldedMesh.maxTime();
 		minTime = fieldedMesh.minTime();
 		fieldSimulationTimeInterval = (maxTime - minTime) / 100.f;
+		visualisationTimeInterval = fieldSimulationTimeInterval / 10.f;
 		curTime = minTime;
 		computePaths();
 	}
@@ -160,7 +164,7 @@ VectorFieldsViewer& VectorFieldsViewer::getInstance()
 
 void VectorFieldsViewer::evolvePaths()
 {
-	curTime += fieldSimulationTimeInterval;
+	curTime += visualisationTimeInterval;
 	if (curTime > maxTime)
 	{
 		curTime = minTime;
@@ -168,7 +172,7 @@ void VectorFieldsViewer::evolvePaths()
 	}
 	else 
 	{
-		pathsMgr.Evolve(fieldSimulationTimeInterval);
+		pathsMgr.Evolve(visualisationTimeInterval);
 	}
 }
 

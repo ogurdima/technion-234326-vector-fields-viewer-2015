@@ -62,6 +62,7 @@ private:
 	Time							maxTime;
 	Time							minTime;
 	Time							fieldSimulationTimeInterval;
+	Time							visualisationTimeInterval;
 
 	FieldedMesh						fieldedMesh;
 	PathFinder						pathFinder;

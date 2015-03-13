@@ -165,6 +165,7 @@ void PathsManager::ChangeBaseColor(const Vec4f& rgba)
 
 void PathHandle::evolve(float dt)
 {
+	restoreCurrentHeadTail();
 	curTime += dt;
 	if (curTime > maxTime())
 	{
@@ -183,11 +184,14 @@ void PathHandle::evolve(float dt)
 	}
 	head -= UnitSize;
 	tail = max(0, (int)head - (int)(maxPathLength * UnitSize));
+	substituteHeadTail();
+	//storeCurrentHeadTail();
 	updateAlphaValues();
 }
 
 void PathHandle::setTime(float t)
 {
+	restoreCurrentHeadTail();
 	curTime = 0;
 	head = tail = 0;
 	evolve(t);
@@ -246,4 +250,69 @@ void PathHandle::updateAlphaValues()
 		assert(strength < 1);
 		data[i + AlphaOffset] = strength * baseAlpha;
 	}
+}
+
+void PathHandle::storeCurrentHeadTail()
+{
+	for (int i = 0; i < UnitSize; i++)
+	{
+		curHeadData[i] = data[head + i];
+		curTailData[i] = data[tail + i];
+	}
+	lastStoredHead = head;
+	lastStoredTail = tail;
+}
+
+void PathHandle::restoreCurrentHeadTail()
+{
+	if (lastStoredHead < 0 || lastStoredTail < 0)
+	{
+		return;
+	}
+
+	for (int i = 0; i < UnitSize; i++)
+	{
+		data[lastStoredHead + i] = curHeadData[i];
+		data[lastStoredTail + i] = curTailData[i];
+	}
+}
+
+void PathHandle::substituteHeadTail()
+{
+	if (head == tail)
+	{
+		return;
+	}
+	storeCurrentHeadTail();
+	
+	if (head != lastIdx() && head != 0)
+	{
+		interpolateNeighbors(head, curTime);
+	}
+	if (tail != lastIdx() && tail != 0)
+	{
+		// interpolateNeighbors(tail, -1);
+	}
+}
+
+void PathHandle::interpolateNeighbors(unsigned int target, float time)
+{
+	unsigned int next = target + UnitSize;
+	unsigned int prev = target - UnitSize;
+	float nextTime = data[next + TimeOffset];
+	float prevTime = data[prev + TimeOffset];
+	if (time < 0)
+	{
+		time = (nextTime + prevTime) / 2;
+	}
+
+	float ratio = (time - prevTime) / (nextTime - prevTime);
+	data[target + 0] = (1-ratio) * data[prev + 0] + ratio * data[next + 0];
+	data[target + 1] = (1-ratio) * data[prev + 1] + ratio * data[next + 1];
+	data[target + 2] = (1-ratio) * data[prev + 2] + ratio * data[next + 2];
+	data[target + 3] = (1-ratio) * data[prev + 3] + ratio * data[next + 3];
+	data[target + 4] = (1-ratio) * data[prev + 4] + ratio * data[next + 4];
+	data[target + 5] = (1-ratio) * data[prev + 5] + ratio * data[next + 5];
+	data[target + 6] = (1-ratio) * data[prev + 6] + ratio * data[next + 6];
+	data[target + 7] = (1-ratio) * data[prev + 7] + ratio * data[next + 7];
 }

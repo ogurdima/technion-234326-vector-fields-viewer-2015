@@ -32,7 +32,9 @@ public:
 		curTime(0),
 		head(0),
 		tail(0),
-		baseAlpha(1)
+		baseAlpha(1),
+		lastStoredHead(-1),
+		lastStoredTail(-1)
 	{}
 
 	PathHandle(unsigned int _dataIndex, unsigned int _dataSize, unsigned int _maxPathLength, float _baseAlpha) :
@@ -42,7 +44,9 @@ public:
 		curTime(0),
 		head(0),
 		tail(0),
-		baseAlpha(1)
+		baseAlpha(1),
+		lastStoredHead(-1),
+		lastStoredTail(-1)
 	{
 		globalPointIndex = _dataIndex;
 		numPoints = _dataSize;
@@ -59,6 +63,7 @@ public:
 	unsigned int tailGlobIdx();
 
 	
+	
 
 private:
 	float maxTime();
@@ -67,6 +72,15 @@ private:
 	float* at(unsigned int pointIndex);
 	unsigned int lastIdx();
 	void updateAlphaValues();
+	void storeCurrentHeadTail();
+	void restoreCurrentHeadTail();
+	void substituteHeadTail();
+	void interpolateNeighbors(unsigned int target, float time);
+
+	float	curHeadData[8];
+	float	curTailData[8];
+	int lastStoredHead;
+	int lastStoredTail;
 };
 
 
