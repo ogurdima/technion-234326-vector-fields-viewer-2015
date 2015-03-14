@@ -96,7 +96,9 @@ public:
 	void SetTime(Time t);
 	void GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount);
 	void ChangeBaseColor(const Vec4f& rgba);
-protected:
+	void ChangePathWindow(double pathWindow);
+
+private:
 	Vec4f					baseColor;
 	float					maxPathTimeSpan;
 	int						numOfPoints;
@@ -104,8 +106,6 @@ protected:
 	vector<PathHandle>		handles;
 	vector<unsigned int>	counts;
 	vector<unsigned int>	starts;
-
-	//void UpdateIndecesAndCounts(unsigned int pathIdx, unsigned int first, unsigned int last);
 	void UpdateStartsAndCounts(unsigned int pathIdx, unsigned int first, unsigned int last);
 
 };

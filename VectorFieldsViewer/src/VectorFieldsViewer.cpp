@@ -76,7 +76,9 @@ void VectorFieldsViewer::openMesh(char* path)
 		maxTime = fieldedMesh.maxTime();
 		minTime = fieldedMesh.minTime();
 		fieldSimulationTimeInterval = (maxTime - minTime) / 100.f;
+		UpdateSimulationStep(fieldSimulationTimeInterval);
 		visualisationTimeInterval = fieldSimulationTimeInterval / 10.f;
+		UpdateVisualizationStep(visualisationTimeInterval);
 		curTime = minTime;
 
 		if(resetSceneEvent != NULL)
@@ -137,12 +139,42 @@ void VectorFieldsViewer::openParameterWindow()
 		&VectorFieldsViewer::changedFieldColorCallback, 
 		&VectorFieldsViewer::openMeshCallback, 
 		&VectorFieldsViewer::openFieldCallback,
-		&VectorFieldsViewer::changedPathWindowCallback);
+		&VectorFieldsViewer::changedPathWindowCallback,
+		&VectorFieldsViewer::changedSimulationStepCallback,
+		&VectorFieldsViewer::changedVisualizationStepCallback,
+		&VectorFieldsViewer::recomputePathsCallback);
 }
 
 void VectorFieldsViewer::changedPathWindowCallback(double val)
 {
+	instance.pathsMgr.ChangePathWindow(val);
+}
 
+void VectorFieldsViewer::recomputePathsCallback()
+{
+	instance.computePaths();
+}
+
+void VectorFieldsViewer::changedSimulationStepCallback(double val)
+{
+	double maxStep = instance.maxTime - instance.minTime;
+	if(val > maxStep)
+	{
+		val = maxStep;
+		UpdateSimulationStep(val);
+	}
+	instance.fieldSimulationTimeInterval = val;
+}
+
+void VectorFieldsViewer::changedVisualizationStepCallback(double val)
+{
+	double maxStep = instance.maxTime - instance.minTime;
+	if(val > maxStep)
+	{
+		val = maxStep;
+		UpdateVisualizationStep(val);
+	}
+	instance.visualisationTimeInterval = val;
 }
 
 void VectorFieldsViewer::resetColorAndIndices()

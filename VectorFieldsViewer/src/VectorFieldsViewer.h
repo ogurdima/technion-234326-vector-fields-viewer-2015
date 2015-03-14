@@ -23,7 +23,14 @@ _declspec(dllexport) void OpenWindow(	void (*changedDrawingTimeout)(int),
 										void (*changedFieldColorCallback)(float,float,float,float),
 										void (*openMeshCallback)(char*),
 										void (*openFieldCallback)(char*, bool),
-										void (*changedPathWindow)(double));
+										void (*changedPathWindowCallback)(double),
+										void (*changedSimulationStepCallback)(double),
+										void (*changedVisualizationStepCallback)(double),
+										void (*recomputePathsCallback)(void));
+
+_declspec(dllexport) void UpdatePathWindow(double pathWindow);
+_declspec(dllexport) void UpdateSimulationStep(double simulationStep);
+_declspec(dllexport) void UpdateVisualizationStep(double visualizationStep);
 
 class VectorFieldsViewer
 {
@@ -45,6 +52,9 @@ private:
 	static void						changedMeshColorCallback(float,float,float,float);
 	static void						changedFieldColorCallback(float,float,float,float);
 	static void						changedPathWindowCallback(double val);
+	static void						changedSimulationStepCallback(double val);
+	static void						changedVisualizationStepCallback(double val);
+	static void						recomputePathsCallback();
 	// callback handlers
 	void							openField(char* path, bool isConst);
 	void							openMesh(char* path);

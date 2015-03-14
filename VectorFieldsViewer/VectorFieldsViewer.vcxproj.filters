@@ -20,9 +20,6 @@
     <ClCompile Include="src\PathFinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ParticlePath.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\VectorFieldsViewer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

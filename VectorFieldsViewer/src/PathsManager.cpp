@@ -24,8 +24,7 @@ void PathsManager::Configure(Vec4f _baseColor, vector<ParticlePath> paths,  floa
 	int pointsProcessedSoFar = 0;
 	for (unsigned int pathIdx = 0; pathIdx < paths.size(); pathIdx++)
 	{
-		PathHandle h(pointsProcessedSoFar, paths[pathIdx].size(), baseColor[3], maxPathTimeSpan);
-		handles[pathIdx] = h;
+		handles[pathIdx] = PathHandle(pointsProcessedSoFar, paths[pathIdx].size(), baseColor[3], maxPathTimeSpan);
 		pointsProcessedSoFar += paths[pathIdx].size();
 	}
 	numOfPoints = pointsProcessedSoFar;
@@ -58,17 +57,6 @@ void PathsManager::Configure(Vec4f _baseColor, vector<ParticlePath> paths,  floa
 			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 7] = baseColor[3];
 		}
 	}
-
-	//for (unsigned int pathIdx = 0; pathIdx < indices.size(); pathIdx++)
-	//{
-	//	if (NULL != indices[pathIdx])
-	//	{
-	//		delete[] indices[pathIdx];
-	//		indices[pathIdx] = NULL;
-	//	}
-	//}
-	//indices.clear();
-	//indices.resize(handles.size());
 
 	starts.clear();
 	starts.resize(handles.size());
@@ -103,23 +91,6 @@ void PathsManager::SetTime(Time t)
 	}
 }
 
-//void PathsManager::UpdateIndecesAndCounts(unsigned int pathIdx, unsigned int first, unsigned int last)
-//{
-//	if (first != last)
-//	{
-//		int count = 0;
-//		for (unsigned int i = first; i <= last; i+=PathHandle::UnitSize, count++)
-//		{
-//			indices[pathIdx][count] = i;
-//		}
-//		counts[pathIdx] = count;
-//	}
-//	else
-//	{
-//		counts[pathIdx] = 0;
-//	}
-//}
-
 void PathsManager::UpdateStartsAndCounts(unsigned int pathIdx, unsigned int first, unsigned int last)
 {
 	if (first != last)
@@ -137,7 +108,6 @@ void PathsManager::UpdateStartsAndCounts(unsigned int pathIdx, unsigned int firs
 void PathsManager::GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount)
 {
 	dataArray = data;
-	//indices = &(this->indices[0]);
 	counts = &(this->counts[0]);
 	starts = &(this->starts[0]);
 	pathCount = handles.size();
@@ -156,6 +126,14 @@ void PathsManager::ChangeBaseColor(const Vec4f& rgba)
 	for (unsigned int pathIdx = 0; pathIdx < handles.size(); pathIdx++)
 	{
 		handles[pathIdx].baseAlpha = baseColor[3];
+	}
+}
+
+void PathsManager::ChangePathWindow(double pathWindow)
+{
+	for(uint i = 0; i < handles.size(); ++i)
+	{
+		handles[i].maxPathTimeSpan = pathWindow;
 	}
 }
 
@@ -329,3 +307,5 @@ void PathHandle::interpolateNeighbors(unsigned int target, float time)
 	data[target + 6] = (1-ratio) * data[prev + 6] + ratio * data[next + 6];
 	data[target + 7] = (1-ratio) * data[prev + 7] + ratio * data[next + 7];
 }
+
+

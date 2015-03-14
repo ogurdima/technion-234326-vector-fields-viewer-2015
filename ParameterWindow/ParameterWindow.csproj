@@ -71,7 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DrawState.cs" />
-    <Compile Include="ManagedClass.cs" />
+    <Compile Include="CallbackTypes.cs" />
     <Compile Include="ParameterWindow.xaml.cs">
       <DependentUpon>ParameterWindow.xaml</DependentUpon>
     </Compile>

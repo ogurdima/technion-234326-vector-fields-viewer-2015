@@ -12,7 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\FieldedMesh.cpp" />
-    <ClCompile Include="src\ParticlePath.cpp" />
     <ClCompile Include="src\PathFinder.cpp" />
     <ClCompile Include="src\PathsManager.cpp" />
     <ClCompile Include="src\VectorFieldsUtils.cpp" />
