@@ -18,7 +18,7 @@ __declspec(dllexport) void OpenWindow(	void (*changedDrawingTimeout)(int),
 										void (*changedVisualizationStepCallback)(double),
 										void (*recomputePathsCallback)(void))
 {
-	ParameterWindow::ParameterWindow::OpenParameterWindow(changedDrawingTimeout, 
+	Parameters::ParameterWindow::OpenParameterWindow(changedDrawingTimeout, 
 					changedDrawStateCallback, 
 					changedMeshColorCallback,
 					changedFieldColorCallback,
@@ -33,17 +33,17 @@ __declspec(dllexport) void OpenWindow(	void (*changedDrawingTimeout)(int),
 
 __declspec(dllexport) void UpdatePathWindow(double pathWindow)
 {
-	ParameterWindow::ParameterWindow::Instance->UpdatePathWindow(pathWindow);
+	Parameters::ParameterWindow::Instance->UpdatePathWindow(pathWindow);
 }
 
 __declspec(dllexport) void UpdateSimulationStep(double simulationStep)
 {
-	ParameterWindow::ParameterWindow::Instance->UpdateSimulationStep(simulationStep);
+	Parameters::ParameterWindow::Instance->UpdateSimulationStep(simulationStep);
 }
 
 __declspec(dllexport) void UpdateVisualizationStep(double visualizationStep)
 {
-	ParameterWindow::ParameterWindow::Instance->UpdateVisualizationStep(visualizationStep);
+	Parameters::ParameterWindow::Instance->UpdateVisualizationStep(visualizationStep);
 }
 
 

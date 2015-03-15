@@ -1,17 +1,22 @@
-﻿<Window x:Class="ParameterWindow.ParameterWindow"
+﻿<Window x:Class="Parameters.ParameterWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:parameterWindow="clr-namespace:ParameterWindow"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:parameterWindow="clr-namespace:Parameters"
         Width="400"
         Height="500"
         MinWidth="300"
         Background="Azure"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         ResizeMode="NoResize"
-        ShowInTaskbar="True"
-        WindowStyle="ToolWindow">
+        ShowInTaskbar="False"
+        WindowStartupLocation="Manual"
+        Topmost="True"
+        WindowStyle="ToolWindow"
+        Closing="WindowClosing"
+        >
 
+    <!--  Region Resources  -->
     <Window.Resources>
         <Style TargetType="{x:Type ListViewItem}">
             <Setter Property="Template">
@@ -35,8 +40,11 @@
             <Setter Property="Foreground" Value="Black" />
         </Style>
     </Window.Resources>
+    <!--  End Region  -->
+
 
     <Grid Loaded="LoadedWindow">
+        <!--  Region Raw/Column Definition  -->
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition />
@@ -65,14 +73,17 @@
             <RowDefinition />
 
         </Grid.RowDefinitions>
+        <!--  End Region  -->
 
-        <!--  Draw type  -->
+        <!--  Region Draw type  -->
         <Label Grid.Row="0"
                Content="Draw type:"
                Style="{StaticResource HeaderLabelStyle}" />
+        
         <ListView Grid.Row="1"
                   Grid.Column="0"
                   Grid.ColumnSpan="2"
+                  Background="Transparent"
                   ItemsSource="{Binding Source={x:Static parameterWindow:DrawState.Values}}"
                   SelectedItem="{Binding SelectedDrawState,
                                          Mode=TwoWay}"
@@ -88,79 +99,81 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        
         <Separator Grid.Row="2"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Height="2"
                    Background="Black" />
-        <!--  Mesh  -->
+        <!--  End Region  -->
+        
+        <!-- Region  Mesh  -->
         <Label Grid.Row="3"
                Grid.Column="0"
                Content="Mesh:"
                Style="{StaticResource HeaderLabelStyle}" />
-
+        
         <DockPanel Grid.Row="4"
                    Grid.Column="0"
                    Grid.ColumnSpan="2">
             <Button Click="LoadMesh" DockPanel.Dock="Right">Load . . .</Button>
             <TextBox Name="MeshPath" IsReadOnly="True" />
         </DockPanel>
-
+        
         <Label Grid.Row="5"
                Grid.Column="0"
                HorizontalAlignment="Left"
                Content="Color:" />
-
         <xctk:ColorPicker Grid.Row="5"
                           Grid.Column="1"
-                          Width="70"
+                          Width="120"
                           HorizontalAlignment="Left"
                           ColorMode="ColorCanvas"
                           DockPanel.Dock="Bottom"
                           SelectedColor="{Binding MeshColor,
                                                   Mode=TwoWay}" />
+        
         <Separator Grid.Row="6"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Height="2"
                    Background="Black" />
+        <!--  End Region  -->
 
-
-        <!--  Field  -->
+        <!-- Region Field  -->
         <Label Grid.Row="7"
                Grid.Column="0"
                Content="Field:"
                Style="{StaticResource HeaderLabelStyle}" />
-
+        
         <DockPanel Grid.Row="8"
                    Grid.Column="0"
                    Grid.ColumnSpan="2">
             <Button Click="LoadField" DockPanel.Dock="Right">Load . . .</Button>
             <TextBox Name="FieldPath" IsReadOnly="True" />
         </DockPanel>
-
+        
         <Label Grid.Row="9"
                Grid.Column="0"
                HorizontalAlignment="Left"
                Content="Field color:" />
-
         <xctk:ColorPicker Grid.Row="9"
                           Grid.Column="1"
-                          Width="70"
+                          Width="120"
                           HorizontalAlignment="Left"
                           ColorMode="ColorCanvas"
                           DockPanel.Dock="Bottom"
                           SelectedColor="{Binding FieldColor,
                                                   Mode=TwoWay}" />
-
-
-
+        
         <Separator Grid.Row="10"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Height="2"
                    Background="Black" />
-        <!--  Visualization  -->
+        <!--  End Region  -->
+
+        <!-- Region Visualization  -->
         <Label Grid.Row="11"
                Grid.Column="0"
                Content="Visualization:"
@@ -172,42 +185,45 @@
                Content="Evolution period(msec):" />
         <xctk:IntegerUpDown Grid.Row="12"
                             Grid.Column="1"
-                            Width="70"
+                            Width="120"
                             HorizontalAlignment="Left"
                             Increment="5"
                             Maximum="5000"
                             Minimum="1"
                             Value="{Binding Timeout}" />
-
+        
         <Label Grid.Row="13"
                Grid.Column="0"
                HorizontalAlignment="Left"
                Content="Path time window:" />
         <xctk:DoubleUpDown Grid.Row="13"
                            Grid.Column="1"
-                           Width="70"
+                           Width="120"
                            HorizontalAlignment="Left"
-                           Increment="0.001"
-                           Minimum="0"
+                           Increment="0.00001"
+                           Minimum="0.00001"
                            Value="{Binding PathWindow}" />
-
+        
         <Label Grid.Row="14"
                Grid.Column="0"
                HorizontalAlignment="Left"
                Content="Visualization step:" />
         <xctk:DoubleUpDown Grid.Row="14"
                            Grid.Column="1"
-                           Width="70"
+                           Width="120"
                            HorizontalAlignment="Left"
-                           Increment="0.001"
-                           Minimum="0"
+                           Increment="0.00001"
+                           Minimum="0.00001"
                            Value="{Binding VisualizationStep}" />
+        
         <Separator Grid.Row="15"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Height="2"
                    Background="Black" />
-        <!--  Simulation  -->
+        <!--  End Region  -->
+
+        <!-- Region Simulation  -->
         <Label Grid.Row="16"
                Grid.Column="0"
                Content="Simulation:"
@@ -218,10 +234,10 @@
                Content="Simulation step:" />
         <xctk:DoubleUpDown Grid.Row="17"
                            Grid.Column="1"
-                           Width="70"
+                           Width="120"
                            HorizontalAlignment="Left"
-                           Increment="0.001"
-                           Minimum="0"
+                           Increment="0.00001"
+                           Minimum="0.00001"
                            Value="{Binding SimulationStep}" />
         <Button Grid.Row="18"
                 Grid.Column="1"
@@ -230,7 +246,9 @@
                 BorderThickness="2"
                 Click="RecomputeClick"
                 Content="Recompute"
-                IsEnabled="{Binding NeedRecompute}"
+                IsEnabled="{Binding NeedRecompute, Mode=TwoWay}"
                 Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" />
+        <!--  End Region  -->
+
     </Grid>
 </Window>

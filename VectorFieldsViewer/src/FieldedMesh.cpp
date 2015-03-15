@@ -269,7 +269,7 @@ void FieldedMesh::setMeshColor(const Vec4f& color)
 	{	
 		vertexColors.resize(size);
 	}
-	for(int i = 0; i < size; ++i)
+	for(uint i = 0; i < size; ++i)
 	{
 		vertexColors[i] = color;
 	}

@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Media;
 using Microsoft.Win32;
 
-namespace ParameterWindow
+namespace Parameters
 {
     /// <summary>
     /// Interaction logic for ParameterWindow.xaml
@@ -108,12 +108,7 @@ namespace ParameterWindow
 
         private void PropertyChangedCallback(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
-            bool needRecompute = false;
-            if (propertyChangedEventArgs.PropertyName == "SimulationStep")
-            {
-                needRecompute = (_oldSimulationStep != _simulationStep);
-            }
-            NeedRecompute = needRecompute;
+            NeedRecompute = _oldSimulationStep != _simulationStep;
         }
 
         public event IntParameterCallback TimeoutChanged;
@@ -327,5 +322,11 @@ namespace ParameterWindow
                 RecomputePaths();
             }
         }
+
+        private void WindowClosing(object sender, CancelEventArgs e)
+        {
+            e.Cancel = true;
+        }
+
     }
 }

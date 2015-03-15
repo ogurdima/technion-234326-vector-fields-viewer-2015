@@ -7,7 +7,7 @@
     <ProjectGuid>{D4B5290C-59F3-4073-8478-51578F4D5B9F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ParameterWindow</RootNamespace>
+    <RootNamespace>Parameters</RootNamespace>
     <AssemblyName>ParameterWindow</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

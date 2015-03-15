@@ -66,13 +66,12 @@ void VectorFieldsWindow::keyboard(int key, int x, int y)
 void VectorFieldsWindow::display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	switch(VectorFieldsViewer::getInstance().getDrawState())
 	{
 	case(DrawStateType::NONE):
 		break;
 	case(DrawStateType::WIREFRAME):
-		drawWireframe(VectorFieldsViewer::getInstance().getMeshColor());
+		drawWireframe();
 		break;
 	case(DrawStateType::SOLID_FLAT):
 		drawSolid(false, true, VectorFieldsViewer::getInstance().getMeshColor());
@@ -89,18 +88,21 @@ void VectorFieldsWindow::display()
 	glutSwapBuffers();
 }
 
-void VectorFieldsWindow::drawWireframe(const Vec4f& color)
+void VectorFieldsWindow::drawWireframe()
 {
 	glDisable(GL_LIGHTING);
 	glDepthFunc(GL_LEQUAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	GL::glColor(color);
+	//GL::glColor(color);
 
 	const FieldedMesh& fieldedMesh = VectorFieldsViewer::getInstance().getMesh();
 	
 	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
 	GL::glVertexPointer(fieldedMesh.points());
+	GL::glColorPointer(fieldedMesh.getVertexColors());
 	glDrawElements(GL_TRIANGLES, fieldedMesh.getIndices().size(), GL_UNSIGNED_INT, &fieldedMesh.getIndices()[0]);
+	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 
 }
@@ -160,7 +162,6 @@ void VectorFieldsWindow::drawVectorField()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	float* dataArray;
-	unsigned int** indices;
 	unsigned int* counts;
 	unsigned int* starts;
 	unsigned int primCount;
@@ -197,7 +198,7 @@ void VectorFieldsWindow::resetSceneHandler()
 		return;
 	}
 	Vec3f l(-1.), r(1.);
-	VectorFieldsWindow::instance->set_scene( (l + r) * 0.5, (l - r).norm() * 0.5);
+	VectorFieldsWindow::instance->set_scene( Vec3f(0.f), 1);
 }
 
 const VectorFieldsWindow* VectorFieldsWindow::getInstance()

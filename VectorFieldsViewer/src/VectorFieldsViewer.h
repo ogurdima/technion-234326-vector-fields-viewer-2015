@@ -17,27 +17,28 @@ typedef enum DrawStateType
 	FIELD			= 5,
 } DrawStateType;
 
+#pragma region export
 _declspec(dllexport) void OpenWindow(	void (*changedDrawingTimeout)(int),
-										void (*changedDrawStateCallback)(int),
-										void (*changedMeshColorCallback)(float,float,float,float),
-										void (*changedFieldColorCallback)(float,float,float,float),
-										void (*openMeshCallback)(char*),
-										void (*openFieldCallback)(char*, bool),
-										void (*changedPathWindowCallback)(double),
-										void (*changedSimulationStepCallback)(double),
-										void (*changedVisualizationStepCallback)(double),
-										void (*recomputePathsCallback)(void));
+									 void (*changedDrawStateCallback)(int),
+									 void (*changedMeshColorCallback)(float,float,float,float),
+									 void (*changedFieldColorCallback)(float,float,float,float),
+									 void (*openMeshCallback)(char*),
+									 void (*openFieldCallback)(char*, bool),
+									 void (*changedPathWindowCallback)(double),
+									 void (*changedSimulationStepCallback)(double),
+									 void (*changedVisualizationStepCallback)(double),
+									 void (*recomputePathsCallback)(void));
 
 _declspec(dllexport) void UpdatePathWindow(double pathWindow);
 _declspec(dllexport) void UpdateSimulationStep(double simulationStep);
 _declspec(dllexport) void UpdateVisualizationStep(double visualizationStep);
+#pragma endregion
 
 class VectorFieldsViewer
 {
 #pragma region Singleton
 private:
 	VectorFieldsViewer(void);
-	~VectorFieldsViewer(void);
 
 	static VectorFieldsViewer		instance;
 	static int						drawingTimeout;
@@ -86,28 +87,25 @@ private:
 private:
 	void							computePaths();
 	void							evolvePaths();
-	void							resetColorAndIndices();
-	
-
 
 public:
-	// singleton
+#pragma region Static
 	static VectorFieldsViewer&		getInstance();
-
-	// events
-	void							AddRedrawHandler(void (*redrawCallback)(void));
-	void							AddResetSceneHandler(void (*resetSceneCallback)(void));
-
-	// api
 	static int						getDrawingTimeout();
+#pragma endregion
 
+#pragma region Handlers
+	void							AddRedrawHandler(void (*redrawCallback)(void));
+	void							AddResetSceneHandler(void (*resetSceneCallback)(void));  
+#pragma endregion
+
+#pragma region API
 	void							GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount);
 	const FieldedMesh&				getMesh();
 	const Vec4f&					getMeshColor();
-	const Vec4f&					getFieldColor();
 	void							onTimer(int val);
-	DrawStateType					getDrawState();
 	void							openParameterWindow();
+	DrawStateType					getDrawState();  
+#pragma endregion
 
 };
-

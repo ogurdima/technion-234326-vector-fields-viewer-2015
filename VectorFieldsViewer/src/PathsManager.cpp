@@ -129,7 +129,7 @@ void PathsManager::ChangeBaseColor(const Vec4f& rgba)
 	}
 }
 
-void PathsManager::ChangePathWindow(double pathWindow)
+void PathsManager::ChangePathWindow(float pathWindow)
 {
 	for(uint i = 0; i < handles.size(); ++i)
 	{

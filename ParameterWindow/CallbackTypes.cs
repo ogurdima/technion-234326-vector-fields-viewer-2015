@@ -1,8 +1,7 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ParameterWindow
+namespace Parameters
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void IntParameterCallback(int i);

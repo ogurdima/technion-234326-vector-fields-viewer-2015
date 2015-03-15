@@ -96,7 +96,7 @@ public:
 	void SetTime(Time t);
 	void GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount);
 	void ChangeBaseColor(const Vec4f& rgba);
-	void ChangePathWindow(double pathWindow);
+	void ChangePathWindow(float pathWindow);
 
 private:
 	Vec4f					baseColor;

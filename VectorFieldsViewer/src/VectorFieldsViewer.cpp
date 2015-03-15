@@ -3,29 +3,53 @@
 VectorFieldsViewer VectorFieldsViewer::instance;
 int VectorFieldsViewer::drawingTimeout;
 
-
 VectorFieldsViewer::VectorFieldsViewer(void) :
 	fieldSimulationTimeInterval(0.001),
 	visualisationTimeInterval(0.0001),
 	drawState(DrawStateType::NONE),
 	fieldColor(1,1,1,0),
-	meshColor(0.1,0.1,0.1,1),
+	meshColor(0.1f,0.1f,0.1f,1.f),
 	resetSceneEvent(NULL),
 	redrawEvent(NULL),
 	maxTime(1),
 	minTime(0),
-	curTime(0)
+	curTime(0) 
 {
-}
-
-VectorFieldsViewer::~VectorFieldsViewer(void)
-{
-	resetColorAndIndices();
 }
 
 void VectorFieldsViewer::openMeshCallback(char* path)
 {
 	instance.openMesh(path);
+}
+
+void VectorFieldsViewer::openMesh(char* path)
+{
+	fieldedMesh = FieldedMesh();
+	if (fieldedMesh.load(path))
+	{
+		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
+		maxTime = fieldedMesh.maxTime();
+		minTime = fieldedMesh.minTime();
+		fieldSimulationTimeInterval = (maxTime - minTime) / 100.f;
+		UpdateSimulationStep(fieldSimulationTimeInterval);
+		visualisationTimeInterval = fieldSimulationTimeInterval / 10.f;
+		UpdateVisualizationStep(visualisationTimeInterval);
+		curTime = minTime;
+
+		if(resetSceneEvent != NULL)
+		{
+			(*resetSceneEvent)();
+		}
+		computePaths();
+	}
+	else
+	{
+		std::cerr << "failed to load the mesh from: " << path << std::endl;
+	}
+	if(redrawEvent != NULL)
+	{
+		(*redrawEvent)();
+	}
 }
 
 void VectorFieldsViewer::changedDrawStateCallback(int val)
@@ -68,35 +92,6 @@ void VectorFieldsViewer::changedFieldColorCallback(float r, float g, float b, fl
 	instance.pathsMgr.ChangeBaseColor(instance.fieldColor);
 }
 
-void VectorFieldsViewer::openMesh(char* path)
-{
-	if (fieldedMesh.load(path))
-	{
-		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
-		maxTime = fieldedMesh.maxTime();
-		minTime = fieldedMesh.minTime();
-		fieldSimulationTimeInterval = (maxTime - minTime) / 100.f;
-		UpdateSimulationStep(fieldSimulationTimeInterval);
-		visualisationTimeInterval = fieldSimulationTimeInterval / 10.f;
-		UpdateVisualizationStep(visualisationTimeInterval);
-		curTime = minTime;
-
-		if(resetSceneEvent != NULL)
-		{
-			(*resetSceneEvent)();
-		}
-		computePaths();
-	}
-	else
-	{
-		std::cerr << "failed to load the mesh from: " << path << std::endl;
-	}
-	if(redrawEvent != NULL)
-	{
-		(*redrawEvent)();
-	}
-}
-
 void VectorFieldsViewer::onTimer(int val)
 {
 	evolvePaths();
@@ -126,9 +121,9 @@ void VectorFieldsViewer::openField(char* path, bool isConst)
 	}
 }
 
-void VectorFieldsViewer::changeDrawingTimeout(int range)
+void VectorFieldsViewer::changeDrawingTimeout(int timeout)
 {
-	drawingTimeout = range;
+	drawingTimeout = timeout;
 }
 
 void VectorFieldsViewer::openParameterWindow()
@@ -177,21 +172,6 @@ void VectorFieldsViewer::changedVisualizationStepCallback(double val)
 	instance.visualisationTimeInterval = val;
 }
 
-void VectorFieldsViewer::resetColorAndIndices()
-{
-	int maxActivePathLength = 30;
-	colors.resize(maxActivePathLength * 4);
-	indices.resize(maxActivePathLength);
-	for(uint i = 0; i < maxActivePathLength; ++i)
-	{
-		indices[i] = i;
-		colors[i * 4] = fieldColor[0];
-		colors[i * 4 + 1] = fieldColor[1];
-		colors[i * 4 + 2] = fieldColor[2];
-		colors[i * 4 + 3] = fieldColor[3] * std::sqrt(std::sqrt( ((float) i) / maxActivePathLength)) / 3;
-	}
-}
-
 VectorFieldsViewer& VectorFieldsViewer::getInstance()
 {
 	return instance;
@@ -219,8 +199,9 @@ void VectorFieldsViewer::evolvePaths()
 void VectorFieldsViewer::computePaths()
 {
 	vector<ParticlePath> particlePaths;
+	UpdateSimulationStep(fieldSimulationTimeInterval);
 	bool success = pathFinder.configure(fieldedMesh, fieldSimulationTimeInterval);
-	if (success) 
+	if (success)
 	{
 		particlePaths = pathFinder.getParticlePaths();
 	}
@@ -229,7 +210,9 @@ void VectorFieldsViewer::computePaths()
 		std::cerr << "Failed to properly configure PathFinder" << std::endl;
 		particlePaths = vector<ParticlePath>();
 	}
-	pathsMgr.Configure(fieldColor, particlePaths, (maxTime - minTime) / 5 );
+
+	UpdateVisualizationStep(visualisationTimeInterval = (maxTime - minTime) / 100);
+	pathsMgr.Configure(fieldColor, particlePaths,  visualisationTimeInterval);
 }
 
 void VectorFieldsViewer::AddRedrawHandler(void (*redrawCallback)(void))
@@ -250,11 +233,6 @@ const FieldedMesh& VectorFieldsViewer::getMesh()
 const Vec4f& VectorFieldsViewer::getMeshColor()
 {
 	return meshColor;
-}
-
-const Vec4f& VectorFieldsViewer::getFieldColor()
-{
-	return fieldColor;
 }
 
 DrawStateType VectorFieldsViewer::getDrawState()
