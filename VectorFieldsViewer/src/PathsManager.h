@@ -91,7 +91,7 @@ class PathsManager
 {
 public:
 	PathsManager();
-	void Configure(Vec4f _baseColor, vector<ParticlePath> paths, float _maxPathTimeSpan);
+	void Configure(Vec4f _baseColor,const vector<ParticlePath>& paths, float _maxPathTimeSpan);
 	void Evolve(Time dt);
 	void SetTime(Time t);
 	void GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount);

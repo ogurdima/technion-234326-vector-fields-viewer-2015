@@ -16,7 +16,7 @@ class VectorFieldsWindow : public GlutExaminer
 
 	void								drawWireframe();
 	void								drawVectorField();
-	void								drawSolid(bool isSmooth, bool useLighting, const Vec4f& color = Vec4f(0,0,0)); 
+	void								drawSolid(bool isSmooth, bool useLighting); 
 
 protected:
 	virtual void						display(void);

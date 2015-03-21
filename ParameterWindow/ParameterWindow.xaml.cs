@@ -311,7 +311,7 @@ namespace Parameters
             };
             Timeout = 60;
             PathWindow = 0.1;
-            var fileInfo = new FileInfo(@"..\Data\old\Horse.off");
+            var fileInfo = new FileInfo(@"..\Data\miri\teddy171.off");
             CallOpenMesh(fileInfo.FullName);
         }
 

@@ -14,7 +14,7 @@ PathsManager::PathsManager() :
 
 }
 
-void PathsManager::Configure(Vec4f _baseColor, vector<ParticlePath> paths,  float _maxPathTimeSpan)
+void PathsManager::Configure(Vec4f _baseColor,const vector<ParticlePath>& paths,  float _maxPathTimeSpan)
 {
 	maxPathTimeSpan = _maxPathTimeSpan;
 	baseColor = _baseColor;
@@ -34,8 +34,16 @@ void PathsManager::Configure(Vec4f _baseColor, vector<ParticlePath> paths,  floa
 		delete[] data;
 		data = NULL;
 	}
-	data = new float[PathHandle::UnitSize * numOfPoints];
-
+	int attemps = 100;
+	
+	while( NULL == data && --attemps > 0)
+	{
+		try
+		{
+			data = new float[PathHandle::UnitSize * numOfPoints];
+		}
+		catch(...) {}
+	}
 	for (unsigned int pathIdx = 0; pathIdx < handles.size(); pathIdx++)
 	{
 		handles[pathIdx].data = &data[handles[pathIdx].globalPointIndex * PathHandle::UnitSize];
