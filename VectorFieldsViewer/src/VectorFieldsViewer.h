@@ -76,7 +76,6 @@ private:
 	Time							visualisationTimeInterval;
 
 	FieldedMesh						fieldedMesh;
-	PathFinder						pathFinder;
 	PathsManager					pathsMgr;
 
 	vector<uint>					indices;

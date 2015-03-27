@@ -17,8 +17,7 @@ class PathFinder
 {
 public:
 	PathFinder();
-	bool												configure(const FieldedMesh& aMesh_, const Time& dt_);
-	vector<ParticlePath>								getParticlePaths();
+	vector<ParticlePath>								getParticlePaths(const FieldedMesh& aMesh_, const Time& dt_);
 
 private:
 
@@ -39,5 +38,6 @@ private:
 	void												cleareCache();
 	ParticlePath										getParticlePath(Mesh::FaceHandle& face_);
 	Vec3f												getField(const Point& p,const int fid, const Time time);
+	bool												configure(const FieldedMesh& aMesh_, const Time& dt_);
 };
 

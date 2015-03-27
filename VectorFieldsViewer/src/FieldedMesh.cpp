@@ -172,8 +172,8 @@ void FieldedMesh::readFieldFile(const char* path, vector<vector<Vec3f>>& fieldPe
 	{
 		std::string fullPath = start + timePath;
 		vector<Vec3f> constField = readConstFieldFile(fullPath.c_str());
-		assert(constField.size() == n_faces());
-		for (unsigned int i = 0; i < constField.size(); i++)
+		assert(constField.size() >= n_faces());
+		for (unsigned int i = 0; i < n_faces(); i++)
 		{
 			fieldPerFace[i].push_back(constField[i]);
 		}

@@ -198,19 +198,17 @@ void VectorFieldsViewer::computePaths()
 {
 	vector<ParticlePath> particlePaths;
 	UpdateSimulationStep(fieldSimulationTimeInterval);
-	bool success = pathFinder.configure(fieldedMesh, fieldSimulationTimeInterval);
-	if (success)
+	PathFinder pathFinder;
+	try
 	{
-		particlePaths = pathFinder.getParticlePaths();
+		particlePaths = pathFinder.getParticlePaths(fieldedMesh, fieldSimulationTimeInterval);
 	}
-	else 
+	catch(exception e)
 	{
-		std::cerr << "Failed to properly configure PathFinder" << std::endl;
-		particlePaths = vector<ParticlePath>();
+		std::cout << "Exception thrown while computing particle paths: " << e.what() << std::endl;
 	}
-
 	UpdateVisualizationStep(visualisationTimeInterval = (maxTime - minTime) / 100);
-	pathsMgr.Configure(fieldColor, particlePaths,  visualisationTimeInterval);
+	pathsMgr.Configure(fieldColor, particlePaths, visualisationTimeInterval);
 }
 
 void VectorFieldsViewer::AddRedrawHandler(void (*redrawCallback)(void))

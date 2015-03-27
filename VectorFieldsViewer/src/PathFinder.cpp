@@ -38,9 +38,10 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 	return hasValidConfig;
 }
 
-vector<ParticlePath> PathFinder::getParticlePaths()
+vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, const Time& dt_)
 {
 	cout << sizeof(float) << "    ******" << endl;
+	configure(aMesh_, dt_);
 	if (!hasValidConfig) 
 	{
 		throw std::exception("Calling getParticlePaths with badly configured PathFinder");
