@@ -27,40 +27,6 @@ bool VectorFieldsUtils::isInnerPoint(const Point& point, const Triangle& triangl
 	return (barycentric[0] >= 0) && (barycentric[1] >= 0) && (barycentric[2] >= 0);	
 }
 
-bool VectorFieldsUtils::isCloseToZero(double val)
-{
-	return abs(val) < NUMERICAL_ERROR_THRESH;
-}
-
-float VectorFieldsUtils::fRand(float fMin, float fMax)
-{
-    float f = (float)rand() / RAND_MAX;
-    return fMin + f * (fMax - fMin);
-}
-
-Vec3f VectorFieldsUtils::lerp(const Vec3f& first, const Vec3f& second, const Time& time) 
-{
-	assert(time <= 1.0 && time >= 0.0);
-	return (first * (1. - time)) + (second * (float)time);
-}
-
-Point VectorFieldsUtils::getTriangleCentroid(const Triangle& t)
-{
-	return (t[0] + t[1] + t[2]) / 3.0;
-}
-
-Vec3f VectorFieldsUtils::getTriangleNormal(const Triangle& t)
-{
-	return ((t[1] - t[0]) % (t[2] - t[1])).normalized();
-}
-
-Vec3f VectorFieldsUtils::projectVectorOntoTriangle(const Vec3f& v, const Normal& n)
-{
-	Vec3f onPlanePerpToV = v % n;
-	Vec3f onPlaneClosestToV = n % onPlanePerpToV;
-	return onPlaneClosestToV; // TODO: check lengths, maybe need to normalize one step
-}
-
 Vec3f VectorFieldsUtils::calculateField(const vector<VectorFieldTimeVal>& fieldSamples, const Time& time)
 {
 	uint size = fieldSamples.size();
@@ -84,8 +50,8 @@ Vec3f VectorFieldsUtils::calculateField(const vector<VectorFieldTimeVal>& fieldS
 			break;
 		}
 	}
+
 	assert(i < size);
-	// fieldSamples[i - 1].time < time && time <= fieldSamples[i].time
 	assert(fieldSamples[i - 1].time < time && time <= fieldSamples[i].time);
 
 	// todo: add interpolation by angle and length

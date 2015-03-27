@@ -19,17 +19,17 @@ public:
 		times.reserve(500);
 	}
 
-	inline const vector<Point>& getPoints()
+	inline const vector<Point>& getPoints() const
 	{
 		return points;
 	}
 
-	inline const vector<Time>& getTimes()
+	inline const vector<Time>& getTimes() const
 	{
 		return times;
 	}
 
-	inline const uint size()
+	inline const uint size() const
 	{
 		assert(points.size() == times.size());
 		return points.size();

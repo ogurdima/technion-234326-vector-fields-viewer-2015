@@ -9,10 +9,12 @@
         Background="Azure"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         ResizeMode="NoResize"
-        ShowInTaskbar="False"
+        ShowInTaskbar="true"
         WindowStartupLocation="Manual"
-        Topmost="True"
+        Topmost="false"
         WindowStyle="ToolWindow"
+        Top="0"
+        Left="1000"
         Closing="WindowClosing"
         >
 

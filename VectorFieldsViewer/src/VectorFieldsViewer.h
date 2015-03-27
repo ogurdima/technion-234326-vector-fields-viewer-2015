@@ -67,7 +67,6 @@ private:
 #pragma region Fields
 private:
 	DrawStateType					drawState;
-	Vec4f							meshColor;
 	Vec4f							fieldColor;
 
 	Time							curTime;
@@ -102,7 +101,6 @@ public:
 #pragma region API
 	void							GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount);
 	const FieldedMesh&				getMesh();
-	const Vec4f&					getMeshColor();
 	void							onTimer(int val);
 	void							openParameterWindow();
 	DrawStateType					getDrawState();  

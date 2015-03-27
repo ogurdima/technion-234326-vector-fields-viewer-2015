@@ -32,12 +32,12 @@ private:
 	// cache
 	vector<Triangle>									triangles;
 	vector<Point>										centroids;
-	vector<vector<int>>									oneRingFaceIds;
 	vector<Normal>										normals;
-	vector<VectorT<Point,3>>							faceVertices;
 	vector<VectorT<vector<VectorFieldTimeVal>,3>>		faceVertexFields;
 	
-	ParticlePath										getParticlePath(const Mesh::FaceHandle& face_);
+	void												cache();
+	void												cleareCache();
+	ParticlePath										getParticlePath(Mesh::FaceHandle& face_);
 	Vec3f												getField(const Point& p,const int fid, const Time time);
 };
 

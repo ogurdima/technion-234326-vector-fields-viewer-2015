@@ -74,13 +74,13 @@ void VectorFieldsWindow::display()
 		drawWireframe();
 		break;
 	case(DrawStateType::SOLID_FLAT):
-		drawSolid(false, true, VectorFieldsViewer::getInstance().getMeshColor());
+		drawSolid(false, true);
 		break;
 	case(DrawStateType::SOLID_SMOOTH):
-		drawSolid(true, true, VectorFieldsViewer::getInstance().getMeshColor());
+		drawSolid(true, true);
 		break;
 	case(DrawStateType::FRONT_FIELD):
-		drawSolid(true, false, VectorFieldsViewer::getInstance().getMeshColor());
+		drawSolid(true, false);
 	case(DrawStateType::FIELD):
 		drawVectorField();
 		break;
@@ -131,7 +131,7 @@ void setLighting(bool useLighting)
 	}
 }
 
-void VectorFieldsWindow::drawSolid(bool isSmooth, bool useLighting, const Vec4f& color)
+void VectorFieldsWindow::drawSolid(bool isSmooth, bool useLighting)
 {
 	glDepthRange(0.01, 1.0);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

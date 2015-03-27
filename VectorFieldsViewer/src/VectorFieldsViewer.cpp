@@ -8,12 +8,11 @@ VectorFieldsViewer::VectorFieldsViewer(void) :
 	visualisationTimeInterval(0.0001),
 	drawState(DrawStateType::NONE),
 	fieldColor(1,1,1,0),
-	meshColor(0.1f,0.1f,0.1f,1.f),
 	resetSceneEvent(NULL),
 	redrawEvent(NULL),
 	maxTime(1),
 	minTime(0),
-	curTime(0) 
+	curTime(0)
 {
 }
 
@@ -78,7 +77,6 @@ void VectorFieldsViewer::changedDrawStateCallback(int val)
 
 void VectorFieldsViewer::changedMeshColorCallback(float r, float g, float b, float a)
 {
-	instance.meshColor = Vec4f(r,g,b,a);
 	getInstance().fieldedMesh.setMeshColor(Vec4f(r,g,b,a));
 	if(getInstance().redrawEvent != NULL)
 	{
@@ -228,11 +226,6 @@ void VectorFieldsViewer::AddResetSceneHandler(void (*resetSceneCallback)(void))
 const FieldedMesh& VectorFieldsViewer::getMesh()
 {
 	return fieldedMesh;
-}
-
-const Vec4f& VectorFieldsViewer::getMeshColor()
-{
-	return meshColor;
 }
 
 DrawStateType VectorFieldsViewer::getDrawState()

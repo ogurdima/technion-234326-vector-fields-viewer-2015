@@ -46,125 +46,90 @@ public:
 	Time	time;
 };
 
-//class VectorField
-//{
-//	vector<VectorFieldTimeVal> samples;
-//public:
-//	VectorField()
-//	{}
-//};
-
 class VectorFieldsUtils
 {
 public:
-	//static Point stdToBarycentric(const Point& original, const Point& v1, const Point& v2, const Point& v3);
-	//static Point barycentricToStd(const Point& barycentric, const Point& v1, const Point& v2, const Point& v3);
 
 	static Point stdToBarycentric(const Point& original, const Triangle& triangle);
 	static Point barycentricToStd(const Point& original, const Triangle& triangle);
 	static bool isInnerPoint(const Point& original, const Triangle& triangle);
 
-	static bool isCloseToZero(double val);
-	static float fRand(float fMin, float fMax);
+	static inline bool isCloseToZero(double val) { return abs(val) < NUMERICAL_ERROR_THRESH; }
 
-	static bool intersectionRaySegment(const Point& start, const Vec3f& field, const Point& v1, const Point& v2, Point& intersection)
+	static inline float fRand(float fMin, float fMax) { return fMin + ((float)rand() / RAND_MAX) * (fMax - fMin); }
+
+	static inline bool intersectionRaySegment(const Point& start, const Vec3f& f, const Point& v1, const Point& v2, const Normal& n, Point& intersection)
 	{
-		// field 21 (end - start)
-		if(field.length() < NUMERICAL_ERROR_THRESH)
-			return false;
-
-		Vec3f segmentRay = v2 - v1; // 43 
-		float segmentRayLength = segmentRay.length();
-
-		if(segmentRayLength < NUMERICAL_ERROR_THRESH)
-			return false;
-
-		
-
-		Vec3f v1Start = v1 - start; // 13 
-
-		float dotV1StartSegmentRay = dot(v1Start, segmentRay);			// d1343
-		float dotSegmentRayField = dot(segmentRay, field);				// d4321
-		float dotV1StartField = dot(v1Start, field);					// d1321
-		float segmentRayLengthSqr = segmentRayLength * segmentRayLength;		// d4343
-		float fieldLengthSqr = dot(field, field);						// d2121
-
-		float denom = fieldLengthSqr * segmentRayLengthSqr - dotSegmentRayField * dotSegmentRayField;
-		if(abs(denom) < NUMERICAL_ERROR_THRESH)
-			return false;
-
-		float numer = dotV1StartSegmentRay * dotSegmentRayField - dotV1StartField * segmentRayLengthSqr;
-
-		float fieldTime = numer / denom;
-
-		if(fieldTime < 0) 
-			return false;
-
-		float segmentTime = (dotV1StartSegmentRay + dotSegmentRayField * fieldTime) / (segmentRayLength * segmentRayLength);
-
-		if(segmentTime < 0 || segmentTime > 1) 
-			return false;
-		
-		intersection = start + field * fieldTime;
-		return true;
-	}
-
-	static bool intersectionRaySegmentDima(
-		const Point& start, 
-		const Vec3f& field, 
-		const Point& v1, 
-		const Point& v2, 
-		const Normal& normal, 
-		Point& intersection)
-	{
-		if(field.length() < NUMERICAL_ERROR_THRESH)
-			return false;
+		if(f.length() < NUMERICAL_ERROR_THRESH) return false;
 
 		Vec3f segment = v2 - v1;
 		float segmentLength = segment.length();
-
-		if(segmentLength < NUMERICAL_ERROR_THRESH)
-			return false;
+		if(segmentLength < NUMERICAL_ERROR_THRESH) return false;
 
 		Vec3f a = start - v1;
+		Vec3f u = (segment % (segment % a)).normalize();
 
-		Vec3f u = (segment % normal).normalize();
-		
-
-		float denom = dot(field, u);
-
-		if(abs(denom) < NUMERICAL_ERROR_THRESH)
-			return false;
-		
-
-		//assert(dot(a,u) < 0);
+		float denom = dot(f, u);
+		if(abs(denom) < NUMERICAL_ERROR_THRESH) return false;
 
 		float fieldTime = - dot(a,u) / denom;
+		if(fieldTime <= 0) return false;
 
-		if(fieldTime < 0) 
-			return false;
-		
-		float segmentTime = (fieldTime * dot(field, segment) + dot(a, segment)) / (segmentLength * segmentLength);
-
-		if(segmentTime < 0 || segmentTime > 1) 
-			return false;
+		float segmentTime = (fieldTime * dot(f, segment) + dot(a, segment)) / (segmentLength * segmentLength);
+		if(segmentTime < 0 || segmentTime > 1) return false;
 
 		intersection = v1 + segment * segmentTime;
 		return true;
-
 	}
 
+	static inline bool intersectionRaySegmentY(const Point& start, const Vec3f& f, const Point& v1, const Point& v2, Point& intersection)
+	{
+		// field 21 (end - start)
+		float fLength = f.length();
+		if(fLength < NUMERICAL_ERROR_THRESH) return false;
 
-	
-	static Vec3f lerp(const Vec3f& first, const Vec3f& second, const Time& time);
+		Vec3f a = v2 - v1;							// 43 
+		float aLen = a.length();
 
-	static Point getTriangleCentroid(const Triangle& t);
+		if(aLen < NUMERICAL_ERROR_THRESH) return false;
 
-	//static TriIntersectionDataT segmentTriangleIntersect(const Point& segA, const Point& segB, const Triangle& tri);
+		Vec3f b = v1 - start;						// 13 
+		float dotV1StartSegmentRay = dot(b, a);		// d1343
+		float dotSegmentRayField = dot(a, f);		// d4321
+		float dotV1StartField = dot(b, f);			// d1321
+		float segmentLengthSqr = aLen * aLen;		// d4343
+		float fieldLengthSqr = fLength * fLength;	// d2121
 
-	static Vec3f getTriangleNormal(const Triangle& t);
+		float denom = fieldLengthSqr * segmentLengthSqr - dotSegmentRayField * dotSegmentRayField;
+		if(abs(denom) < NUMERICAL_ERROR_THRESH) return false;
 
-	static Vec3f projectVectorOntoTriangle(const Vec3f& v, const Normal& n);
+		float numer = dotV1StartSegmentRay * dotSegmentRayField - dotV1StartField * segmentLengthSqr;
+
+		float fieldTime = numer / denom;
+
+		if(fieldTime < 0) return false;
+
+		float segmentTime = (dotV1StartSegmentRay + dotSegmentRayField * fieldTime) / segmentLengthSqr;
+
+		if(segmentTime < 0 || segmentTime > 1) return false;
+
+		intersection = start + f * fieldTime;
+		return true;
+	}
+
+	static inline Vec3f lerp(const Vec3f& first, const Vec3f& second, const Time& time)
+	{
+		assert(time <= 1.0 && time >= 0.0);
+		return (first * (1. - time)) + (second * (float)time);
+	}
+
+	static inline Point getTriangleCentroid(const Triangle& t) { return (t[0] + t[1] + t[2]) / 3.0;}
+
+	static inline float getPerimeter(const Triangle& t) { return (t[1] - t[0]).length() + (t[2] - t[1]).length() + (t[0] - t[2]).length(); }
+
+	static inline Vec3f getTriangleNormal(const Triangle& t) { return ((t[1] - t[0]) % (t[2] - t[1])).normalized(); }
+
+	static inline Vec3f projectVectorOntoTriangle(const Vec3f& v, const Normal& n) { return n % (v % n); }
 
 	static Vec3f calculateField(const vector<VectorFieldTimeVal>& fieldSamples, const Time& time);
 
@@ -180,18 +145,17 @@ public:
 		return item0 * barycentric[0] + item1 * barycentric[1] + item2 * barycentric[2];
 	}
 
-	static Vec3f average(const vector<Vec3f>& values)
+	static inline Vec3f average(const vector<Vec3f>& values)
 	{
 		Vec3f sum = Vec3f(0,0,0);
-		unsigned int count = 0;
-		for (count; count < values.size(); count++)
+		uint size = values.size();
+		if(size == 0)
+			return sum;
+		for (uint count = 0; count < values.size(); count++)
 		{
 			sum += values[count];
 		}
-		if (0 != count) {
-			sum /= (float) count;
-		}
-		return sum;
+		return sum / size;
 	}
-	
+
 };

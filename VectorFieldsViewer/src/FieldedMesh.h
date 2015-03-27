@@ -18,7 +18,6 @@ public:
 	bool									assignVectorField(const char* path, bool isConst);
 
 	const vector<uint>&						getIndices() const;
-	Triangle								getFacePoints(const OpenMesh::ArrayKernel::FaceHandle& faceHandle) const;
 
 	Time									minTime();
 	Time									maxTime();

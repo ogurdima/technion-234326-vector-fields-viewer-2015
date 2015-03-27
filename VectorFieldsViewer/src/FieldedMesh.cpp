@@ -106,12 +106,6 @@ bool FieldedMesh::assignRotatingVectorFieldPerVertex(const Vec3f& axis)
 	return true;
 }
 
-Triangle FieldedMesh::getFacePoints(const OpenMesh::ArrayKernel::FaceHandle& faceHandle) const
-{
-	ConstFaceVertexIter cvit(cfv_iter(faceHandle));
-	return Triangle(point(cvit), point(++cvit), point(++cvit));
-}
-
 Time FieldedMesh::maxTime()
 {
 	return _maxTime;
