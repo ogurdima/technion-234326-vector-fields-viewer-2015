@@ -9,15 +9,13 @@ const unsigned int PathHandle::AlphaOffset	= 7;
 #pragma region PathsManager
 
 PathsManager::PathsManager() :
-	data(NULL)
+	data(NULL), baseColor(1,1,1,1)
 {
 
 }
 
-void PathsManager::Configure(Vec4f _baseColor,const vector<ParticlePath>& paths,  float _maxPathTimeSpan)
+void PathsManager::Configure(const vector<ParticlePath>& paths)
 {
-	maxPathTimeSpan = _maxPathTimeSpan;
-	baseColor = _baseColor;
 	handles.clear();
 	handles.resize(paths.size());
 	
@@ -74,7 +72,6 @@ void PathsManager::Configure(Vec4f _baseColor,const vector<ParticlePath>& paths,
 	{
 		starts[pathIdx] = counts[pathIdx] = 0;
 	}
-
 }
 
 void PathsManager::Evolve(Time dt)
@@ -139,6 +136,7 @@ void PathsManager::ChangeBaseColor(const Vec4f& rgba)
 
 void PathsManager::ChangePathWindow(float pathWindow)
 {
+	maxPathTimeSpan = pathWindow;
 	for(uint i = 0; i < handles.size(); ++i)
 	{
 		handles[i].maxPathTimeSpan = pathWindow;
@@ -146,7 +144,6 @@ void PathsManager::ChangePathWindow(float pathWindow)
 }
 
 #pragma endregion
-
 
 void PathHandle::evolve(float dt)
 {

@@ -16,6 +16,7 @@ public:
 	bool									isLoaded() const;
 	bool									hasField() const;
 	bool									assignVectorField(const char* path, bool isConst);
+	bool									assignDefaultField(double minTime, double maxTime, const Vec3f& rotationAxis = Vec3f(0,0,1));
 
 	const vector<uint>&						getIndices() const;
 
@@ -45,7 +46,7 @@ private:
 	vector<Vec3f>							readConstFieldFile(const char* path);
 	void									readFieldFile(const char* path, vector<vector<Vec3f>>& fieldPerFace, vector<Time>& times);
 	bool									assignFieldToVertices(const vector<vector<Vec3f>>& fieldPerFace, const vector<Time>& times);
-	bool									assignRotatingVectorFieldPerVertex(const Vec3f& rotationAxis = Vec3f(0,0,1));
+	
 
 };
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -22,16 +23,12 @@ namespace Parameters
             _parameterWindow = new ParameterWindow();
         }
 
-        public static unsafe void OpenParameterWindow(void* changedDrawingTimeoutCallback,
-                                                        void* changedDrawStateCallback,
+        public static unsafe void OpenParameterWindow(void* changedDrawStateCallback,
+                                                        void* openMeshCallback,
                                                         void* changedMeshColorCallback,
                                                         void* changedFieldColorCallback,
-                                                        void* openMeshCallback,
-                                                        void* openFieldCallback,
-                                                        void* changedPathWindowCallback,
-                                                        void* changedSimulationStepCallback,
-                                                        void* changedVisualizationStepCallback,
-                                                        void* recomputeCallback)
+                                                        void* changedVisualizationCallback,
+                                                        void* recomputePathsCallback)
         {
             if (_opened)
             {
@@ -44,10 +41,6 @@ namespace Parameters
             Instance.OpenMesh +=
                 (MeshPathParameterCallback)
                     Marshal.GetDelegateForFunctionPointer((IntPtr)openMeshCallback, typeof(MeshPathParameterCallback));
-            Instance.OpenField +=
-                (FieldPathParameterCallback)
-                    Marshal.GetDelegateForFunctionPointer((IntPtr)openFieldCallback,
-                        typeof(FieldPathParameterCallback));
             Instance.MeshColorChanged +=
                 (ColorParameterCallback)
                     Marshal.GetDelegateForFunctionPointer((IntPtr)changedMeshColorCallback,
@@ -56,25 +49,13 @@ namespace Parameters
                 (ColorParameterCallback)
                     Marshal.GetDelegateForFunctionPointer((IntPtr)changedFieldColorCallback,
                         typeof(ColorParameterCallback));
-            Instance.TimeoutChanged +=
-                (IntParameterCallback)
-                    Marshal.GetDelegateForFunctionPointer((IntPtr)changedDrawingTimeoutCallback,
-                        typeof(IntParameterCallback));
-            Instance.PathWindowChanged +=
-                (DoubleParameterCallback)
-                    Marshal.GetDelegateForFunctionPointer((IntPtr)changedPathWindowCallback,
-                        typeof(DoubleParameterCallback));
-            Instance.SimulationStepChanged +=
-                (DoubleParameterCallback)
-                    Marshal.GetDelegateForFunctionPointer((IntPtr)changedSimulationStepCallback,
-                        typeof(DoubleParameterCallback));
-            Instance.VisualizationStepChanged +=
-                (DoubleParameterCallback)
-                    Marshal.GetDelegateForFunctionPointer((IntPtr)changedVisualizationStepCallback,
-                        typeof(DoubleParameterCallback));
+            Instance.VisualizationChanged +=
+                (VisualizationChangedCallback)
+                    Marshal.GetDelegateForFunctionPointer((IntPtr)changedVisualizationCallback,
+                        typeof(VisualizationChangedCallback));
             Instance.RecomputePaths +=
-                (VoidParameterCallback)
-                    Marshal.GetDelegateForFunctionPointer((IntPtr)recomputeCallback, typeof(VoidParameterCallback));
+                (RecomputePathsCallback)
+                    Marshal.GetDelegateForFunctionPointer((IntPtr)recomputePathsCallback, typeof(RecomputePathsCallback));
 
             Instance.Show();
             _opened = true;
@@ -89,6 +70,13 @@ namespace Parameters
         }
         #endregion
 
+        #region C'tor
+        public ParameterWindow()
+        {
+            InitializeComponent();
+        } 
+        #endregion
+
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -100,45 +88,49 @@ namespace Parameters
         }
         #endregion
 
-        public ParameterWindow()
-        {
-            InitializeComponent();
-            PropertyChanged += PropertyChangedCallback;
-        }
-
-        private void PropertyChangedCallback(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
-        {
-            NeedRecompute = _oldSimulationStep != _simulationStep;
-        }
-
-        public event IntParameterCallback TimeoutChanged;
+        #region Events
         public event IntParameterCallback DrawStateChanged;
-        public event DoubleParameterCallback PathWindowChanged;
         public event MeshPathParameterCallback OpenMesh;
-        public event FieldPathParameterCallback OpenField;
         public event ColorParameterCallback MeshColorChanged;
         public event ColorParameterCallback FieldColorChanged;
-        public event DoubleParameterCallback SimulationStepChanged;
-        public event DoubleParameterCallback VisualizationStepChanged;
-        public event VoidParameterCallback RecomputePaths;
+        public event VisualizationChangedCallback VisualizationChanged;
+        private void OnVisualizationChanged()
+        {
+            if (VisualizationChanged != null)
+            {
+                VisualizationChanged(_timeout, _visualizationStep, _pathWindow);
+            }
+        }
+        public event RecomputePathsCallback RecomputePaths;
+        #endregion
 
+        #region Properties
         private DrawState _selectedDrawState;
         public DrawState SelectedDrawState
         {
             get { return _selectedDrawState; }
             set
             {
-                if (value == null)
-                {
-                    return;
-                }
-                _selectedDrawState = value;
-                if (DrawStateChanged != null)
-                {
-                    DrawStateChanged(_selectedDrawState.Value);
-                }
-                OnPropertyChanged("SelectedDrawState");
+                SetDrawState(value, true);
             }
+        }
+
+        private void SetDrawState(DrawState value, bool riseEvent)
+        {
+            if (value == null)
+            {
+                return;
+            }
+            _selectedDrawState = value;
+            if (riseEvent && null != DrawStateChanged)
+            {
+                DrawStateChanged(_selectedDrawState.Value);
+            }
+            OnPropertyChanged("SelectedDrawState");
+        }
+        public void SetDrawState(int val)
+        {
+            SetDrawState(DrawState.Values.FirstOrDefault(v => v.Value == val), false);
         }
 
         private Color _meshColor;
@@ -153,6 +145,20 @@ namespace Parameters
                     MeshColorChanged(_meshColor.ScR, _meshColor.ScG, _meshColor.ScB, _meshColor.ScA);
                 }
                 OnPropertyChanged("MeshColor");
+            }
+        }
+
+        private string _fieldPath;
+        private string _oldFieldPath;
+        public string FieldPath
+        {
+            get { return _fieldPath; }
+            set
+            {
+                if (_fieldPath == value)
+                    return;
+                _fieldPath = value;
+                OnPropertyChanged("FieldPath");
             }
         }
 
@@ -179,10 +185,7 @@ namespace Parameters
             {
                 _timeout = value;
                 OnPropertyChanged("Timeout");
-                if (TimeoutChanged != null)
-                {
-                    TimeoutChanged(_timeout);
-                }
+                OnVisualizationChanged();
             }
         }
 
@@ -194,10 +197,7 @@ namespace Parameters
             {
                 _pathWindow = value;
                 OnPropertyChanged("PathWindow");
-                if (PathWindowChanged != null)
-                {
-                    PathWindowChanged(_pathWindow);
-                }
+                OnVisualizationChanged();
             }
         }
         public void UpdatePathWindow(double value)
@@ -206,7 +206,7 @@ namespace Parameters
             OnPropertyChanged("PathWindow");
         }
 
-        private double _visualizationStep;
+        private double _visualizationStep = 0.002;
         public double VisualizationStep
         {
             get { return _visualizationStep; }
@@ -214,20 +214,17 @@ namespace Parameters
             {
                 _visualizationStep = value;
                 OnPropertyChanged("VisualizationStep");
-                if (VisualizationStepChanged != null)
-                {
-                    VisualizationStepChanged(_visualizationStep);
-                }
+                OnVisualizationChanged();
             }
         }
-        public void UpdateVisualizationStep(double step)
+        public void SetVisualizationStep(double step)
         {
             _visualizationStep = step;
             OnPropertyChanged("VisualizationStep");
         }
 
         private double _oldSimulationStep;
-        private double _simulationStep;
+        private double _simulationStep = 0.005;
         public double SimulationStep
         {
             get { return _simulationStep; }
@@ -235,10 +232,6 @@ namespace Parameters
             {
                 _simulationStep = value;
                 OnPropertyChanged("SimulationStep");
-                if (SimulationStepChanged != null)
-                {
-                    SimulationStepChanged(_simulationStep);
-                }
             }
         }
         public void UpdateSimulationStep(double step)
@@ -247,19 +240,30 @@ namespace Parameters
             OnPropertyChanged("SimulationStep");
         }
 
-        private bool _needRecompute;
-        public bool NeedRecompute
+        private double _maxTime = 1;
+        public double MaxTime
         {
-            get { return _needRecompute; }
+            get { return _maxTime; }
             set
             {
-                if (_needRecompute == value)
-                    return;
-                _needRecompute = value;
-                OnPropertyChanged("NeedRecompute");
+                _maxTime = value;
+                OnPropertyChanged("MaxTime");
             }
         }
 
+        private double _minTime;
+        public double MinTime
+        {
+            get { return _minTime; }
+            set
+            {
+                _minTime = value;
+                OnPropertyChanged("MinTime");
+            }
+        } 
+        #endregion
+
+        #region Handlers
         private void LoadMesh(object sender, RoutedEventArgs e)
         {
             var fd = new OpenFileDialog { CheckFileExists = true, CheckPathExists = true };
@@ -275,7 +279,7 @@ namespace Parameters
             if (OpenMesh == null)
                 return;
             MeshPath.Text = fileName;
-            FieldPath.Text = string.Empty;
+            FieldPath = string.Empty;
             OpenMesh(new StringBuilder(fileName));
         }
 
@@ -286,15 +290,12 @@ namespace Parameters
             {
                 return;
             }
-            if (OpenField == null)
-                return;
-            FieldPath.Text = fd.FileName;
-            OpenField(new StringBuilder(fd.FileName), !fd.FileName.EndsWith(".txt"));
+            FieldPath = fd.FileName;
         }
 
         private void LoadedWindow(object sender, RoutedEventArgs e)
         {
-            SelectedDrawState = DrawState.Field;
+            SelectedDrawState = DrawState.SolidSmooth;
             MeshColor = new Color
             {
                 ScR = 0.1f,
@@ -317,16 +318,17 @@ namespace Parameters
 
         private void RecomputeClick(object sender, RoutedEventArgs e)
         {
-            if (RecomputePaths != null)
-            {
-                RecomputePaths();
-            }
+            if (RecomputePaths == null)
+                return;
+            var path = FieldPath ?? string.Empty;
+            RecomputePaths(new StringBuilder(path), !path.EndsWith(".txt"), SimulationStep, MinTime, MaxTime);
         }
 
         private void WindowClosing(object sender, CancelEventArgs e)
         {
             e.Cancel = true;
-        }
+        } 
+        #endregion
 
     }
 }

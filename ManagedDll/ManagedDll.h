@@ -7,44 +7,23 @@
 using namespace System;
 using namespace System::Reflection;
 
-__declspec(dllexport) void OpenWindow(	void (*changedDrawingTimeout)(int),
-										void (*changedDrawStateCallback)(int),
-										void (*changedMeshColorCallback)(float,float,float,float),
-										void (*changedFieldColorCallback)(float,float,float,float),
-										void (*openMeshCallback)(char*),
-										void (*openFieldCallback)(char*, bool),
-										void (*changedPathWindowCallback)(double),
-										void (*changedSimulationStepCallback)(double),
-										void (*changedVisualizationStepCallback)(double),
-										void (*recomputePathsCallback)(void))
+__declspec(dllexport) void OpenWindow(void (*changedDrawStateCallback)(int),
+									 void (*openMeshCallback)(char*),
+									 void (*changedMeshColorCallback)(float,float,float,float),
+									 void (*changedFieldColorCallback)(float,float,float,float),
+									 void (*changedVisualizationCallback)(int, double, double),
+									 void (*recomputePathsCallback)(char* path, bool isConst, double step, double min, double max))
 {
-	Parameters::ParameterWindow::OpenParameterWindow(changedDrawingTimeout, 
-					changedDrawStateCallback, 
+	Parameters::ParameterWindow::OpenParameterWindow( changedDrawStateCallback, 
+					openMeshCallback,
 					changedMeshColorCallback,
 					changedFieldColorCallback,
-					openMeshCallback,
-					openFieldCallback,
-					changedPathWindowCallback,
-					changedSimulationStepCallback,
-					changedVisualizationStepCallback,
+					changedVisualizationCallback,
 					recomputePathsCallback);
 }
 
 
-__declspec(dllexport) void UpdatePathWindow(double pathWindow)
+_declspec(dllexport) void UpdateDrawStateGui(int drawState)
 {
-	Parameters::ParameterWindow::Instance->UpdatePathWindow(pathWindow);
+	Parameters::ParameterWindow::Instance->SetDrawState(drawState);
 }
-
-__declspec(dllexport) void UpdateSimulationStep(double simulationStep)
-{
-	Parameters::ParameterWindow::Instance->UpdateSimulationStep(simulationStep);
-}
-
-__declspec(dllexport) void UpdateVisualizationStep(double visualizationStep)
-{
-	Parameters::ParameterWindow::Instance->UpdateVisualizationStep(visualizationStep);
-}
-
-
-

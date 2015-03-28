@@ -13,7 +13,6 @@ FieldedMesh::FieldedMesh(void) :
 	request_face_normals();
 	request_vertex_normals();
 	request_vertex_colors();
-	//add_property(vectorFieldFaceProperty);
 	add_property(vertexFieldProperty);
 }
 
@@ -31,7 +30,6 @@ bool FieldedMesh::load(const char* path)
 	if(isLoaded_)
 	{
 		setMeshColor(meshColor);
-		assignRotatingVectorFieldPerVertex();
 	}
 	return isLoaded_;
 }
@@ -90,18 +88,18 @@ void FieldedMesh::updateFaceIndices()
 	}
 }
 
-bool FieldedMesh::assignRotatingVectorFieldPerVertex(const Vec3f& axis)
+bool FieldedMesh::assignDefaultField(double minTime, double maxTime, const Vec3f& axis)
 {
 	isFieldAssigned = false;
 	for(VertexIter vit(vertices_begin()), vend(vertices_end()); vit != vend; ++vit)
 	{
 		vector<VectorFieldTimeVal>& field = property(vertexFieldProperty, vit);
 		Vec3f first(point(vit) % axis);
-		field.push_back(VectorFieldTimeVal(first, Time(0)));
-		field.push_back(VectorFieldTimeVal(normal(vit) % first, Time(1)));
+		field.push_back(VectorFieldTimeVal(first, Time(minTime)));
+		field.push_back(VectorFieldTimeVal(normal(vit) % first, Time(maxTime)));
 	}
-	_minTime = Time(0);
-	_maxTime = Time(1);
+	_minTime = Time(minTime);
+	_maxTime = Time(maxTime);
 	isFieldAssigned = true;
 	return true;
 }

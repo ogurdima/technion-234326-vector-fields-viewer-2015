@@ -28,6 +28,7 @@
     <ClCompile Include="src\VectorFieldsViewer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\External.h" />
     <ClInclude Include="src\FieldedMesh.h" />
     <ClInclude Include="src\ParticlePath.h" />
     <ClInclude Include="src\PathFinder.h" />

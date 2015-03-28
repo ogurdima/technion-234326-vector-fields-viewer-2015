@@ -20,15 +20,15 @@ PathFinder::PathFinder() :
 	
 }
 
-bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
+bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_, const Time& minTime, const Time& maxTime)
 {
 	hasValidConfig = false;
 	fieldedMesh = aMesh_;
 	int size = fieldedMesh.n_faces();
 
 	dt = dt_;
-	tmax = fieldedMesh.maxTime();
-	tmin = fieldedMesh.minTime();
+	tmax = maxTime;
+	tmin = minTime;
 
 	if (tmax <= tmin|| (dt_ >= (tmax - tmin)) || size < 1) 
 	{
@@ -38,10 +38,9 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_)
 	return hasValidConfig;
 }
 
-vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, const Time& dt_)
+vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, const Time& dt_, const Time& minTime, const Time& maxTime)
 {
-	cout << sizeof(float) << "    ******" << endl;
-	configure(aMesh_, dt_);
+	configure(aMesh_, dt_, minTime, maxTime);
 	if (!hasValidConfig) 
 	{
 		throw std::exception("Calling getParticlePaths with badly configured PathFinder");

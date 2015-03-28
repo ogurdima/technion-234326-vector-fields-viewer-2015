@@ -1,22 +1,20 @@
 ﻿<Window x:Class="Parameters.ParameterWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:parameterWindow="clr-namespace:Parameters"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         Width="400"
-        Height="500"
         MinWidth="300"
         Background="Azure"
+        Closing="WindowClosing"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Left="1000"
         ResizeMode="NoResize"
         ShowInTaskbar="true"
-        WindowStartupLocation="Manual"
-        Topmost="false"
-        WindowStyle="ToolWindow"
         Top="0"
-        Left="1000"
-        Closing="WindowClosing"
-        >
+        Topmost="false"
+        WindowStartupLocation="Manual"
+        WindowStyle="ToolWindow">
 
     <!--  Region Resources  -->
     <Window.Resources>
@@ -34,7 +32,8 @@
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         </Style>
 
-        <Style x:Key="HeaderLabelStyle" TargetType="{x:Type Label}">
+        <Style x:Key="HeaderLabelStyle"
+               TargetType="{x:Type Label}">
             <Setter Property="FontFamily" Value="Trebuchet MS" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="FontWeight" Value="DemiBold" />
@@ -71,9 +70,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition />
-
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <!--  End Region  -->
 
@@ -81,7 +78,7 @@
         <Label Grid.Row="0"
                Content="Draw type:"
                Style="{StaticResource HeaderLabelStyle}" />
-        
+
         <ListView Grid.Row="1"
                   Grid.Column="0"
                   Grid.ColumnSpan="2"
@@ -101,27 +98,31 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        
+
         <Separator Grid.Row="2"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Height="2"
                    Background="Black" />
         <!--  End Region  -->
-        
-        <!-- Region  Mesh  -->
+
+        <!--  Region  Mesh  -->
         <Label Grid.Row="3"
                Grid.Column="0"
                Content="Mesh:"
                Style="{StaticResource HeaderLabelStyle}" />
-        
+
         <DockPanel Grid.Row="4"
                    Grid.Column="0"
                    Grid.ColumnSpan="2">
-            <Button Click="LoadMesh" DockPanel.Dock="Right">Load . . .</Button>
-            <TextBox Name="MeshPath" IsReadOnly="True" />
+            <Button Click="LoadMesh"
+                    DockPanel.Dock="Right">
+                Load . . .
+            </Button>
+            <TextBox Name="MeshPath"
+                     IsReadOnly="True" />
         </DockPanel>
-        
+
         <Label Grid.Row="5"
                Grid.Column="0"
                HorizontalAlignment="Left"
@@ -134,7 +135,7 @@
                           DockPanel.Dock="Bottom"
                           SelectedColor="{Binding MeshColor,
                                                   Mode=TwoWay}" />
-        
+
         <Separator Grid.Row="6"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
@@ -142,19 +143,23 @@
                    Background="Black" />
         <!--  End Region  -->
 
-        <!-- Region Field  -->
+        <!--  Region Field  -->
         <Label Grid.Row="7"
                Grid.Column="0"
                Content="Field:"
                Style="{StaticResource HeaderLabelStyle}" />
-        
+
         <DockPanel Grid.Row="8"
                    Grid.Column="0"
                    Grid.ColumnSpan="2">
-            <Button Click="LoadField" DockPanel.Dock="Right">Load . . .</Button>
-            <TextBox Name="FieldPath" IsReadOnly="True" />
+            <Button Click="LoadField"
+                    DockPanel.Dock="Right">
+                Load . . .
+            </Button>
+            <TextBox IsReadOnly="True"
+                     Text="{Binding FieldPath}" />
         </DockPanel>
-        
+
         <Label Grid.Row="9"
                Grid.Column="0"
                HorizontalAlignment="Left"
@@ -167,7 +172,7 @@
                           DockPanel.Dock="Bottom"
                           SelectedColor="{Binding FieldColor,
                                                   Mode=TwoWay}" />
-        
+
         <Separator Grid.Row="10"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
@@ -175,7 +180,7 @@
                    Background="Black" />
         <!--  End Region  -->
 
-        <!-- Region Visualization  -->
+        <!--  Region Visualization  -->
         <Label Grid.Row="11"
                Grid.Column="0"
                Content="Visualization:"
@@ -193,7 +198,7 @@
                             Maximum="5000"
                             Minimum="1"
                             Value="{Binding Timeout}" />
-        
+
         <Label Grid.Row="13"
                Grid.Column="0"
                HorizontalAlignment="Left"
@@ -202,10 +207,10 @@
                            Grid.Column="1"
                            Width="120"
                            HorizontalAlignment="Left"
-                           Increment="0.00001"
-                           Minimum="0.00001"
+                           Increment="0.001"
+                           Minimum="0.001"
                            Value="{Binding PathWindow}" />
-        
+
         <Label Grid.Row="14"
                Grid.Column="0"
                HorizontalAlignment="Left"
@@ -214,10 +219,10 @@
                            Grid.Column="1"
                            Width="120"
                            HorizontalAlignment="Left"
-                           Increment="0.00001"
-                           Minimum="0.00001"
+                           Increment="0.001"
+                           Minimum="0.0001"
                            Value="{Binding VisualizationStep}" />
-        
+
         <Separator Grid.Row="15"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
@@ -225,7 +230,7 @@
                    Background="Black" />
         <!--  End Region  -->
 
-        <!-- Region Simulation  -->
+        <!--  Region Simulation  -->
         <Label Grid.Row="16"
                Grid.Column="0"
                Content="Simulation:"
@@ -238,17 +243,37 @@
                            Grid.Column="1"
                            Width="120"
                            HorizontalAlignment="Left"
-                           Increment="0.00001"
-                           Minimum="0.00001"
+                           Increment="0.001"
+                           Minimum="0.0001"
                            Value="{Binding SimulationStep}" />
-        <Button Grid.Row="18"
+        <StackPanel Grid.Row="18"
+                    Grid.Column="0"
+                    HorizontalAlignment="Stretch"
+                    Orientation="Horizontal">
+            <Label Content="Minimal time:" />
+            <xctk:DoubleUpDown Width="100"
+                               HorizontalAlignment="Stretch"
+                               Increment="0.001"
+                               Value="{Binding MinTime}" />
+        </StackPanel>
+        <StackPanel Grid.Row="18"
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    Orientation="Horizontal">
+            <Label Content="Maximal time:" />
+            <xctk:DoubleUpDown Width="100"
+                               HorizontalAlignment="Stretch"
+                               Increment="0.001"
+                               Value="{Binding MaxTime}" />
+        </StackPanel>
+        <Button Grid.Row="19"
                 Grid.Column="1"
+                Margin="5 3"
                 HorizontalAlignment="Right"
                 BorderBrush="Black"
                 BorderThickness="2"
                 Click="RecomputeClick"
-                Content="Recompute"
-                IsEnabled="{Binding NeedRecompute, Mode=TwoWay}"
+                Content="Compute Paths"
                 Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" />
         <!--  End Region  -->
 

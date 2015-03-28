@@ -4,35 +4,18 @@
 #include "FieldedMesh.h"
 #include "PathFinder.h"
 #include "PathsManager.h"
+#include "External.h"
 
 using std::string;
 
 typedef enum DrawStateType
 {
-	NONE			= 0,
 	WIREFRAME		= 1,
 	SOLID_FLAT		= 2,
 	SOLID_SMOOTH	= 3,
 	FRONT_FIELD		= 4,
 	FIELD			= 5,
 } DrawStateType;
-
-#pragma region export
-_declspec(dllexport) void OpenWindow(	void (*changedDrawingTimeout)(int),
-									 void (*changedDrawStateCallback)(int),
-									 void (*changedMeshColorCallback)(float,float,float,float),
-									 void (*changedFieldColorCallback)(float,float,float,float),
-									 void (*openMeshCallback)(char*),
-									 void (*openFieldCallback)(char*, bool),
-									 void (*changedPathWindowCallback)(double),
-									 void (*changedSimulationStepCallback)(double),
-									 void (*changedVisualizationStepCallback)(double),
-									 void (*recomputePathsCallback)(void));
-
-_declspec(dllexport) void UpdatePathWindow(double pathWindow);
-_declspec(dllexport) void UpdateSimulationStep(double simulationStep);
-_declspec(dllexport) void UpdateVisualizationStep(double visualizationStep);
-#pragma endregion
 
 class VectorFieldsViewer
 {
@@ -46,16 +29,12 @@ private:
 
 #pragma region Callbacks
 private:
-	static void						changeDrawingTimeout(int timeout);
-	static void						openMeshCallback(char* path);
-	static void						openFieldCallback(char* path, bool isConst);
 	static void						changedDrawStateCallback(int);
+	static void						openMeshCallback(char* path);
 	static void						changedMeshColorCallback(float,float,float,float);
 	static void						changedFieldColorCallback(float,float,float,float);
-	static void						changedPathWindowCallback(double val);
-	static void						changedSimulationStepCallback(double val);
-	static void						changedVisualizationStepCallback(double val);
-	static void						recomputePathsCallback();
+	static void						changedVisualizationCallback(int drawTimeout, double step, double window);
+	static void						recomputePathsCallback(char* path, bool isConst, double step, double min, double max);
 	// callback handlers
 	void							openField(char* path, bool isConst);
 	void							openMesh(char* path);
@@ -67,12 +46,10 @@ private:
 #pragma region Fields
 private:
 	DrawStateType					drawState;
-	Vec4f							fieldColor;
 
 	Time							curTime;
 	Time							maxTime;
 	Time							minTime;
-	Time							fieldSimulationTimeInterval;
 	Time							visualisationTimeInterval;
 
 	FieldedMesh						fieldedMesh;
@@ -83,8 +60,9 @@ private:
 #pragma endregion
 
 private:
-	void							computePaths();
+	void							computePaths(double step);
 	void							evolvePaths();
+	void							setDrawState(DrawStateType ds);
 
 public:
 #pragma region Static

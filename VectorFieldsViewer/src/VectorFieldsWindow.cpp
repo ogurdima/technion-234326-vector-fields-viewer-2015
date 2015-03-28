@@ -68,8 +68,6 @@ void VectorFieldsWindow::display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	switch(VectorFieldsViewer::getInstance().getDrawState())
 	{
-	case(DrawStateType::NONE):
-		break;
 	case(DrawStateType::WIREFRAME):
 		drawWireframe();
 		break;

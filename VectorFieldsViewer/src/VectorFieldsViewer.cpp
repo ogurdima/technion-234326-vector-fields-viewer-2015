@@ -1,19 +1,47 @@
 #include "VectorFieldsViewer.h"
+#include <math.h>
 
 VectorFieldsViewer VectorFieldsViewer::instance;
 int VectorFieldsViewer::drawingTimeout;
 
 VectorFieldsViewer::VectorFieldsViewer(void) :
-	fieldSimulationTimeInterval(0.001),
-	visualisationTimeInterval(0.0001),
-	drawState(DrawStateType::NONE),
-	fieldColor(1,1,1,0),
+	visualisationTimeInterval(0.001),
+	drawState(DrawStateType::SOLID_SMOOTH),
 	resetSceneEvent(NULL),
 	redrawEvent(NULL),
 	maxTime(1),
 	minTime(0),
 	curTime(0)
 {
+}
+
+#pragma region Callbacks
+void VectorFieldsViewer::changedDrawStateCallback(int val)
+{
+	instance.setDrawState((DrawStateType) val);
+}
+
+void VectorFieldsViewer::setDrawState(DrawStateType ds)
+{
+	switch(ds)
+	{
+	case(DrawStateType::WIREFRAME):
+	case(DrawStateType::SOLID_FLAT):
+	case(DrawStateType::SOLID_SMOOTH):
+	case(DrawStateType::FRONT_FIELD):
+	case(DrawStateType::FIELD):
+		drawState = ds;
+		break;
+	default:
+		drawState = DrawStateType::SOLID_SMOOTH;
+		std::cerr << "Unknown draw state: " << ds << std::endl;
+		break;
+	}
+	UpdateDrawStateGui((int)drawState);
+	if(redrawEvent != NULL)
+	{
+		redrawEvent();
+	}
 }
 
 void VectorFieldsViewer::openMeshCallback(char* path)
@@ -27,19 +55,11 @@ void VectorFieldsViewer::openMesh(char* path)
 	if (fieldedMesh.load(path))
 	{
 		std::cout << fieldedMesh.n_vertices() << " vertices, " << fieldedMesh.n_faces()    << " faces\n";
-		maxTime = fieldedMesh.maxTime();
-		minTime = fieldedMesh.minTime();
-		fieldSimulationTimeInterval = (maxTime - minTime) / 100.f;
-		UpdateSimulationStep(fieldSimulationTimeInterval);
-		visualisationTimeInterval = fieldSimulationTimeInterval / 10.f;
-		UpdateVisualizationStep(visualisationTimeInterval);
-		curTime = minTime;
-
+		setDrawState(DrawStateType::SOLID_SMOOTH);
 		if(resetSceneEvent != NULL)
 		{
 			(*resetSceneEvent)();
 		}
-		computePaths();
 	}
 	else
 	{
@@ -51,34 +71,10 @@ void VectorFieldsViewer::openMesh(char* path)
 	}
 }
 
-void VectorFieldsViewer::changedDrawStateCallback(int val)
-{
-	DrawStateType ds =(DrawStateType) val;
-	switch(ds )
-	{
-	case(DrawStateType::NONE):
-	case(DrawStateType::WIREFRAME):
-	case(DrawStateType::SOLID_FLAT):
-	case(DrawStateType::SOLID_SMOOTH):
-	case(DrawStateType::FRONT_FIELD):
-	case(DrawStateType::FIELD):
-		instance.drawState = ds;
-		break;
-	default:
-		instance.drawState = DrawStateType::NONE;
-		std::cerr << "Unknown draw state: " << val << std::endl;
-		break;
-	}
-	if(instance.redrawEvent != NULL)
-	{
-		instance.redrawEvent();
-	}
-}
-
 void VectorFieldsViewer::changedMeshColorCallback(float r, float g, float b, float a)
 {
-	getInstance().fieldedMesh.setMeshColor(Vec4f(r,g,b,a));
-	if(getInstance().redrawEvent != NULL)
+	instance.fieldedMesh.setMeshColor(Vec4f(r,g,b,a));
+	if(instance.redrawEvent != NULL)
 	{
 		instance.redrawEvent();
 	}
@@ -86,8 +82,41 @@ void VectorFieldsViewer::changedMeshColorCallback(float r, float g, float b, flo
 
 void VectorFieldsViewer::changedFieldColorCallback(float r, float g, float b, float a)
 {
-	instance.fieldColor = Vec4f(r,g,b,a);
-	instance.pathsMgr.ChangeBaseColor(instance.fieldColor);
+	instance.pathsMgr.ChangeBaseColor(Vec4f(r,g,b,a));
+}
+
+void VectorFieldsViewer::changedVisualizationCallback(int drawTimeout, double step, double window)
+{
+	drawingTimeout = drawTimeout;
+	instance.pathsMgr.ChangePathWindow(window);
+	instance.visualisationTimeInterval = step;
+}
+
+void VectorFieldsViewer::recomputePathsCallback(char* path, bool isConst, double step, double min, double max)
+{
+	string p(path);
+	bool loaded = false;
+	if(p.length() == 0)
+	{
+		std::cout << "Default field assignment" << path << std::endl;
+		loaded = instance.fieldedMesh.assignDefaultField(min, max);
+	}
+	else
+	{
+		std::cout << "Opening Field File " << path << std::endl;
+		loaded = instance.fieldedMesh.assignVectorField(path, isConst);
+	}
+	if (!loaded)
+	{
+		std::cout << "Failed to assign field" << std::endl;
+	}
+	else
+	{
+		instance.maxTime = max;
+		instance.minTime = min;
+		instance.curTime = instance.minTime;
+		instance.computePaths(step);
+	}
 }
 
 void VectorFieldsViewer::onTimer(int val)
@@ -95,80 +124,17 @@ void VectorFieldsViewer::onTimer(int val)
 	evolvePaths();
 }
 
-void VectorFieldsViewer::openFieldCallback(char* path, bool isConst)
-{
-	instance.openField(path, isConst);
-}
-
-void VectorFieldsViewer::openField(char* path, bool isConst)
-{
-	std::cout << "Opening Field File " << path << std::endl;
-	bool success = fieldedMesh.assignVectorField(path, isConst);
-	if (!success) 
-	{
-		std::cout << "Failed to read field" << std::endl;
-	}
-	else
-	{
-		maxTime = fieldedMesh.maxTime();
-		minTime = fieldedMesh.minTime();
-		fieldSimulationTimeInterval = (maxTime - minTime) / 100.f;
-		visualisationTimeInterval = fieldSimulationTimeInterval / 10.f;
-		curTime = minTime;
-		computePaths();
-	}
-}
-
-void VectorFieldsViewer::changeDrawingTimeout(int timeout)
-{
-	drawingTimeout = timeout;
-}
-
 void VectorFieldsViewer::openParameterWindow()
 {
-	OpenWindow(&VectorFieldsViewer::changeDrawingTimeout,
-		&VectorFieldsViewer::changedDrawStateCallback, 
-		&VectorFieldsViewer::changedMeshColorCallback, 
-		&VectorFieldsViewer::changedFieldColorCallback, 
+	OpenWindow(&VectorFieldsViewer::changedDrawStateCallback,
 		&VectorFieldsViewer::openMeshCallback, 
-		&VectorFieldsViewer::openFieldCallback,
-		&VectorFieldsViewer::changedPathWindowCallback,
-		&VectorFieldsViewer::changedSimulationStepCallback,
-		&VectorFieldsViewer::changedVisualizationStepCallback,
+		&VectorFieldsViewer::changedMeshColorCallback, 
+		&VectorFieldsViewer::changedFieldColorCallback,
+		&VectorFieldsViewer::changedVisualizationCallback,
 		&VectorFieldsViewer::recomputePathsCallback);
 }
 
-void VectorFieldsViewer::changedPathWindowCallback(double val)
-{
-	instance.pathsMgr.ChangePathWindow(val);
-}
-
-void VectorFieldsViewer::recomputePathsCallback()
-{
-	instance.computePaths();
-}
-
-void VectorFieldsViewer::changedSimulationStepCallback(double val)
-{
-	double maxStep = instance.maxTime - instance.minTime;
-	if(val > maxStep)
-	{
-		val = maxStep;
-		UpdateSimulationStep(val);
-	}
-	instance.fieldSimulationTimeInterval = val;
-}
-
-void VectorFieldsViewer::changedVisualizationStepCallback(double val)
-{
-	double maxStep = instance.maxTime - instance.minTime;
-	if(val > maxStep)
-	{
-		val = maxStep;
-		UpdateVisualizationStep(val);
-	}
-	instance.visualisationTimeInterval = val;
-}
+#pragma endregion
 
 VectorFieldsViewer& VectorFieldsViewer::getInstance()
 {
@@ -194,21 +160,18 @@ void VectorFieldsViewer::evolvePaths()
 	}
 }
 
-void VectorFieldsViewer::computePaths()
+void VectorFieldsViewer::computePaths(double step)
 {
 	vector<ParticlePath> particlePaths;
-	UpdateSimulationStep(fieldSimulationTimeInterval);
-	PathFinder pathFinder;
 	try
 	{
-		particlePaths = pathFinder.getParticlePaths(fieldedMesh, fieldSimulationTimeInterval);
+		particlePaths = PathFinder().getParticlePaths(fieldedMesh, step, minTime, maxTime);
 	}
 	catch(exception e)
 	{
 		std::cout << "Exception thrown while computing particle paths: " << e.what() << std::endl;
 	}
-	UpdateVisualizationStep(visualisationTimeInterval = (maxTime - minTime) / 100);
-	pathsMgr.Configure(fieldColor, particlePaths, visualisationTimeInterval);
+	pathsMgr.Configure(particlePaths);
 }
 
 void VectorFieldsViewer::AddRedrawHandler(void (*redrawCallback)(void))
@@ -229,7 +192,7 @@ const FieldedMesh& VectorFieldsViewer::getMesh()
 DrawStateType VectorFieldsViewer::getDrawState()
 {
 	if(!fieldedMesh.isLoaded())
-		return DrawStateType::NONE;
+		return DrawStateType::SOLID_SMOOTH;
 	switch(drawState)
 	{
 	case(DrawStateType::FIELD):
@@ -237,7 +200,7 @@ DrawStateType VectorFieldsViewer::getDrawState()
 		{
 			if(!fieldedMesh.hasField())
 			{
-				return DrawStateType::NONE;
+				return DrawStateType::SOLID_SMOOTH;
 			}
 		}
 		break;
