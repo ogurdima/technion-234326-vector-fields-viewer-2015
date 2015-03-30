@@ -12,6 +12,11 @@ private:
 	int				particleLoc;
 public:
 
+	static bool compareBySize(const ParticlePath& left, const ParticlePath& right)
+	{
+		return (left.size() < right.size());
+	}
+
 	ParticlePath():
 		particleLoc(0)
 	{
