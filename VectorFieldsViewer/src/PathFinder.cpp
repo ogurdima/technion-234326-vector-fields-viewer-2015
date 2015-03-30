@@ -42,7 +42,8 @@ void reportPathsStatistics(vector<ParticlePath>& paths)
 
 void simplifyPaths(vector<ParticlePath>& paths, Time minTime)
 {
-	cout << "Simplifying paths: min time will be" << minTime << endl;
+	cout << "Simplifying paths: min time will be " << minTime << endl;
+	#pragma omp parallel for schedule(dynamic, 500)
 	for (uint i = 0; i < paths.size(); i++)
 	{
 		paths[i].simplify(minTime);
