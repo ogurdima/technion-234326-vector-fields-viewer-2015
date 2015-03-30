@@ -3,6 +3,7 @@
 #include "VectorFieldsUtils.h"
 #include <math.h>
 
+
 class ParticlePath
 {
 
@@ -148,6 +149,81 @@ public:
 			}
 		}
 		return true;
+	}
+
+	static bool compareFloats(float& a, float& b) { return (a < b); }
+
+	void simplify(Time requiredMinTime)
+	{
+		if (size() < 2)
+		{
+			return;
+		}
+		float actualMinTime = times[1] - times[0];
+		for (unsigned int i = 1; i < times.size(); ++i)
+		{
+			actualMinTime = std::min(times[i] - times[i-1], actualMinTime);
+		}
+		if (actualMinTime > requiredMinTime)
+		{
+			return;
+		}
+		
+		vector<bool> deleted;
+		for (unsigned int i = 0; i < times.size(); ++i)
+		{
+			deleted.push_back(false);
+		}
+
+		int l = 0, r;
+		Vec3f pointApprox;
+		Time timeApprox;
+		float count;
+		while (l < points.size())
+		{
+			r = l + 1;
+			count = 1;
+			timeApprox = times[l];
+			pointApprox = points[l];
+
+			while (r < times.size() && times[r] - times[l] < requiredMinTime)
+			{
+				deleted[r] = true;
+				timeApprox += times[r];
+				pointApprox += points[r];
+				count++;
+				r++;
+			}
+			if (count > 1)
+			{
+				// collapse range (l,r-1) to r-1, new l is r-1.
+				timeApprox /= count;
+				pointApprox /= count;
+				points[r-1] = pointApprox;
+				times[r-1] = timeApprox;
+				deleted[r-1] = false;
+				deleted[l] = true;
+				l = r-1;
+			}
+			else
+			{
+				l++;
+			}
+		}
+
+		vector<Vec3f> newPoints;
+		vector<Time> newTimes;
+
+		for (int i = 0; i < points.size(); i++)
+		{
+			if (!deleted[i])
+			{
+				newPoints.push_back(points[i]);
+				newTimes.push_back(times[i]);
+			}
+		}
+		points = newPoints;
+		times = newTimes;
 	}
 };
 

@@ -40,6 +40,15 @@ void reportPathsStatistics(vector<ParticlePath>& paths)
 	cout << "Bottom 90% Avg path length: " << (sum/bottom90PercentileSize) <<  endl;
 }
 
+void simplifyPaths(vector<ParticlePath>& paths, Time minTime)
+{
+	cout << "Simplifying paths: min time will be" << minTime << endl;
+	for (uint i = 0; i < paths.size(); i++)
+	{
+		paths[i].simplify(minTime);
+	}
+}
+
 PathFinder::PathFinder() : 
 	dt(0.1f),
 	tmin(0),
@@ -104,6 +113,8 @@ vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, con
 	cout << "run took " << duration_cast<milliseconds>(high_resolution_clock::now() - start_time).count() << " milliseconds" << endl;
 	std::cout << "Fuckup count: " << fuckupCount << endl;
 	cout << "Expected min path length: " << floorf(((maxTime-minTime)/dt)) << endl;
+	reportPathsStatistics(allPaths);
+	simplifyPaths(allPaths, dt / 10.f);
 	reportPathsStatistics(allPaths);
 	return allPaths;
 }
