@@ -2,6 +2,7 @@
 
 #include "VectorFieldsUtils.h"
 #include <math.h>
+#include "psimpl.h"
 
 
 class ParticlePath
@@ -153,12 +154,70 @@ public:
 
 	static bool compareFloats(float& a, float& b) { return (a < b); }
 
+	bool tryCollapseLastPoints(float pointRadius)
+	{
+		int last = times.size() - 1;
+		int prev = times.size() - 2;
+		float dist = (points[last] - points[prev]).length();
+
+		if (dist < pointRadius)
+		{
+			float t = times[last];
+			Vec3f p = points[last];
+
+			points.pop_back(); 
+			points.pop_back();
+			times.pop_back();
+			times.pop_back();
+
+			points.push_back(p);
+			times.push_back(t);
+			return true;
+		}
+		return false;
+	}
+
 	void simplify(Time requiredMinTime)
 	{
 		if (size() < 2)
 		{
 			return;
 		}
+		//psimpl::simplify_reumann_witkam<4>();
+
+
+		
+		float* flattened = new float[4*points.size()];
+		vector<float> result;
+		for(int i = 0; i < points.size(); i++)
+		{
+			flattened[4*i + 0] = points[i][0];
+			flattened[4*i + 1] = points[i][1];
+			flattened[4*i + 2] = points[i][2];
+			flattened[4*i + 3] = times[i];
+		}
+
+		psimpl::simplify_reumann_witkam<4>(flattened, flattened + 4*points.size(), requiredMinTime, std::back_inserter(result));
+
+		points.clear();
+		times.clear();
+		delete[] flattened;
+		points.resize(result.size() / 4);
+		times.resize(result.size() / 4);
+
+		for (int i = 0; i < points.size(); i++)
+		{
+			float x = result[4 * i + 0];
+			float y = result[4 * i + 1];
+			float z = result[4 * i + 2];
+			float t = result[4 * i + 3];
+			points[i] = Vec3f(x,y,z);
+			times[i] = t;
+		}
+
+		return;
+
+
 		float actualMinTime = times[1] - times[0];
 		for (unsigned int i = 1; i < times.size(); ++i)
 		{

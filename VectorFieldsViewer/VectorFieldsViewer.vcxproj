@@ -33,6 +33,7 @@
     <ClInclude Include="src\ParticlePath.h" />
     <ClInclude Include="src\PathFinder.h" />
     <ClInclude Include="src\PathsManager.h" />
+    <ClInclude Include="src\psimpl.h" />
     <ClInclude Include="src\VectorFieldsUtils.h" />
     <ClInclude Include="src\VectorFieldsWindow.h" />
     <ClInclude Include="src\VectorFieldsViewer.h" />

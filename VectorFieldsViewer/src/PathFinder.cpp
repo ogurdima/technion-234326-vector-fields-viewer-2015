@@ -17,9 +17,15 @@ void reportPathsStatistics(vector<ParticlePath>& paths)
 	{
 		return;
 	}
-	std::sort(paths.begin(), paths.end(), ParticlePath::compareBySize);
-	cout << "Max path length: " << paths[paths.size() - 1].size() <<  endl;
-	cout << "Min path length: " << paths[0].size() <<  endl;
+	
+	std::nth_element(paths.begin(), paths.begin() + paths.size()/2, paths.end(), ParticlePath::compareBySize);
+	int maxLen = std::max_element(paths.begin(), paths.end(), ParticlePath::compareBySize)->size();
+	int minLen = std::min_element(paths.begin(), paths.end(), ParticlePath::compareBySize)->size();
+	
+    std::cout << "The median is " << paths[paths.size()/2].size() << '\n';
+
+	cout << "Max path length: " << maxLen <<  endl;
+	cout << "Min path length: " << minLen <<  endl;
 	cout << "Med path length: " << paths[paths.size()/2].size() <<  endl;
 	float sum = 0;
 	for (uint i = 0; i < paths.size(); i++)
@@ -27,24 +33,13 @@ void reportPathsStatistics(vector<ParticlePath>& paths)
 		sum += paths[i].size();
 	}
 	cout << "Avg path length: " << (sum/paths.size()) <<  endl;
-	
-	uint topTenPercentileMedianIdx =  ((paths.size() - 1 - floorf(paths.size()/10.f)) + paths.size()) / 2;
-	cout << "Top 10% median path length: " << paths[topTenPercentileMedianIdx].size() <<  endl;
-
-	sum = 0;
-	uint bottom90PercentileSize =  paths.size() - floor(paths.size()/10.f);
-	for (uint i = 0; i < bottom90PercentileSize; i++)
-	{
-		sum += paths[i].size();
-	}
-	cout << "Bottom 90% Avg path length: " << (sum/bottom90PercentileSize) <<  endl;
 }
 
 void simplifyPaths(vector<ParticlePath>& paths, Time minTime)
 {
 	cout << "Simplifying paths: min time will be " << minTime << endl;
 	#pragma omp parallel for schedule(dynamic, 500)
-	for (uint i = 0; i < paths.size(); i++)
+	for (int i = 0; i < paths.size(); i++)
 	{
 		paths[i].simplify(minTime);
 	}
@@ -115,8 +110,8 @@ vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, con
 	std::cout << "Fuckup count: " << fuckupCount << endl;
 	cout << "Expected min path length: " << floorf(((maxTime-minTime)/dt)) << endl;
 	reportPathsStatistics(allPaths);
-	simplifyPaths(allPaths, dt / 10.f);
-	reportPathsStatistics(allPaths);
+	//simplifyPaths(allPaths, dt / 10.f);
+	//reportPathsStatistics(allPaths);
 	return allPaths;
 }
 
@@ -166,12 +161,34 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 	bool exclude = false;
 
 	int convergenceCheckCounter = 0;
+	int numConsecutiveClosePoints = 0;
 
 	while (currentTime <= tmax )
 	{
 		const int currentOwnerIdx = currentFace.idx();
 		const Triangle& currentTriangle = triangles[currentOwnerIdx];
+		float pointConvRadius = VectorFieldsUtils::getPerimeter(currentTriangle) / 1000.f;
 		Vec3f field = getField(currentPoint, currentOwnerIdx, currentTime);
+
+		if (particlePath.size() > 3)
+		{
+			if (particlePath.tryCollapseLastPoints(pointConvRadius))
+			{
+				numConsecutiveClosePoints++;
+			}
+			else
+			{
+				numConsecutiveClosePoints = 0;
+			}
+		}
+
+		if (numConsecutiveClosePoints > 50)
+		{
+			currentTime += dt;
+			particlePath.pushBack(currentPoint, currentTime);
+			continue;
+		}
+		
 		if (VectorFieldsUtils::isCloseToZero(field.length()))
 		{
 			currentTime += dt;
@@ -183,7 +200,6 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 		if (convergenceCheckCounter == 0) // Every so often
 		{
 			Point conv;
-			float pointConvRadius = VectorFieldsUtils::getPerimeter(currentTriangle) / 1000.f;
 			if (particlePath.isConverged(pointConvRadius, (dt/100), 10, &conv))
 			{
 				currentTime += dt;
