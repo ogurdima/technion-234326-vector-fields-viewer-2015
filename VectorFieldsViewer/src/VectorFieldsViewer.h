@@ -21,8 +21,7 @@ class VectorFieldsViewer
 {
 #pragma region Singleton
 private:
-	VectorFieldsViewer(void);
-
+	VectorFieldsViewer();
 	static VectorFieldsViewer		instance;
 	static int						drawingTimeout;
 #pragma endregion
@@ -46,17 +45,15 @@ private:
 #pragma region Fields
 private:
 	DrawStateType					drawState;
-
 	Time							curTime;
 	Time							maxTime;
 	Time							minTime;
 	Time							visualisationTimeInterval;
-
 	FieldedMesh						fieldedMesh;
 	PathsManager					pathsMgr;
-
 	vector<uint>					indices;
 	vector<float>					colors;
+	string							loadedFieldPath;
 #pragma endregion
 
 private:

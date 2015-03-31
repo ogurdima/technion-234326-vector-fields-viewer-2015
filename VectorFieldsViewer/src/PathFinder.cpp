@@ -21,28 +21,18 @@ void reportPathsStatistics(vector<ParticlePath>& paths)
 	std::nth_element(paths.begin(), paths.begin() + paths.size()/2, paths.end(), ParticlePath::compareBySize);
 	int maxLen = std::max_element(paths.begin(), paths.end(), ParticlePath::compareBySize)->size();
 	int minLen = std::min_element(paths.begin(), paths.end(), ParticlePath::compareBySize)->size();
-	
-    std::cout << "The median is " << paths[paths.size()/2].size() << '\n';
-
-	cout << "Max path length: " << maxLen <<  endl;
-	cout << "Min path length: " << minLen <<  endl;
-	cout << "Med path length: " << paths[paths.size()/2].size() <<  endl;
 	float sum = 0;
 	for (uint i = 0; i < paths.size(); i++)
 	{
 		sum += paths[i].size();
 	}
-	cout << "Avg path length: " << (sum/paths.size()) <<  endl;
-}
 
-void simplifyPaths(vector<ParticlePath>& paths, Time minTime)
-{
-	cout << "Simplifying paths: min time will be " << minTime << endl;
-	#pragma omp parallel for schedule(dynamic, 500)
-	for (int i = 0; i < paths.size(); i++)
-	{
-		paths[i].simplify(minTime);
-	}
+	std::cout << "====================< Paths Statistics >==================="	<< endl;
+	cout << "Max path length: " << maxLen										<< endl;
+	cout << "Min path length: " << minLen										<< endl;
+	cout << "Med path length: " << paths[paths.size()/2].size()					<< endl;
+	cout << "Avg path length: " << (sum/paths.size())							<< endl;
+	std::cout << "==========================================================="	<< endl;
 }
 
 PathFinder::PathFinder() : 
@@ -75,25 +65,24 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_, const Tim
 
 vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, const Time& dt_, const Time& minTime, const Time& maxTime)
 {
+
 	configure(aMesh_, dt_, minTime, maxTime);
 	if (!hasValidConfig) 
 	{
 		throw std::exception("Calling getParticlePaths with badly configured PathFinder");
 	}
 	auto start_time = high_resolution_clock::now();
-	
 	int totalFaces = fieldedMesh.n_faces();
 	vector<Mesh::FaceHandle> faceHandles;
 	faceHandles.reserve(totalFaces);
-
 	for(Mesh::ConstFaceIter fit(fieldedMesh.faces_begin()), fitEnd(fieldedMesh.faces_end()); fit != fitEnd; ++fit ) 
 	{
 		faceHandles.push_back(fit.handle());
 	}
-
 	vector<ParticlePath> allPaths;
 	allPaths.resize(totalFaces);
 	cache();
+
 #pragma omp parallel for schedule(dynamic, 500)
 	for(int i = 0; i < totalFaces; ++i )
 	{
@@ -102,21 +91,17 @@ vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, con
 		int prevFractionDone = (int)((double)(i) * 100. / (double)totalFaces);
 		if ( (fractionDone % 10) == 0  && fractionDone != prevFractionDone)
 		{
-			cout << fractionDone << "% Done" << endl;
+			cout << fractionDone << "th percentile path computation finished" << endl;
 		}
 	}
+//==========< End of parallel part >============// 
 	cleareCache();
-	cout << "run took " << duration_cast<milliseconds>(high_resolution_clock::now() - start_time).count() << " milliseconds" << endl;
-	std::cout << "Fuckup count: " << fuckupCount << endl;
+	cout << "Run took " << duration_cast<milliseconds>(high_resolution_clock::now() - start_time).count()/1000 << " seconds" << endl;
+	cout << "Problematic paths count: " << fuckupCount << endl;
 	cout << "Expected min path length: " << floorf(((maxTime-minTime)/dt)) << endl;
 	reportPathsStatistics(allPaths);
-	//simplifyPaths(allPaths, dt / 10.f);
-	//reportPathsStatistics(allPaths);
 	return allPaths;
 }
-
-
-
 
 void PathFinder::cache()
 {
@@ -157,8 +142,6 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 	Time currentTime = tmin;
 	particlePath.pushBack(currentPoint, currentTime);
 
-	Mesh::HalfedgeHandle excludeHalfEdge;
-	bool exclude = false;
 
 	int convergenceCheckCounter = 0;
 	int numConsecutiveClosePoints = 0;
@@ -170,6 +153,8 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 		float pointConvRadius = VectorFieldsUtils::getPerimeter(currentTriangle) / 1000.f;
 		Vec3f field = getField(currentPoint, currentOwnerIdx, currentTime);
 
+		// Next section locally simplifies path. It looks at two last points in the path, and
+		// if they are close enough collapses them into one.
 		if (particlePath.size() > 3)
 		{
 			if (particlePath.tryCollapseLastPoints(pointConvRadius))
@@ -184,6 +169,9 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 
 		if (numConsecutiveClosePoints > 50)
 		{
+			// There were numConsecutiveClosePoints consecutive collapses. So minimal sphere's containing
+			// last numConsecutiveClosePoints points radius is ar most numConsecutiveClosePoints * pointConvRadius
+			// Means we are stuck in one place. Increase curTime by dt and see maybe field changed (continue)
 			currentTime += dt;
 			particlePath.pushBack(currentPoint, currentTime);
 			continue;
@@ -191,17 +179,21 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 		
 		if (VectorFieldsUtils::isCloseToZero(field.length()))
 		{
+			// The field is ridiculously small, we will not move from here. 
+			// Increase curTime and check maybe field changed (continue)
 			currentTime += dt;
 			particlePath.pushBack(currentPoint, currentTime);
 			continue;
 		}
 
+		// Every so often check if last points in the path are bounded.
+		// If so we are stuck, need to wait for field change (continue)
 		convergenceCheckCounter = (convergenceCheckCounter + 1) % 50; 
-		if (convergenceCheckCounter == 0) // Every so often
+		if (convergenceCheckCounter == 0) 
 		{
-			Point conv;
-			if (particlePath.isConverged(pointConvRadius, (dt/100), 10, &conv))
+			if (particlePath.isConverged(pointConvRadius, (dt/100), 10))
 			{
+				cout << "Converged" << endl;
 				currentTime += dt;
 				particlePath.pushBack(currentPoint, currentTime);
 				continue;
@@ -209,7 +201,8 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 		}
 		
 		Point next = currentPoint + field * dt;
-
+		// The next point is in the same face as the last. 
+		// last = next; continue
 		if( VectorFieldsUtils::isInnerPoint(next, currentTriangle))
 		{
 			currentPoint = next;
@@ -218,22 +211,14 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 			continue;
 		}
 
-		// Next we find next owner face. If owner face changed then we need to change next particle point to be on the
+		// Next we find next owner face. The owner face changed so we need to change next particle point to be on the
 		// edge of the new owner face
-
 		const Normal& normal = normals[currentOwnerIdx];
 		Point intersection;
 		bool breakSearch = false;
 		bool intersectionFound = false;
-		bool removeExclusion = false;
 		for(Mesh::ConstFaceHalfedgeIter cfhei(fieldedMesh.cfh_begin(currentFace)); cfhei != fieldedMesh.cfh_end(currentFace); ++cfhei)
 		{
-			/*if(exclude && cfhei.handle() == excludeHalfEdge)
-			{
-				removeExclusion = true;
-				continue;
-			}
-*/
 			Point& from = fieldedMesh.point(fieldedMesh.from_vertex_handle(cfhei));
 			Point& to = fieldedMesh.point(fieldedMesh.to_vertex_handle(cfhei));
 
@@ -245,8 +230,11 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 			double actualTimeInterval = dt * ( (intersection - currentPoint).length() / (next - currentPoint).length());
 			currentFace = fieldedMesh.opposite_face_handle(cfhei.handle());
 			currentPoint = intersection;
-			int ccc = 1;
 			Triangle& t = triangles[currentFace.idx()];
+
+			// Here we move the intersection point a little bit to the center of the new ownerFace
+			// This is needed to reduce possibility of numeric instability
+			int ccc = 1;
 			Vec3f delta = (centroids[currentFace.idx()] - intersection).normalized() * FLT_EPSILON * 10;
 			currentPoint += delta;
 			while(!VectorFieldsUtils::isInnerPoint(currentPoint, t))
@@ -254,27 +242,23 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 				currentPoint = intersection + delta * ccc;
 				++ccc;
 			}
+
 			currentTime = currentTime + (Time)actualTimeInterval;
 			particlePath.pushBack(intersection, currentTime);
-			excludeHalfEdge = fieldedMesh.opposite_halfedge_handle(cfhei.handle());
-			exclude = true;
-			removeExclusion = false;
 			intersectionFound = true;
 			break;
 		}
 
 		if(currentFace.idx() < 0) 
 		{
+			// This means we got to the boundary of the mesh, so we need to stop the computation here
 			break;
 		}
 		if (!intersectionFound)
 		{
+			// Oops
 			fuckupCount++; 
 			break;
-		}
-		if(removeExclusion)
-		{
-			exclude = false;
 		}
 	}
 	return particlePath;

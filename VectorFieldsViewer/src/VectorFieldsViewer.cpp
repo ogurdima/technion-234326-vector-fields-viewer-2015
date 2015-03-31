@@ -13,6 +13,7 @@ VectorFieldsViewer::VectorFieldsViewer(void) :
 	minTime(0),
 	curTime(0)
 {
+	loadedFieldPath = "?"; // This is an invalid path
 }
 
 #pragma region Callbacks
@@ -96,25 +97,34 @@ void VectorFieldsViewer::recomputePathsCallback(char* path, bool isConst, double
 {
 	string p(path);
 	bool loaded = false;
-	if(p.length() == 0)
+	instance.maxTime = max;
+	instance.minTime = min;
+	instance.curTime = instance.minTime;
+
+	if (p == instance.loadedFieldPath)
 	{
-		std::cout << "Default field assignment" << path << std::endl;
-		loaded = instance.fieldedMesh.assignDefaultField(min, max);
+		loaded = true;
 	}
 	else
 	{
-		std::cout << "Opening Field File " << path << std::endl;
-		loaded = instance.fieldedMesh.assignVectorField(path, isConst);
+		if(p.length() == 0)
+		{
+			std::cout << "Assigning default rotating field" << path << std::endl;
+			loaded = instance.fieldedMesh.assignDefaultField(min, max);
+		}
+		else
+		{
+			std::cout << "Opening Field File " << path << std::endl;
+			loaded = instance.fieldedMesh.assignVectorField(path, isConst);
+		}
+		if (!loaded)
+		{
+			std::cout << "Failed to assign field" << std::endl;
+		}
 	}
-	if (!loaded)
+	instance.loadedFieldPath = p;
+	if (loaded)
 	{
-		std::cout << "Failed to assign field" << std::endl;
-	}
-	else
-	{
-		instance.maxTime = max;
-		instance.minTime = min;
-		instance.curTime = instance.minTime;
 		instance.computePaths(step);
 	}
 }
@@ -163,6 +173,7 @@ void VectorFieldsViewer::evolvePaths()
 void VectorFieldsViewer::computePaths(double step)
 {
 	vector<ParticlePath> particlePaths;
+	pathsMgr.Clear();
 	try
 	{
 		particlePaths = PathFinder().getParticlePaths(fieldedMesh, step, minTime, maxTime);

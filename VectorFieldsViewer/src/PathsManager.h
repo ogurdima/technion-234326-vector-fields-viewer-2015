@@ -91,6 +91,7 @@ class PathsManager
 {
 public:
 	PathsManager();
+	void Clear();
 	void Configure(const vector<ParticlePath>& paths);
 	void Evolve(Time dt);
 	void SetTime(Time t);

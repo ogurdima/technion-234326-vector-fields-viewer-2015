@@ -14,8 +14,22 @@ PathsManager::PathsManager() :
 
 }
 
+void PathsManager::Clear()
+{
+	numOfPoints = 0;
+	if (NULL != data)
+	{
+		delete[] data;
+		data = NULL;
+	}
+	handles.clear();
+	counts.clear();
+	starts.clear();
+}
+
 void PathsManager::Configure(const vector<ParticlePath>& paths)
 {
+	cout << "Configuring PathsManager with " << paths.size() << " paths" << endl;
 	handles.clear();
 	handles.resize(paths.size());
 	
