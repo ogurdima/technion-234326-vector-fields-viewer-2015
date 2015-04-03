@@ -32,7 +32,7 @@ typedef OpenMesh::VectorT<Point,3> Triangle;
 
 #pragma endregion
 
-#define NUMERICAL_ERROR_THRESH				DBL_EPSILON * 10
+#define NUMERICAL_ERROR_THRESH				FLT_EPSILON * 10
 
 
 

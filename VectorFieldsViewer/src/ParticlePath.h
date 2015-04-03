@@ -15,8 +15,6 @@ public:
 	ParticlePath():
 		particleLoc(0)
 	{
-		points.reserve(500);
-		times.reserve(500);
 	}
 
 	inline const vector<Point>& getPoints() const
@@ -47,52 +45,6 @@ public:
 	{
 		points.clear();
 		times.clear();
-	}
-
-	const Point* getActivePathPoints(int requestedLength, int* actualLength) const
-	{
-		int firstIndex = particleLoc - requestedLength + 1;
-		if (firstIndex < 0) 
-		{
-			firstIndex = 0;
-		}
-		*actualLength = particleLoc - firstIndex + 1;
-		assert(*actualLength > 0);
-		return &points[firstIndex];
-	}
-
-	const Time* getActivePathTimes(int requestedLength, int* actualLength)
-	{
-		int firstIndex = particleLoc - requestedLength;
-		if (firstIndex < 0) 
-		{
-			firstIndex = 0;
-		}
-		*actualLength = particleLoc - firstIndex + 1;
-		assert(*actualLength > 0);
-		return &times[firstIndex];
-	}
-
-	void evolveParticleLoc(double dt)
-	{
-		int pathLength = (int) size();
-		assert(pathLength > 0 && particleLoc >= 0 && particleLoc < pathLength);
-		double currentTime = times[particleLoc];
-		if (particleLoc == pathLength - 1)
-		{
-			particleLoc = rand() % std::max( ((int) (pathLength / 10)),  pathLength);
-			return;
-		}
-		for (int nextLoc = particleLoc; nextLoc < pathLength; nextLoc++)
-		{
-			if (times[nextLoc] >= currentTime + dt)
-			{
-				particleLoc = nextLoc;
-				assert(particleLoc >= 0);
-				return;
-			}
-		}
-		particleLoc = pathLength - 1;
 	}
 
 	bool isConverged(float pointRadius, float timeRadius = NUMERICAL_ERROR_THRESH*100, unsigned int pointsToCheck = 10, Point* convergencePoint = NULL)

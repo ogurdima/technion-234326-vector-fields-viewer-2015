@@ -3,6 +3,7 @@
 #include "../OpenMesh/Core/Mesh/AttribKernelT.hh"
 #include <chrono>
 #include <omp.h>
+#include <math.h>
 
 using std::cout;
 using std::endl;
@@ -59,17 +60,22 @@ vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, con
 	vector<ParticlePath> allPaths;
 	allPaths.resize(totalFaces);
 	cache();
-#pragma omp parallel for schedule(dynamic, 500)
+	int step = 5;
+	int count = 0;
+	int fractionDone = 0;
+//#pragma omp parallel for schedule(dynamic, 500) shared(count) shared(fractionDone)
 	for(int i = 0; i < totalFaces; ++i )
 	{
 		allPaths[i] = getParticlePath(faceHandles[i]);
-		int fractionDone = (int)((double)(i+1) * 100. / (double)totalFaces);
-		int prevFractionDone = (int)((double)(i) * 100. / (double)totalFaces);
-		if ( (fractionDone % 10) == 0  && fractionDone != prevFractionDone)
+		++count;
+		if ( (count * 100 / totalFaces) == (fractionDone + step))
 		{
-			cout << fractionDone << "% Done" << endl;
+			fractionDone += step;
+//#pragma omp critical(PRINT)
+			cout << "\r" << fractionDone << "% done";
 		}
 	}
+	cout << endl;
 	cleareCache();
 	cout << "run took " << duration_cast<milliseconds>(high_resolution_clock::now() - start_time).count() << " milliseconds" << endl;
 	std::cout << "Fuckup count: " << fuckupCount << endl;
@@ -115,13 +121,11 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 	Time currentTime = tmin;
 	particlePath.pushBack(currentPoint, currentTime);
 
-	Mesh::HalfedgeHandle excludeHalfEdge;
-	bool exclude = false;
-
 	int convergenceCheckCounter = 0;
 
 	while (currentTime <= tmax )
 	{
+		float timeDelta = std::min(dt, tmax - currentTime);
 		const int currentOwnerIdx = currentFace.idx();
 		const Triangle& currentTriangle = triangles[currentOwnerIdx];
 		Vec3f field = getField(currentPoint, currentOwnerIdx, currentTime);
@@ -132,12 +136,10 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 			continue;
 		}
 
-		convergenceCheckCounter = (convergenceCheckCounter + 1) % 50; 
-		if (convergenceCheckCounter == 0) // Every so often
+		if ((++convergenceCheckCounter % 50) == 0) // Every so often
 		{
 			Point conv;
-			float pointConvRadius = VectorFieldsUtils::getPerimeter(currentTriangle) / 1000.f;
-			if (particlePath.isConverged(pointConvRadius, (dt/100), 10, &conv))
+			if (particlePath.isConverged(VectorFieldsUtils::getPerimeter(currentTriangle) / 1000.f, (dt/100), 10, &conv))
 			{
 				currentTime += dt;
 				particlePath.pushBack(currentPoint, currentTime);
@@ -160,17 +162,9 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 
 		const Normal& normal = normals[currentOwnerIdx];
 		Point intersection;
-		bool breakSearch = false;
 		bool intersectionFound = false;
-		bool removeExclusion = false;
 		for(Mesh::ConstFaceHalfedgeIter cfhei(fieldedMesh.cfh_begin(currentFace)); cfhei != fieldedMesh.cfh_end(currentFace); ++cfhei)
 		{
-			/*if(exclude && cfhei.handle() == excludeHalfEdge)
-			{
-				removeExclusion = true;
-				continue;
-			}
-*/
 			Point& from = fieldedMesh.point(fieldedMesh.from_vertex_handle(cfhei));
 			Point& to = fieldedMesh.point(fieldedMesh.to_vertex_handle(cfhei));
 
@@ -188,14 +182,10 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 			currentPoint += delta;
 			while(!VectorFieldsUtils::isInnerPoint(currentPoint, t))
 			{
-				currentPoint = intersection + delta * ccc;
-				++ccc;
+				currentPoint = intersection + delta * (ccc++);
 			}
 			currentTime = currentTime + (Time)actualTimeInterval;
 			particlePath.pushBack(intersection, currentTime);
-			excludeHalfEdge = fieldedMesh.opposite_halfedge_handle(cfhei.handle());
-			exclude = true;
-			removeExclusion = false;
 			intersectionFound = true;
 			break;
 		}
@@ -208,10 +198,6 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 		{
 			fuckupCount++; 
 			break;
-		}
-		if(removeExclusion)
-		{
-			exclude = false;
 		}
 	}
 	return particlePath;
