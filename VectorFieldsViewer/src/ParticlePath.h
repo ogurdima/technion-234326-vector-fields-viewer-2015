@@ -108,6 +108,10 @@ public:
 
 	bool tryCollapseLastPoints(float pointRadius)
 	{
+		if(size() < 2)
+		{
+			return false;
+		}
 		int last = times.size() - 1;
 		int prev = times.size() - 2;
 		float dist = (points[last] - points[prev]).length();

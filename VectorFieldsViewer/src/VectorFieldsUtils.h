@@ -82,41 +82,6 @@ public:
 		return true;
 	}
 
-	static inline bool intersectionRaySegmentY(const Point& start, const Vec3f& f, const Point& v1, const Point& v2, Point& intersection)
-	{
-		// field 21 (end - start)
-		float fLength = f.length();
-		if(fLength < NUMERICAL_ERROR_THRESH) return false;
-
-		Vec3f a = v2 - v1;							// 43 
-		float aLen = a.length();
-
-		if(aLen < NUMERICAL_ERROR_THRESH) return false;
-
-		Vec3f b = v1 - start;						// 13 
-		float dotV1StartSegmentRay = dot(b, a);		// d1343
-		float dotSegmentRayField = dot(a, f);		// d4321
-		float dotV1StartField = dot(b, f);			// d1321
-		float segmentLengthSqr = aLen * aLen;		// d4343
-		float fieldLengthSqr = fLength * fLength;	// d2121
-
-		float denom = fieldLengthSqr * segmentLengthSqr - dotSegmentRayField * dotSegmentRayField;
-		if(abs(denom) < NUMERICAL_ERROR_THRESH) return false;
-
-		float numer = dotV1StartSegmentRay * dotSegmentRayField - dotV1StartField * segmentLengthSqr;
-
-		float fieldTime = numer / denom;
-
-		if(fieldTime < 0) return false;
-
-		float segmentTime = (dotV1StartSegmentRay + dotSegmentRayField * fieldTime) / segmentLengthSqr;
-
-		if(segmentTime < 0 || segmentTime > 1) return false;
-
-		intersection = start + f * fieldTime;
-		return true;
-	}
-
 	static inline Vec3f lerp(const Vec3f& first, const Vec3f& second, const Time& time)
 	{
 		assert(time <= 1.0 && time >= 0.0);
