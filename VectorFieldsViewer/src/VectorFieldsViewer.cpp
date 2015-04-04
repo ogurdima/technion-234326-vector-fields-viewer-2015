@@ -158,6 +158,11 @@ int VectorFieldsViewer::getDrawingTimeout()
 
 void VectorFieldsViewer::evolvePaths()
 {
+	DrawStateType ds = getDrawState();
+	if(ds != DrawStateType::FIELD && ds != DrawStateType::FRONT_FIELD)
+	{
+		return;
+	}
 	curTime += visualisationTimeInterval;
 	if (curTime > maxTime)
 	{
@@ -168,6 +173,7 @@ void VectorFieldsViewer::evolvePaths()
 	{
 		pathsMgr.Evolve(visualisationTimeInterval);
 	}
+	UpdateCurrentTimeGui(curTime);
 }
 
 void VectorFieldsViewer::computePaths(double step)

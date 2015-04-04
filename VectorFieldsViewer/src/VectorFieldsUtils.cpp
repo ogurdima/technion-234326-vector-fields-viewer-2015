@@ -16,17 +16,6 @@ Point VectorFieldsUtils::stdToBarycentric(const Point& original, const Triangle&
 	return p;
 }
 
-Point VectorFieldsUtils::barycentricToStd(const Point& barycentric, const Triangle& triangle) 
-{
-	return triangle[0] * barycentric[0] + triangle[1] * barycentric[1] + triangle[2] * barycentric[2];
-}
-
-bool VectorFieldsUtils::isInnerPoint(const Point& point, const Triangle& triangle) 
-{
-	Point barycentric(stdToBarycentric(point, triangle));
-	return (barycentric[0] >= 0) && (barycentric[1] >= 0) && (barycentric[2] >= 0);	
-}
-
 Vec3f VectorFieldsUtils::calculateField(const vector<VectorFieldTimeVal>& fieldSamples, const Time& time)
 {
 	uint size = fieldSamples.size();

@@ -149,7 +149,6 @@ namespace Parameters
         }
 
         private string _fieldPath;
-        private string _oldFieldPath;
         public string FieldPath
         {
             get { return _fieldPath; }
@@ -200,11 +199,6 @@ namespace Parameters
                 OnVisualizationChanged();
             }
         }
-        public void UpdatePathWindow(double value)
-        {
-            _pathWindow = value;
-            OnPropertyChanged("PathWindow");
-        }
 
         private double _visualizationStep = 0.002;
         public double VisualizationStep
@@ -217,13 +211,23 @@ namespace Parameters
                 OnVisualizationChanged();
             }
         }
-        public void SetVisualizationStep(double step)
+
+        private double _currentTime;
+        public double CurrentTime
         {
-            _visualizationStep = step;
-            OnPropertyChanged("VisualizationStep");
+            get { return Math.Round(_currentTime, 5); }
+            set
+            {
+                _currentTime = value;
+                OnPropertyChanged("CurrentTime");
+            }
+        }
+        public void SetCurrentTime(double time)
+        {
+            _currentTime = time;
+            OnPropertyChanged("CurrentTime");
         }
 
-        private double _oldSimulationStep;
         private double _simulationStep = 0.005;
         public double SimulationStep
         {
@@ -233,11 +237,6 @@ namespace Parameters
                 _simulationStep = value;
                 OnPropertyChanged("SimulationStep");
             }
-        }
-        public void UpdateSimulationStep(double step)
-        {
-            _oldSimulationStep = _simulationStep = step;
-            OnPropertyChanged("SimulationStep");
         }
 
         private double _maxTime = 1;

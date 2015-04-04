@@ -71,6 +71,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <!--  End Region  -->
 
@@ -197,6 +198,7 @@
                             Increment="5"
                             Maximum="5000"
                             Minimum="1"
+                            TextAlignment="Left"
                             Value="{Binding Timeout}" />
 
         <Label Grid.Row="13"
@@ -209,6 +211,7 @@
                            HorizontalAlignment="Left"
                            Increment="0.001"
                            Minimum="0.001"
+                           TextAlignment="Left"
                            Value="{Binding PathWindow}" />
 
         <Label Grid.Row="14"
@@ -221,9 +224,22 @@
                            HorizontalAlignment="Left"
                            Increment="0.001"
                            Minimum="0.0001"
+                           TextAlignment="Left"
                            Value="{Binding VisualizationStep}" />
 
-        <Separator Grid.Row="15"
+        <Label Grid.Row="15"
+               Grid.Column="0"
+               HorizontalAlignment="Left"
+               Content="Current time:" />
+        <TextBox Grid.Row="15"
+                 Grid.Column="1"
+                 Width="120"
+                 HorizontalAlignment="Left"
+                 IsReadOnly="True"
+                 Text="{Binding CurrentTime}"
+                 TextAlignment="Left" />
+
+        <Separator Grid.Row="16"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Height="2"
@@ -231,22 +247,23 @@
         <!--  End Region  -->
 
         <!--  Region Simulation  -->
-        <Label Grid.Row="16"
+        <Label Grid.Row="17"
                Grid.Column="0"
                Content="Simulation:"
                Style="{StaticResource HeaderLabelStyle}" />
-        <Label Grid.Row="17"
+        <Label Grid.Row="18"
                Grid.Column="0"
                HorizontalAlignment="Left"
                Content="Simulation step:" />
-        <xctk:DoubleUpDown Grid.Row="17"
+        <xctk:DoubleUpDown Grid.Row="18"
                            Grid.Column="1"
                            Width="120"
                            HorizontalAlignment="Left"
                            Increment="0.001"
                            Minimum="0.0001"
+                           TextAlignment="Left"
                            Value="{Binding SimulationStep}" />
-        <StackPanel Grid.Row="18"
+        <StackPanel Grid.Row="19"
                     Grid.Column="0"
                     HorizontalAlignment="Stretch"
                     Orientation="Horizontal">
@@ -254,9 +271,10 @@
             <xctk:DoubleUpDown Width="100"
                                HorizontalAlignment="Stretch"
                                Increment="0.001"
+                               TextAlignment="Left"
                                Value="{Binding MinTime}" />
         </StackPanel>
-        <StackPanel Grid.Row="18"
+        <StackPanel Grid.Row="19"
                     Grid.Column="1"
                     HorizontalAlignment="Stretch"
                     Orientation="Horizontal">
@@ -264,9 +282,10 @@
             <xctk:DoubleUpDown Width="100"
                                HorizontalAlignment="Stretch"
                                Increment="0.001"
+                               TextAlignment="Left"
                                Value="{Binding MaxTime}" />
         </StackPanel>
-        <Button Grid.Row="19"
+        <Button Grid.Row="20"
                 Grid.Column="1"
                 Margin="5 3"
                 HorizontalAlignment="Right"

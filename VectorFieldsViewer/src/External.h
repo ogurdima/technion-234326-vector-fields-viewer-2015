@@ -6,3 +6,5 @@ _declspec(dllexport) void OpenWindow(void (*changedDrawStateCallback)(int),
 									 void (*recomputePathsCallback)(char* path, bool isConst, double step, double min, double max));
 
 _declspec(dllexport) void UpdateDrawStateGui(int drawState);
+
+_declspec(dllexport) void UpdateCurrentTimeGui(double currentTime);

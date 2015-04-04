@@ -27,3 +27,8 @@ _declspec(dllexport) void UpdateDrawStateGui(int drawState)
 {
 	Parameters::ParameterWindow::Instance->SetDrawState(drawState);
 }
+
+_declspec(dllexport) void UpdateCurrentTimeGui(double currentTime)
+{
+	Parameters::ParameterWindow::Instance->SetCurrentTime(currentTime);
+}

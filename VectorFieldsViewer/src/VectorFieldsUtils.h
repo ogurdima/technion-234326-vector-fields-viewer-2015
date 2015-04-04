@@ -51,8 +51,18 @@ class VectorFieldsUtils
 public:
 
 	static Point stdToBarycentric(const Point& original, const Triangle& triangle);
-	static Point barycentricToStd(const Point& original, const Triangle& triangle);
-	static bool isInnerPoint(const Point& original, const Triangle& triangle);
+	
+	
+	static inline Point barycentricToStd(const Point& barycentric, const Triangle& triangle)
+	{
+		return triangle[0] * barycentric[0] + triangle[1] * barycentric[1] + triangle[2] * barycentric[2];
+	}
+
+	static inline bool isInnerPoint(const Point& original, const Triangle& triangle)
+	{
+		Point barycentric(stdToBarycentric(original, triangle));
+		return (barycentric[0] >= 0) && (barycentric[1] >= 0) && (barycentric[2] >= 0);	
+	}
 
 	static inline bool isCloseToZero(double val) { return abs(val) < NUMERICAL_ERROR_THRESH; }
 
