@@ -74,6 +74,7 @@ namespace Parameters
         public ParameterWindow()
         {
             InitializeComponent();
+            IsVisualizationStopped = false;
         } 
         #endregion
 
@@ -98,7 +99,12 @@ namespace Parameters
         {
             if (VisualizationChanged != null)
             {
-                VisualizationChanged(_timeout, _visualizationStep, _pathWindow);
+                int actualTimeout = _timeout;
+                if (IsVisualizationStopped)
+                {
+                    actualTimeout = -1; // A long time
+                }
+                VisualizationChanged(actualTimeout, _visualizationStep, _pathWindow);
             }
         }
         public event RecomputePathsCallback RecomputePaths;
@@ -184,6 +190,18 @@ namespace Parameters
             {
                 _timeout = value;
                 OnPropertyChanged("Timeout");
+                OnVisualizationChanged();
+            }
+        }
+
+        private bool _isVisualizationStopped;
+        public bool IsVisualizationStopped
+        {
+            get { return _isVisualizationStopped; }
+            set
+            {
+                _isVisualizationStopped = value;
+                OnPropertyChanged("IsVisualizationStopped");
                 OnVisualizationChanged();
             }
         }
@@ -323,11 +341,25 @@ namespace Parameters
             RecomputePaths(new StringBuilder(path), !path.EndsWith(".txt"), SimulationStep, MinTime, MaxTime);
         }
 
+        private void StopClick(object sender, RoutedEventArgs e)
+        {
+            IsVisualizationStopped = true;
+        }
+
+        private void PlayClick(object sender, RoutedEventArgs e)
+        {
+            IsVisualizationStopped = false;
+        }
+
         private void WindowClosing(object sender, CancelEventArgs e)
         {
             e.Cancel = true;
         } 
         #endregion
+
+       
+
+        
 
     }
 }

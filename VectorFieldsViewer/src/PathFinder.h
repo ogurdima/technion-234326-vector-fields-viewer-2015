@@ -29,20 +29,14 @@ private:
 	vector<VectorT<vector<VectorFieldTimeVal>,3>>		faceVertexFields;
 
 	void												cache();
-	inline bool											isOutOfBox(const Point& p);
-	void												cleareCache();
+	void												clearCache();
 	ParticlePath										getParticlePath(Mesh::FaceHandle& face_);
 	inline Vec3f										getField(const Point& p,const int fid, const Time time);
 	bool												configure(const FieldedMesh& aMesh_, const Time& dt_, const Time& minTime, const Time& maxTime);
-	inline bool											getintersection(Mesh::FaceHandle& currentFace, Point& currentPoint, Time& currentTime, Time timeDelta);
+	inline bool											getIntersection(Mesh::FaceHandle& currentFace, Point& currentPoint, Time& currentTime, Time timeDelta);
 };
 
-bool PathFinder::isOutOfBox(const Point& p)
-{
-	return abs(p[0]) > 1 || abs(p[1]) > 1 || abs(p[2]) > 1;
-}
-
-bool PathFinder::getintersection(Mesh::FaceHandle& currentFace, Point& currentPoint, Time& currentTime, Time timeDelta)
+bool PathFinder::getIntersection(Mesh::FaceHandle& currentFace, Point& currentPoint, Time& currentTime, Time timeDelta)
 {
 	const Triangle& currentTriangle = triangles[currentFace.idx()];
 	Vec3f field = getField(currentPoint, currentFace.idx(), currentTime);
@@ -76,6 +70,11 @@ bool PathFinder::getintersection(Mesh::FaceHandle& currentFace, Point& currentPo
 		if (!VectorFieldsUtils::intersectionRaySegment(currentPoint, field, from, to, normal, intersection)) 
 		{ continue;	}
 		currentFace = fieldedMesh.opposite_face_handle(cfhei.handle());
+		if (currentFace.idx() == -1)
+		{
+			// We reached boundary - need to stop computation here
+			return false;
+		}
 
 		Triangle& t = triangles[currentFace.idx()];
 
@@ -93,6 +92,7 @@ bool PathFinder::getintersection(Mesh::FaceHandle& currentFace, Point& currentPo
 		currentPoint = nextPoint;
 		return true;
 	}
+	fuckupCount++; 
 	return false;
 }
 

@@ -83,7 +83,7 @@ vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, con
 	allPaths.resize(totalFaces);
 	cache();
 
-//#pragma omp parallel for schedule(dynamic, 500)
+#pragma omp parallel for schedule(dynamic, 500)
 	for(int i = 0; i < totalFaces; ++i )
 	{
 		allPaths[i] = getParticlePath(faceHandles[i]);
@@ -95,7 +95,7 @@ vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, con
 		}
 	}
 //==========< End of parallel part >============// 
-	cleareCache();
+	clearCache();
 	cout << "Run took " << duration_cast<milliseconds>(high_resolution_clock::now() - start_time).count()/1000 << " seconds" << endl;
 	cout << "Problematic paths count: " << fuckupCount << endl;
 	cout << "Expected min path length: " << floorf(((maxTime-minTime)/dt)) << endl;
@@ -125,7 +125,7 @@ void PathFinder::cache()
 	}
 }
 
-void PathFinder::cleareCache()
+void PathFinder::clearCache()
 {
 	triangles = vector<Triangle>();
 	centroids = vector<Point>();
@@ -136,13 +136,10 @@ void PathFinder::cleareCache()
 ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 {
 	ParticlePath particlePath;
-
 	Mesh::FaceHandle& currentFace = faceHandle;
 	Point currentPoint = VectorFieldsUtils::barycentricToStd(Point(1.f/3.f), triangles[faceHandle.idx()]);
 	Time currentTime = tmin;
 	particlePath.pushBack(currentPoint, currentTime);
-
-	//int convergenceCheckCounter = 0;
 	int numConsecutiveClosePoints = 0;
 
 	while (currentTime < tmax)
@@ -171,33 +168,11 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 			particlePath.pushBack(currentPoint, currentTime);
 			continue;
 		}
-
-		// Every so often check if last points in the path are bounded.
-		// If so we are stuck, need to wait for field change (continue)
-		//convergenceCheckCounter = (convergenceCheckCounter + 1) % 50; 
-		//if (convergenceCheckCounter == 0) 
-		//{
-		//	if (particlePath.isConverged(pointConvRadius, (dt/100), 10))
-		//	{
-		//		cout << "Converged" << endl;
-		//		currentTime += dt;
-		//		particlePath.pushBack(currentPoint, currentTime);
-		//		continue;
-		//	}
-		//}
-
-		if(!getintersection(currentFace, currentPoint, currentTime, timeDelta))
+		if(!getIntersection(currentFace, currentPoint, currentTime, timeDelta))
 		{
-			fuckupCount++; 
 			break;
 		}
 		particlePath.pushBack(currentPoint,currentTime);
-
-		if(currentFace.idx() < 0) 
-		{
-			// This means we got to the boundary of the mesh, so we need to stop the computation here
-			break;
-		}
 	}
 	return particlePath;
 }

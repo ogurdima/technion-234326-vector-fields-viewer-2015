@@ -11,7 +11,8 @@ VectorFieldsViewer::VectorFieldsViewer(void) :
 	redrawEvent(NULL),
 	maxTime(1),
 	minTime(0),
-	curTime(0)
+	curTime(0),
+	isVisualizationStopped(false)
 {
 	loadedFieldPath = "?"; // This is an invalid path
 }
@@ -48,6 +49,7 @@ void VectorFieldsViewer::setDrawState(DrawStateType ds)
 void VectorFieldsViewer::openMeshCallback(char* path)
 {
 	instance.openMesh(path);
+	instance.loadedFieldPath = "?";
 }
 
 void VectorFieldsViewer::openMesh(char* path)
@@ -88,6 +90,13 @@ void VectorFieldsViewer::changedFieldColorCallback(float r, float g, float b, fl
 
 void VectorFieldsViewer::changedVisualizationCallback(int drawTimeout, double step, double window)
 {
+	if (drawTimeout < 0)
+	{
+		instance.isVisualizationStopped = true;
+		return;
+	}
+	instance.isVisualizationStopped = false;
+
 	drawingTimeout = drawTimeout;
 	instance.pathsMgr.ChangePathWindow(window);
 	instance.visualisationTimeInterval = step;
@@ -131,7 +140,10 @@ void VectorFieldsViewer::recomputePathsCallback(char* path, bool isConst, double
 
 void VectorFieldsViewer::onTimer(int val)
 {
-	evolvePaths();
+	if (!isVisualizationStopped)
+	{
+		evolvePaths();
+	}
 }
 
 void VectorFieldsViewer::openParameterWindow()

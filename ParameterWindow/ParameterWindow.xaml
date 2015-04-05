@@ -231,14 +231,25 @@
                Grid.Column="0"
                HorizontalAlignment="Left"
                Content="Current time:" />
-        <TextBox Grid.Row="15"
-                 Grid.Column="1"
-                 Width="120"
-                 HorizontalAlignment="Left"
-                 IsReadOnly="True"
-                 Text="{Binding CurrentTime}"
-                 TextAlignment="Left" />
-
+        <StackPanel     Orientation="Horizontal" 
+                        Grid.Row="15"
+                        Grid.Column="1">
+            <TextBox Width="120"
+                     HorizontalAlignment="Left"
+                     IsReadOnly="True"
+                     Text="{Binding CurrentTime}"
+                     TextAlignment="Left" />
+            <Button Width="22" Margin="2" Click="StopClick">
+                <Rectangle Fill="Black" Height="10" Width="10"/>
+            </Button>
+            <Button Width="22" Margin="2" Click="PlayClick">
+                <Polygon Points="0,0 8,5, 0,10" Stroke="Green" Fill="Green">
+                    <Polygon.RenderTransform>
+                        <TranslateTransform X="2"/>
+                    </Polygon.RenderTransform>
+                </Polygon>
+            </Button>
+        </StackPanel>
         <Separator Grid.Row="16"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"

@@ -54,6 +54,7 @@ private:
 	vector<uint>					indices;
 	vector<float>					colors;
 	string							loadedFieldPath;
+	bool							isVisualizationStopped;
 #pragma endregion
 
 private:
