@@ -153,6 +153,7 @@
         <DockPanel Grid.Row="8"
                    Grid.Column="0"
                    Grid.ColumnSpan="2">
+            <CheckBox Content="Normalize" IsChecked="{Binding NormalizeField}" DockPanel.Dock="Right" Margin="3"/>
             <Button Click="LoadField"
                     DockPanel.Dock="Right">
                 Load . . .

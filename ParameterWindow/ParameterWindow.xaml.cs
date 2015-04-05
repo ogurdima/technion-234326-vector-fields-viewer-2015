@@ -75,6 +75,7 @@ namespace Parameters
         {
             InitializeComponent();
             IsVisualizationStopped = false;
+            NormalizeField = false;
         } 
         #endregion
 
@@ -164,6 +165,17 @@ namespace Parameters
                     return;
                 _fieldPath = value;
                 OnPropertyChanged("FieldPath");
+            }
+        }
+
+        private bool _normalizeField;
+        public bool NormalizeField
+        {
+            get { return _normalizeField; }
+            set
+            {
+                _normalizeField = value;
+                OnPropertyChanged("NormalizeField");
             }
         }
 
@@ -338,7 +350,7 @@ namespace Parameters
             if (RecomputePaths == null)
                 return;
             var path = FieldPath ?? string.Empty;
-            RecomputePaths(new StringBuilder(path), !path.EndsWith(".txt"), SimulationStep, MinTime, MaxTime);
+            RecomputePaths(new StringBuilder(path), !path.EndsWith(".txt"), NormalizeField, SimulationStep, MinTime, MaxTime);
         }
 
         private void StopClick(object sender, RoutedEventArgs e)

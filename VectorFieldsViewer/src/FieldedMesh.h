@@ -15,7 +15,7 @@ public:
 	bool									load(const char* path);
 	bool									isLoaded() const;
 	bool									hasField() const;
-	bool									assignVectorField(const char* path, bool isConst);
+	bool									assignVectorField(const char* path, bool isConst, bool normalize);
 	bool									assignDefaultField(double minTime, double maxTime, const Vec3f& rotationAxis = Vec3f(0,0,1));
 
 	const vector<uint>&						getIndices() const;

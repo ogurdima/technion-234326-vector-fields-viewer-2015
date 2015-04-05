@@ -87,9 +87,9 @@ bool PathFinder::getIntersection(Mesh::FaceHandle& currentFace, Point& currentPo
 		{
 			nextPoint = intersection + delta * ccc++;
 		}
-		while (!VectorFieldsUtils::isInnerPoint(nextPoint, t));
+		while (!VectorFieldsUtils::isInnerPoint(nextPoint, t) && ccc < 10);
 		currentTime = currentTime + (Time)((intersection - currentPoint).length() / field.length());
-		currentPoint = nextPoint;
+		currentPoint = intersection;
 		return true;
 	}
 	fuckupCount++; 

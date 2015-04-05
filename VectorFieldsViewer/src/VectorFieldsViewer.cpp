@@ -102,7 +102,7 @@ void VectorFieldsViewer::changedVisualizationCallback(int drawTimeout, double st
 	instance.visualisationTimeInterval = step;
 }
 
-void VectorFieldsViewer::recomputePathsCallback(char* path, bool isConst, double step, double min, double max)
+void VectorFieldsViewer::recomputePathsCallback(char* path, bool isConst, bool normalize, double step, double min, double max)
 {
 	string p(path);
 	bool loaded = false;
@@ -110,7 +110,7 @@ void VectorFieldsViewer::recomputePathsCallback(char* path, bool isConst, double
 	instance.minTime = min;
 	instance.curTime = instance.minTime;
 
-	if (p == instance.loadedFieldPath)
+	if (p == instance.loadedFieldPath && p.length() == 0)
 	{
 		loaded = true;
 	}
@@ -124,7 +124,8 @@ void VectorFieldsViewer::recomputePathsCallback(char* path, bool isConst, double
 		else
 		{
 			std::cout << "Opening Field File " << path << std::endl;
-			loaded = instance.fieldedMesh.assignVectorField(path, isConst);
+			loaded = instance.fieldedMesh.assignVectorField(path, isConst, normalize);
+
 		}
 		if (!loaded)
 		{

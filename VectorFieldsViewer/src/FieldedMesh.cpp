@@ -34,7 +34,7 @@ bool FieldedMesh::load(const char* path)
 	return isLoaded_;
 }
 
-bool FieldedMesh::assignVectorField(const char* path, bool isConst)
+bool FieldedMesh::assignVectorField(const char* path, bool isConst, bool normalize)
 {
 	vector<vector<Vec3f>> fields;
 	vector<Time> times;
@@ -70,6 +70,21 @@ bool FieldedMesh::assignVectorField(const char* path, bool isConst)
 		times.push_back(Time(0));
 		times.push_back(Time(1));
 	}
+
+	if (normalize)
+	{
+		for (uint faceId = 0; faceId < fields.size(); faceId++)
+		{
+			for (uint i = 0; i < fields[faceId].size(); i++)
+			{
+				if (!VectorFieldsUtils::isCloseToZero(fields[faceId][i].length()))
+				{
+					fields[faceId][i].normalize();
+				}
+			}
+		}
+	}
+
 	return assignFieldToVertices(fields, times);
 }
 

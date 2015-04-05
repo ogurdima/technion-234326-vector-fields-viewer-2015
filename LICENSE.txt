@@ -1,0 +1,2 @@
+All added source, executable and data files are distributed under BSD license (http://www.linfo.org/bsdlicense.html)
+All source code, libraries and data files that are used by the project are distributed under their appropriate licenses.

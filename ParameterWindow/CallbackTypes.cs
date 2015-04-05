@@ -7,7 +7,7 @@ namespace Parameters
     public delegate void IntParameterCallback(int i);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void RecomputePathsCallback(StringBuilder s, bool isConst, double step, double min, double max);
+    public delegate void RecomputePathsCallback(StringBuilder s, bool isConst, bool normalize, double step, double min, double max);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void VisualizationChangedCallback(int timeout, double step, double window);

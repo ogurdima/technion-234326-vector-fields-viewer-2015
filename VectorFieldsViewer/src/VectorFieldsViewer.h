@@ -33,7 +33,7 @@ private:
 	static void						changedMeshColorCallback(float,float,float,float);
 	static void						changedFieldColorCallback(float,float,float,float);
 	static void						changedVisualizationCallback(int drawTimeout, double step, double window);
-	static void						recomputePathsCallback(char* path, bool isConst, double step, double min, double max);
+	static void						recomputePathsCallback(char* path, bool isConst, bool normalize, double step, double min, double max);
 	// callback handlers
 	void							openField(char* path, bool isConst);
 	void							openMesh(char* path);
