@@ -86,9 +86,14 @@ public:
 		if(fieldTime <= 0) return false;
 
 		float segmentTime = (fieldTime * dot(f, segment) + dot(a, segment)) / (segmentLength * segmentLength);
-		if(segmentTime < 0 || segmentTime > 1) return false;
+		if(segmentTime < -0.001 || segmentTime > 1.001) return false;
 
 		intersection = v1 + segment * segmentTime;
+		if (_isnan(intersection[0]) || !_finite(intersection[0]))
+		{
+			bool debug = true;
+			return false;
+		}
 		return true;
 	}
 

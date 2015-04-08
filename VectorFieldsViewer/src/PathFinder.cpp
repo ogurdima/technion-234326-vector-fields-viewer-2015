@@ -65,7 +65,7 @@ bool PathFinder::configure(const FieldedMesh& aMesh_, const Time& dt_, const Tim
 
 vector<ParticlePath> PathFinder::getParticlePaths(const FieldedMesh& aMesh_, const Time& dt_, const Time& minTime, const Time& maxTime)
 {
-
+	cout << "Starting particle simulation..." << endl;
 	configure(aMesh_, dt_, minTime, maxTime);
 	if (!hasValidConfig) 
 	{
@@ -148,7 +148,7 @@ ParticlePath PathFinder::getParticlePath(Mesh::FaceHandle& faceHandle)
 		// if they are close enough collapses them into one.
 		if (particlePath.size() > 3)
 		{
-			if (particlePath.tryCollapseLastPoints(NUMERICAL_ERROR_THRESH * 10))
+			if (particlePath.tryCollapseLastPoints(NUMERICAL_ERROR_THRESH * 100))
 			{
 				numConsecutiveClosePoints++;
 			}

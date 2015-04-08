@@ -258,7 +258,7 @@ namespace Parameters
             OnPropertyChanged("CurrentTime");
         }
 
-        private double _simulationStep = 0.005;
+        private double _simulationStep = 0.05;
         public double SimulationStep
         {
             get { return _simulationStep; }
@@ -342,7 +342,14 @@ namespace Parameters
             Timeout = 60;
             PathWindow = 0.1;
             var fileInfo = new FileInfo(@"..\Data\old\Horse.off");
-            CallOpenMesh(fileInfo.FullName);
+            if (!fileInfo.Exists)
+            {
+                fileInfo = new FileInfo(@"Horse.off");
+            }
+            if (fileInfo.Exists)
+            {
+                CallOpenMesh(fileInfo.FullName);
+            }
         }
 
         private void RecomputeClick(object sender, RoutedEventArgs e)

@@ -82,14 +82,19 @@ bool PathFinder::getIntersection(Mesh::FaceHandle& currentFace, Point& currentPo
 		// This is needed to reduce possibility of numeric instability
 		int ccc = 1;
 		Point nextPoint;
-		Vec3f delta = (centroids[currentFace.idx()] - intersection).normalized() * FLT_EPSILON * 10;
+		Vec3f delta = (centroids[currentFace.idx()] - intersection).normalized() * NUMERICAL_ERROR_THRESH;
 		do
 		{
 			nextPoint = intersection + delta * ccc++;
 		}
 		while (!VectorFieldsUtils::isInnerPoint(nextPoint, t) && ccc < 10);
-		currentTime = currentTime + (Time)((intersection - currentPoint).length() / field.length());
-		currentPoint = intersection;
+		Time tmpTime = currentTime + (Time)((intersection - currentPoint).length() / field.length());
+		if (_isnan(tmpTime) || !_finite(tmpTime))
+		{
+			bool debug = true;
+		}
+		currentTime = tmpTime;
+		currentPoint = nextPoint;
 		return true;
 	}
 	fuckupCount++; 
