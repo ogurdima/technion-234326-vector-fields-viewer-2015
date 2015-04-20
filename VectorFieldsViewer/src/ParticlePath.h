@@ -2,8 +2,6 @@
 
 #include "VectorFieldsUtils.h"
 #include <math.h>
-#include "psimpl.h"
-
 
 class ParticlePath
 {
