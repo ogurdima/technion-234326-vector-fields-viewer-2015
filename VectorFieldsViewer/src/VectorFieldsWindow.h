@@ -2,6 +2,7 @@
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include "MeshViewer.h"
+#include "lodepng.h"
 
 class VectorFieldsWindow : public GlutExaminer
 {
@@ -13,6 +14,7 @@ class VectorFieldsWindow : public GlutExaminer
 
 	static void							redrawHandler();
 	static void							resetSceneHandler();
+	static void							printScreenHandler(std::string filePath);
 
 	void								drawWireframe();
 	void								drawVectorField();

@@ -13,6 +13,7 @@ VectorFieldsWindow::VectorFieldsWindow(const char* _title, int _width, int _heig
 
 	VectorFieldsViewer::getInstance().AddRedrawHandler(&VectorFieldsWindow::redrawHandler);
 	VectorFieldsViewer::getInstance().AddResetSceneHandler(&VectorFieldsWindow::resetSceneHandler);
+	VectorFieldsViewer::getInstance().AddPrintScreenHandler(&VectorFieldsWindow::printScreenHandler);
 	VectorFieldsViewer::getInstance().openParameterWindow();
 
 	resetTimer();
@@ -54,6 +55,10 @@ void VectorFieldsWindow::keyboard(int key, int x, int y)
 		return;
 	case '.':
 		translate(Vec3f(0.0f, 0.0f, -0.05f));
+		return;
+	case 'p':
+	case 'P':
+		printScreenHandler("capture.png");
 		return;
 	default:
 		{
@@ -189,6 +194,50 @@ void VectorFieldsWindow::redrawHandler()
 	glutPostRedisplay();
 }
 
+void VectorFieldsWindow::printScreenHandler(std::string filePath)
+{
+	if(instance == NULL)
+	{
+		return;
+	}
+	int h = VectorFieldsWindow::instance->height_;
+	int w = VectorFieldsWindow::instance->width_;
+
+	std::vector<unsigned char> pixels;
+	pixels.resize(4 * w * h);
+	
+	std::vector<unsigned char> inverted;
+	inverted.resize(4 * w * h);
+	
+
+	VectorFieldsWindow::instance->display();
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
+
+	int totalPixels = w * h;
+
+	for (int r = 0; r < h; r++)
+	{
+		for (int c = 0; c < w; c++)
+		{
+			inverted[4*w*r + 4*c + 0] = pixels[4*w*(w-r-1) + 4*c + 0];
+			inverted[4*w*r + 4*c + 1] = pixels[4*w*(w-r-1) + 4*c + 1];
+			inverted[4*w*r + 4*c + 2] = pixels[4*w*(w-r-1) + 4*c + 2];
+			inverted[4*w*r + 4*c + 3] = pixels[4*w*(w-r-1) + 4*c + 3];
+		}
+	}
+
+	for (int i = 0; i < w * h; i++)
+	{
+		if (inverted[4*i + 0] == 0 && inverted[4*i + 1] == 0 && inverted[4*i + 2] == 0)
+		{
+			inverted[4*i + 3] = 255;
+		}
+	}
+
+	lodepng::encode(filePath, inverted, w, h, LCT_RGBA);
+}
+
 void VectorFieldsWindow::resetSceneHandler()
 {
 	if(instance == NULL)
@@ -198,6 +247,8 @@ void VectorFieldsWindow::resetSceneHandler()
 	Vec3f l(-1.), r(1.);
 	VectorFieldsWindow::instance->set_scene( Vec3f(0.f), 1);
 }
+
+
 
 const VectorFieldsWindow* VectorFieldsWindow::getInstance()
 {

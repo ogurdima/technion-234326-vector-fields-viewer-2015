@@ -40,6 +40,7 @@ private:
 	// events
 	void							(*redrawEvent)(void);
 	void							(*resetSceneEvent)(void);
+	void							(*printScreenEvent)(string);
 #pragma endregion
 
 #pragma region Fields
@@ -71,6 +72,7 @@ public:
 #pragma region Handlers
 	void							AddRedrawHandler(void (*redrawCallback)(void));
 	void							AddResetSceneHandler(void (*resetSceneCallback)(void));  
+	void							AddPrintScreenHandler(void (*printScreenCallback)(std::string));
 #pragma endregion
 
 #pragma region API

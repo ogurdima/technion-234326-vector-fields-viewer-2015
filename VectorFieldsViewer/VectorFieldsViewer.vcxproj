@@ -26,6 +26,7 @@
     <ClCompile Include="src\VectorFieldsView.cpp" />
     <ClCompile Include="src\VectorFieldsWindow.cpp" />
     <ClCompile Include="src\VectorFieldsViewer.cpp" />
+	<ClCompile Include="src\lodepng.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\External.h" />
@@ -36,6 +37,7 @@
     <ClInclude Include="src\VectorFieldsUtils.h" />
     <ClInclude Include="src\VectorFieldsWindow.h" />
     <ClInclude Include="src\VectorFieldsViewer.h" />
+	<ClInclude Include="src\lodepng.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C9349948-C638-4913-BF63-4936861CB04C}</ProjectGuid>

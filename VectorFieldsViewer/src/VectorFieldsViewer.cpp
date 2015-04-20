@@ -214,6 +214,11 @@ void VectorFieldsViewer::AddResetSceneHandler(void (*resetSceneCallback)(void))
 	resetSceneEvent = resetSceneCallback;
 }
 
+void VectorFieldsViewer::AddPrintScreenHandler(void (*printScreenCallback)(std::string))
+{
+	printScreenEvent = printScreenCallback;
+}
+
 const FieldedMesh& VectorFieldsViewer::getMesh()
 {
 	return fieldedMesh;
