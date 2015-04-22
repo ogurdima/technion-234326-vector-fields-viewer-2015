@@ -72,6 +72,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <!--  End Region  -->
 
@@ -251,7 +252,24 @@
                 </Polygon>
             </Button>
         </StackPanel>
-        <Separator Grid.Row="16"
+        <Label Grid.Row="16"
+               Grid.Column="0"
+               Content="Number of screenshots:"
+        />
+        <StackPanel Orientation="Horizontal" Grid.Row="16" Grid.Column="1">
+            <xctk:DoubleUpDown
+                            Width="120"
+                            HorizontalAlignment="Left"
+                            Increment="1"
+                            Minimum="1"
+                            Maximum="100"
+                            TextAlignment="Left"
+                            ParsingNumberStyle="Integer"
+                            Value="{Binding NumberOfScrrenshots}">
+            </xctk:DoubleUpDown>
+            <Button Content="Capture!" Margin="2,0,2,0" Click="CaptureScreenshotsClick"/>
+        </StackPanel>
+        <Separator Grid.Row="17"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
                    Height="2"
@@ -259,15 +277,15 @@
         <!--  End Region  -->
 
         <!--  Region Simulation  -->
-        <Label Grid.Row="17"
+        <Label Grid.Row="18"
                Grid.Column="0"
                Content="Simulation:"
                Style="{StaticResource HeaderLabelStyle}" />
-        <Label Grid.Row="18"
+        <Label Grid.Row="19"
                Grid.Column="0"
                HorizontalAlignment="Left"
                Content="Simulation step:" />
-        <xctk:DoubleUpDown Grid.Row="18"
+        <xctk:DoubleUpDown Grid.Row="19"
                            Grid.Column="1"
                            Width="120"
                            HorizontalAlignment="Left"
@@ -275,7 +293,7 @@
                            Minimum="0.0001"
                            TextAlignment="Left"
                            Value="{Binding SimulationStep}" />
-        <StackPanel Grid.Row="19"
+        <StackPanel Grid.Row="20"
                     Grid.Column="0"
                     HorizontalAlignment="Stretch"
                     Orientation="Horizontal">
@@ -286,7 +304,7 @@
                                TextAlignment="Left"
                                Value="{Binding MinTime}" />
         </StackPanel>
-        <StackPanel Grid.Row="19"
+        <StackPanel Grid.Row="20"
                     Grid.Column="1"
                     HorizontalAlignment="Stretch"
                     Orientation="Horizontal">
@@ -297,7 +315,7 @@
                                TextAlignment="Left"
                                Value="{Binding MaxTime}" />
         </StackPanel>
-        <Button Grid.Row="20"
+        <Button Grid.Row="21"
                 Grid.Column="1"
                 Margin="5 3"
                 HorizontalAlignment="Right"

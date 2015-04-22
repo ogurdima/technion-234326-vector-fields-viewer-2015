@@ -28,7 +28,8 @@ namespace Parameters
                                                         void* changedMeshColorCallback,
                                                         void* changedFieldColorCallback,
                                                         void* changedVisualizationCallback,
-                                                        void* recomputePathsCallback)
+                                                        void* recomputePathsCallback,
+                                                        void* takeScreenshotsCallback)
         {
             if (_opened)
             {
@@ -56,6 +57,11 @@ namespace Parameters
             Instance.RecomputePaths +=
                 (RecomputePathsCallback)
                     Marshal.GetDelegateForFunctionPointer((IntPtr)recomputePathsCallback, typeof(RecomputePathsCallback));
+            Instance.TakeScreenshots +=
+                 (IntParameterCallback)
+                     Marshal.GetDelegateForFunctionPointer((IntPtr)takeScreenshotsCallback,
+                            typeof(IntParameterCallback));
+
 
             Instance.Show();
             _opened = true;
@@ -109,6 +115,7 @@ namespace Parameters
             }
         }
         public event RecomputePathsCallback RecomputePaths;
+        public event IntParameterCallback TakeScreenshots;
         #endregion
 
         #region Properties
@@ -289,7 +296,19 @@ namespace Parameters
                 _minTime = value;
                 OnPropertyChanged("MinTime");
             }
-        } 
+        }
+
+        private int _numberOfScrrenshots;
+        public int NumberOfScrrenshots
+        {
+            get { return _numberOfScrrenshots; }
+            set
+            {
+                _numberOfScrrenshots = value;
+                OnPropertyChanged("NumberOfScrrenshots");
+            }
+        }
+
         #endregion
 
         #region Handlers
@@ -375,6 +394,14 @@ namespace Parameters
             e.Cancel = true;
         } 
         #endregion
+
+        private void CaptureScreenshotsClick(object sender, RoutedEventArgs e)
+        {
+            if (TakeScreenshots != null)
+            {
+                TakeScreenshots(NumberOfScrrenshots);
+            }
+        }
 
        
 

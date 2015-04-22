@@ -139,6 +139,11 @@ void VectorFieldsViewer::recomputePathsCallback(char* path, bool isConst, bool n
 	}
 }
 
+void VectorFieldsViewer::takeScreenshotsCallback(int howMany)
+{
+	getInstance().takeScreenshots(howMany);
+}
+
 void VectorFieldsViewer::onTimer(int val)
 {
 	if (!isVisualizationStopped)
@@ -154,7 +159,8 @@ void VectorFieldsViewer::openParameterWindow()
 		&VectorFieldsViewer::changedMeshColorCallback, 
 		&VectorFieldsViewer::changedFieldColorCallback,
 		&VectorFieldsViewer::changedVisualizationCallback,
-		&VectorFieldsViewer::recomputePathsCallback);
+		&VectorFieldsViewer::recomputePathsCallback,
+		&VectorFieldsViewer::takeScreenshotsCallback);
 }
 
 #pragma endregion
@@ -187,6 +193,25 @@ void VectorFieldsViewer::evolvePaths()
 		pathsMgr.Evolve(visualisationTimeInterval);
 	}
 	UpdateCurrentTimeGui(curTime);
+}
+
+void VectorFieldsViewer::takeScreenshots(int howMany)
+{
+	if (printScreenEvent == NULL)
+	{
+		return;
+	}
+	Time dt = (maxTime - minTime) / (double)(howMany + 1);
+
+	Time t = minTime + dt;
+	for (int i = 0; i < howMany; i++, t+=dt)
+	{
+		stringstream s;
+		s << "Snapshot " << i+1 << " at t " << t << ".png";
+		pathsMgr.SetTime(t);
+		printScreenEvent(s.str());
+	}
+	pathsMgr.SetTime(curTime);
 }
 
 void VectorFieldsViewer::computePaths(double step)
