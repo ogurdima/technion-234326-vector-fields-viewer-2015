@@ -85,7 +85,7 @@ void VectorFieldsViewer::changedMeshColorCallback(float r, float g, float b, flo
 
 void VectorFieldsViewer::changedFieldColorCallback(float r, float g, float b, float a)
 {
-	instance.pathsMgr.ChangeBaseColor(Vec4f(r,g,b,a));
+	instance.pathsMgr.ChangeBaseColor(Vec4f(r,g,b,a), Vec4f(g,r,b,0));
 }
 
 void VectorFieldsViewer::changedVisualizationCallback(int drawTimeout, double step, double window)

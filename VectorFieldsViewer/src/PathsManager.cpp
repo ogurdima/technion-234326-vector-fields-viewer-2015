@@ -9,7 +9,9 @@ const unsigned int PathHandle::AlphaOffset	= 7;
 #pragma region PathsManager
 
 PathsManager::PathsManager() :
-	data(NULL), baseColor(1,1,1,1)
+	data(NULL), 
+	headBaseColor(Vec4f(0,1,0,1)),
+	tailBaseColor(Vec4f(0,1,0,0))
 {
 
 }
@@ -36,7 +38,7 @@ void PathsManager::Configure(const vector<ParticlePath>& paths)
 	int pointsProcessedSoFar = 0;
 	for (unsigned int pathIdx = 0; pathIdx < paths.size(); pathIdx++)
 	{
-		handles[pathIdx] = PathHandle(pointsProcessedSoFar, paths[pathIdx].size(), baseColor[3], maxPathTimeSpan);
+		handles[pathIdx] = PathHandle(pointsProcessedSoFar, paths[pathIdx].size(), maxPathTimeSpan, headBaseColor, tailBaseColor);
 		pointsProcessedSoFar += paths[pathIdx].size();
 	}
 	numOfPoints = pointsProcessedSoFar;
@@ -71,10 +73,10 @@ void PathsManager::Configure(const vector<ParticlePath>& paths)
 			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 1] = pathPoints[pointIdx][1];
 			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 2] = pathPoints[pointIdx][2];
 			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 3] = (float)pathTimes[pointIdx];
-			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 4] = baseColor[0];
-			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 5] = baseColor[1];
-			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 6] = baseColor[2];
-			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 7] = baseColor[3];
+			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 4] = headBaseColor[0];
+			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 5] = headBaseColor[1];
+			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 6] = headBaseColor[2];
+			handles[pathIdx].data[PathHandle::UnitSize * pointIdx + 7] = headBaseColor[3];
 		}
 	}
 
@@ -132,19 +134,21 @@ void PathsManager::GetCurrentPaths(float*& dataArray, unsigned int*& starts, uns
 	pathCount = handles.size();
 }
 
-void PathsManager::ChangeBaseColor(const Vec4f& rgba)
+void PathsManager::ChangeBaseColor(const Vec4f& head, const Vec4f& tail)
 {
-	baseColor = rgba;
-	for (int pointIdx = 0; pointIdx < numOfPoints; pointIdx++)
-	{
-		data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 0] = baseColor[0];
-		data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 1] = baseColor[1];
-		data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 2] = baseColor[2];
-		data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 3] = baseColor[3];
-	}
+	headBaseColor = head;
+	tailBaseColor = tail;
+	//for (int pointIdx = 0; pointIdx < numOfPoints; pointIdx++)
+	//{
+	//	data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 0] = baseColor[0];
+	//	data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 1] = baseColor[1];
+	//	data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 2] = baseColor[2];
+	//	data[pointIdx * PathHandle::UnitSize + PathHandle::ColorOffset + 3] = baseColor[3];
+	//}
 	for (unsigned int pathIdx = 0; pathIdx < handles.size(); pathIdx++)
 	{
-		handles[pathIdx].baseAlpha = baseColor[3];
+		handles[pathIdx].headBaseColor = headBaseColor;
+		handles[pathIdx].tailBaseColor = tailBaseColor;
 	}
 }
 
@@ -196,7 +200,7 @@ void PathHandle::evolve(float dt)
 	}
 
 	substituteHeadTail();
-	updateAlphaValues();
+	updatePathColors();
 }
 
 void PathHandle::setTime(float t)
@@ -242,10 +246,18 @@ unsigned int PathHandle::lastIdx()
 	return ((numPoints - 1) * UnitSize);
 }
 
-void PathHandle::updateAlphaValues()
+void PathHandle::setColor(float* elem, const Vec4f& c)
 {
-	data[head + AlphaOffset] = baseAlpha;
-	data[tail + AlphaOffset] = 0;
+	elem[ColorOffset + 0] = c[0];
+	elem[ColorOffset + 1] = c[1];
+	elem[ColorOffset + 2] = c[2];
+	elem[AlphaOffset] = c[3];
+}
+
+void PathHandle::updatePathColors()
+{
+	setColor(&data[head], headBaseColor);
+	setColor(&data[tail], tailBaseColor);
 	if (head == tail)
 	{
 		return;
@@ -258,7 +270,8 @@ void PathHandle::updateAlphaValues()
 	{
 		float strength = (data[i + TimeOffset] - pathMinTime) / timeSpan;
 		assert(strength < 1);
-		data[i + AlphaOffset] = strength * baseAlpha;
+		Vec4f interpolatedColor = VectorFieldsUtils::lerp(headBaseColor, tailBaseColor, 1-strength);
+		setColor(&data[i], interpolatedColor);
 	}
 }
 

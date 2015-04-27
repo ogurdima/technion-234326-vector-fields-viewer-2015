@@ -23,7 +23,8 @@ public:
 	unsigned int					head;
 	unsigned int					tail;
 	float							maxPathTimeSpan;
-	float							baseAlpha;
+	Vec4f							headBaseColor;
+	Vec4f							tailBaseColor;
 	
 
 	PathHandle() :
@@ -33,27 +34,30 @@ public:
 		curTime(0),
 		head(0),
 		tail(0),
-		baseAlpha(1),
+		headBaseColor(Vec4f(0,1,0,1)),
+		tailBaseColor(Vec4f(0,1,0,0)),
 		lastStoredHead(-1),
 		lastStoredTail(-1),
 		maxPathTimeSpan(1)
 	{}
 
-	PathHandle(unsigned int _dataIndex, unsigned int _dataSize, float _baseAlpha, float _maxPathTimeSpan) :
+	PathHandle(unsigned int _dataIndex, unsigned int _dataSize, float _maxPathTimeSpan, const Vec4f& _headColor, const Vec4f& _tailColor) :
 		data(NULL),
 		globalPointIndex(0),
 		numPoints(0),
 		curTime(0),
 		head(0),
 		tail(0),
-		baseAlpha(1),
+		headBaseColor(Vec4f(0,1,0,1)),
+		tailBaseColor(Vec4f(0,1,0,0)),
 		lastStoredHead(-1),
 		lastStoredTail(-1),
 		maxPathTimeSpan(1)
 	{
 		globalPointIndex = _dataIndex;
 		numPoints = _dataSize;
-		baseAlpha = _baseAlpha;
+		headBaseColor = _headColor;
+		tailBaseColor = _tailColor;
 		maxPathTimeSpan = _maxPathTimeSpan;
 	}
 
@@ -74,7 +78,8 @@ private:
 	float* last();
 	float* at(unsigned int pointIndex);
 	unsigned int lastIdx();
-	void updateAlphaValues();
+	void updatePathColors();
+	void setColor(float* elem, const Vec4f& c);
 	void storeCurrentHeadTail();
 	void restoreCurrentHeadTail();
 	void substituteHeadTail();
@@ -96,11 +101,12 @@ public:
 	void Evolve(Time dt);
 	void SetTime(Time t);
 	void GetCurrentPaths(float*& dataArray, unsigned int*& starts, unsigned int*& counts, unsigned int& pathCount);
-	void ChangeBaseColor(const Vec4f& rgba);
+	void ChangeBaseColor(const Vec4f& head, const Vec4f& tail);
 	void ChangePathWindow(float pathWindow);
 
 private:
-	Vec4f					baseColor;
+	Vec4f					headBaseColor;
+	Vec4f					tailBaseColor;
 	float					maxPathTimeSpan;
 	int						numOfPoints;
 	float*					data;

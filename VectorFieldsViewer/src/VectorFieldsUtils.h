@@ -103,6 +103,12 @@ public:
 		return (first * (1. - time)) + (second * (float)time);
 	}
 
+	static inline Vec4f lerp(const Vec4f& first, const Vec4f& second, const Time& time)
+	{
+		assert(time <= 1.0 && time >= 0.0);
+		return (first * (1. - time)) + (second * (float)time);
+	}
+
 	static inline Point getTriangleCentroid(const Triangle& t) { return (t[0] + t[1] + t[2]) / 3.0;}
 
 	static inline float getPerimeter(const Triangle& t) { return (t[1] - t[0]).length() + (t[2] - t[1]).length() + (t[0] - t[2]).length(); }
