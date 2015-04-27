@@ -214,8 +214,7 @@ void VectorFieldsWindow::printScreenHandler(std::string filePath)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
-	int totalPixels = w * h;
-
+	
 	for (int r = 0; r < h; r++)
 	{
 		for (int c = 0; c < w; c++)
@@ -227,13 +226,13 @@ void VectorFieldsWindow::printScreenHandler(std::string filePath)
 		}
 	}
 
-	for (int i = 0; i < w * h; i++)
+	/*for (int i = 0; i < w * h; i++)
 	{
 		if (inverted[4*i + 0] == 0 && inverted[4*i + 1] == 0 && inverted[4*i + 2] == 0)
 		{
 			inverted[4*i + 3] = 255;
 		}
-	}
+	}*/
 
 	lodepng::encode(filePath, inverted, w, h, LCT_RGBA);
 }

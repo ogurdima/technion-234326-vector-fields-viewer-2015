@@ -16,6 +16,9 @@ namespace Parameters
     public delegate void ColorParameterCallback(float r, float g, float b, float a);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ColorParameterCallbackArr(float[] head, float[] tail);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void MeshPathParameterCallback(StringBuilder s);
 
 }

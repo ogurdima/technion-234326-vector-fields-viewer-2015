@@ -6,7 +6,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="Parameters.ParameterWindow"
         Width="400"
         MinWidth="300"
-        Height="575"
+        Height="650"
         Background="Azure"
         Closing="WindowClosing"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -156,19 +156,47 @@
 				Text="{Binding FieldPath}" />
         </DockPanel>
 
-        <Label Grid.Row="9"
-			Grid.Column="0"
-			HorizontalAlignment="Left"
-			Content="Field color:" />
-        <xctk:ColorPicker Grid.Row="9"
-			Grid.Column="1"
-			Width="120"
-			HorizontalAlignment="Left"
-			ColorMode="ColorCanvas"
-			DockPanel.Dock="Bottom"
-			SelectedColor="{Binding FieldColor, Mode=TwoWay}" />
+        <StackPanel Grid.Row="9" Grid.ColumnSpan="2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label
+			        Grid.Column="0"
+			        HorizontalAlignment="Left"
+			        Content="Head color:" />
+        
+                <xctk:ColorPicker Grid.Row="9"
+			        Grid.Column="1"
+			        Width="120"
+			        HorizontalAlignment="Left"
+			        ColorMode="ColorCanvas"
+			        DockPanel.Dock="Bottom"
+			        SelectedColor="{Binding FieldHeadColor, Mode=TwoWay}" />
+            </Grid>
 
-        <Separator Grid.Row="10"
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label
+			        Grid.Column="0"
+			        HorizontalAlignment="Left"
+			        Content="Tail color:" />
+
+                <xctk:ColorPicker Grid.Row="9"
+			        Grid.Column="1"
+			        Width="120"
+			        HorizontalAlignment="Left"
+			        ColorMode="ColorCanvas"
+			        DockPanel.Dock="Bottom"
+			        SelectedColor="{Binding FieldTailColor, Mode=TwoWay}" />
+            </Grid>
+        </StackPanel>
+            
+    <Separator Grid.Row="10"
 			Grid.Column="0"
 			Grid.ColumnSpan="2"
 			Height="2"

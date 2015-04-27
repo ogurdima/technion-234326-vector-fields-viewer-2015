@@ -47,9 +47,9 @@ namespace Parameters
                     Marshal.GetDelegateForFunctionPointer((IntPtr)changedMeshColorCallback,
                         typeof(ColorParameterCallback));
             Instance.FieldColorChanged +=
-                (ColorParameterCallback)
+                (ColorParameterCallbackArr)
                     Marshal.GetDelegateForFunctionPointer((IntPtr)changedFieldColorCallback,
-                        typeof(ColorParameterCallback));
+                        typeof(ColorParameterCallbackArr));
             Instance.VisualizationChanged +=
                 (VisualizationChangedCallback)
                     Marshal.GetDelegateForFunctionPointer((IntPtr)changedVisualizationCallback,
@@ -100,7 +100,7 @@ namespace Parameters
         public event IntParameterCallback DrawStateChanged;
         public event MeshPathParameterCallback OpenMesh;
         public event ColorParameterCallback MeshColorChanged;
-        public event ColorParameterCallback FieldColorChanged;
+        public event ColorParameterCallbackArr FieldColorChanged;
         public event VisualizationChangedCallback VisualizationChanged;
         private void OnVisualizationChanged()
         {
@@ -186,19 +186,44 @@ namespace Parameters
             }
         }
 
-        private Color _fieldColor;
-        public Color FieldColor
+        private Color _fieldHeadColor;
+        public Color FieldHeadColor
         {
-            get { return _fieldColor; }
+            get { return _fieldHeadColor; }
             set
             {
-                _fieldColor = value;
+                _fieldHeadColor = value;
                 if (FieldColorChanged != null)
                 {
-                    FieldColorChanged(_fieldColor.ScR, _fieldColor.ScG, _fieldColor.ScB, _fieldColor.ScA);
+                    FieldColorChanged(colorToFloatArray(_fieldHeadColor), colorToFloatArray(_fieldTailColor));
                 }
-                OnPropertyChanged("FieldColor");
+                OnPropertyChanged("FieldHeadColor");
             }
+        }
+
+        private Color _fieldTailColor;
+        public Color FieldTailColor
+        {
+            get { return _fieldTailColor; }
+            set
+            {
+                _fieldTailColor = value;
+                if (FieldColorChanged != null)
+                {
+                    FieldColorChanged(colorToFloatArray(_fieldHeadColor), colorToFloatArray(_fieldTailColor));    
+                }
+                OnPropertyChanged("FieldTailColor");
+            }
+        }
+
+        private float[] colorToFloatArray(Color c)
+        {
+            var f = new float[4];
+            f[0] = c.ScR;
+            f[1] = c.ScG;
+            f[2] = c.ScB;
+            f[3] = c.ScA;
+            return f;
         }
 
         private int _timeout;
@@ -344,20 +369,6 @@ namespace Parameters
         private void LoadedWindow(object sender, RoutedEventArgs e)
         {
             SelectedDrawState = DrawState.SolidSmooth;
-            MeshColor = new Color
-            {
-                ScR = 0.1f,
-                ScG = 0.1f,
-                ScB = 0.1f,
-                ScA = 1f
-            };
-            FieldColor = new Color
-            {
-                ScR = 0f,
-                ScG = 1f,
-                ScB = 0f,
-                ScA = 1f
-            };
             Timeout = 60;
             PathWindow = 0.1;
             var fileInfo = new FileInfo(@"..\Data\old\Horse.off");
@@ -369,6 +380,27 @@ namespace Parameters
             {
                 CallOpenMesh(fileInfo.FullName);
             }
+            MeshColor = new Color
+            {
+                ScR = 0.1f,
+                ScG = 0.1f,
+                ScB = 0.1f,
+                ScA = 1f
+            };
+            FieldHeadColor = new Color
+            {
+                ScR = 0f,
+                ScG = 1f,
+                ScB = 0f,
+                ScA = 1f
+            };
+            FieldTailColor = new Color
+            {
+                ScR = 0f,
+                ScG = 1f,
+                ScB = 0f,
+                ScA = 0f
+            };
         }
 
         private void RecomputeClick(object sender, RoutedEventArgs e)
