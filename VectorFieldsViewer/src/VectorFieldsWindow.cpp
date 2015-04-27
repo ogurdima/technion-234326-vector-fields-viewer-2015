@@ -205,24 +205,38 @@ void VectorFieldsWindow::printScreenHandler(std::string filePath)
 
 	std::vector<unsigned char> pixels;
 	pixels.resize(4 * w * h);
-	
-	std::vector<unsigned char> inverted;
-	inverted.resize(4 * w * h);
-	
 
 	VectorFieldsWindow::instance->display();
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
-
 	
-	for (int r = 0; r < h; r++)
+	std::vector<unsigned char> tempRow;
+	tempRow.resize(4 * w);
+
+	if (pixels.size() != 4 * w * h)
+	{
+		return;
+	}
+
+	for (int r = 0; r < w-r; r++)
 	{
 		for (int c = 0; c < w; c++)
 		{
-			inverted[4*w*r + 4*c + 0] = pixels[4*w*(w-r-1) + 4*c + 0];
-			inverted[4*w*r + 4*c + 1] = pixels[4*w*(w-r-1) + 4*c + 1];
-			inverted[4*w*r + 4*c + 2] = pixels[4*w*(w-r-1) + 4*c + 2];
-			inverted[4*w*r + 4*c + 3] = pixels[4*w*(w-r-1) + 4*c + 3];
+
+			tempRow[4*c + 0] = pixels[4*w*(w-r-1) + 4*c + 0];
+			tempRow[4*c + 1] = pixels[4*w*(w-r-1) + 4*c + 1];
+			tempRow[4*c + 2] = pixels[4*w*(w-r-1) + 4*c + 2];
+			tempRow[4*c + 3] = pixels[4*w*(w-r-1) + 4*c + 3];
+
+			pixels[4*w*(w-r-1) + 4*c + 0] = pixels[4*w*r + 4*c + 0];
+			pixels[4*w*(w-r-1) + 4*c + 1] = pixels[4*w*r + 4*c + 1];
+			pixels[4*w*(w-r-1) + 4*c + 2] = pixels[4*w*r + 4*c + 2];
+			pixels[4*w*(w-r-1) + 4*c + 3] = pixels[4*w*r + 4*c + 3];
+
+			pixels[4*w*r + 4*c + 0] = tempRow[4*c + 0];
+			pixels[4*w*r + 4*c + 1] = tempRow[4*c + 1];
+			pixels[4*w*r + 4*c + 2] = tempRow[4*c + 2];
+			pixels[4*w*r + 4*c + 3] = tempRow[4*c + 3];
 		}
 	}
 
@@ -234,7 +248,9 @@ void VectorFieldsWindow::printScreenHandler(std::string filePath)
 		}
 	}*/
 
-	lodepng::encode(filePath, inverted, w, h, LCT_RGBA);
+	lodepng::encode(filePath, pixels, w, h, LCT_RGBA);
+	pixels.clear();
+	tempRow.clear();
 }
 
 void VectorFieldsWindow::resetSceneHandler()
