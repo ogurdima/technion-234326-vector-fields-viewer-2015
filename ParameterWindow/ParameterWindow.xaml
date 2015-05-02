@@ -1,12 +1,13 @@
-﻿<Window
+﻿<Window x:Class="Parameters.ParameterWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:parameterWindow="clr-namespace:Parameters"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="Parameters.ParameterWindow"
         Width="400"
+        Height="620"
         MinWidth="300"
-        Height="650"
         Background="Azure"
         Closing="WindowClosing"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -16,7 +17,9 @@
         Top="0"
         Topmost="false"
         WindowStartupLocation="Manual"
-        WindowStyle="ToolWindow" d:DesignHeight="575">
+        WindowStyle="ToolWindow"
+        d:DesignHeight="575"
+        mc:Ignorable="d">
 
     <!--  Region Resources  -->
     <Window.Resources>
@@ -46,11 +49,6 @@
 
 
     <Grid Loaded="LoadedWindow">
-        <!--  Region Raw/Column Definition  -->
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -61,289 +59,337 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <!--  End Region  -->
 
-        <!--  Region Draw type  -->
-        <Label Grid.Row="0"
-			Content="Draw type:"
-			Style="{StaticResource HeaderLabelStyle}" />
+        <!--  Draw type  -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0"
+                   Content="Draw type:"
+                   Style="{StaticResource HeaderLabelStyle}" />
+            <ListView Grid.Row="1"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      Background="Transparent"
+                      ItemsSource="{Binding Source={x:Static parameterWindow:DrawState.Values}}"
+                      SelectedItem="{Binding SelectedDrawState,
+                                             Mode=TwoWay}"
+                      SelectionMode="Single">
+                <ListView.ItemTemplate>
+                    <DataTemplate DataType="parameterWindow:DrawState">
+                        <RadioButton Content="{Binding Name}"
+                                     GroupName="state"
+                                     IsChecked="{Binding IsSelected,
+                                                         Mode=TwoWay,
+                                                         RelativeSource={RelativeSource FindAncestor,
+                                                                                        AncestorType={x:Type ListViewItem}}}" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
 
-        <ListView Grid.Row="1"
-			Grid.Column="0"
-			Grid.ColumnSpan="2"
-			Background="Transparent"
-			ItemsSource="{Binding Source={x:Static parameterWindow:DrawState.Values}}"
-			SelectedItem="{Binding SelectedDrawState, Mode=TwoWay}"
-			SelectionMode="Single">
-            <ListView.ItemTemplate>
-                <DataTemplate DataType="parameterWindow:DrawState">
-                    <RadioButton Content="{Binding Name}"
-						GroupName="state"
-						IsChecked="{Binding IsSelected, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}}" />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
 
-        <Separator Grid.Row="2"
-			Grid.Column="0"
-			Grid.ColumnSpan="2"
-			Height="2"
-			Background="Black" />
-        <!--  End Region  -->
+        </Grid>
+        <Separator Grid.Row="1"
+                   Grid.Column="0"
+                   Height="2"
+                   Background="Black" />
 
-        <!--  Region  Mesh  -->
-        <Label Grid.Row="3"
-			Grid.Column="0"
-			Content="Mesh:"
-			Style="{StaticResource HeaderLabelStyle}" />
+        <!--  Mesh  -->
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0"
+                   Grid.Column="0"
+                   Content="Mesh:"
+                   Style="{StaticResource HeaderLabelStyle}" />
 
-        <DockPanel Grid.Row="4"
-			Grid.Column="0"
-			Grid.ColumnSpan="2">
-            <Button Click="LoadMesh"
-				DockPanel.Dock="Right" Content="Load . . ."/>
-            <TextBox x:Name="MeshPath"
-				IsReadOnly="True" />
-        </DockPanel>
+            <DockPanel Grid.Row="1"
+                       Grid.Column="0"
+                       Grid.ColumnSpan="2">
+                <Button Click="LoadMesh"
+                        Content="Load . . ."
+                        DockPanel.Dock="Right" />
+                <TextBox x:Name="MeshPath"
+                         IsReadOnly="True" />
+            </DockPanel>
 
-        <Label Grid.Row="5"
-			Grid.Column="0"
-			HorizontalAlignment="Left"
-			Content="Color:" />
-        <xctk:ColorPicker Grid.Row="5"
-			Grid.Column="1"
-			Width="120"
-			HorizontalAlignment="Left"
-			ColorMode="ColorCanvas"
-			DockPanel.Dock="Bottom"
-			SelectedColor="{Binding MeshColor, Mode=TwoWay}" />
+            <Label Grid.Row="2"
+                   Grid.Column="0"
+                   HorizontalAlignment="Left"
+                   Content="Color:" />
+            <xctk:ColorPicker Grid.Row="2"
+                              Grid.Column="1"
+                              Width="120"
+                              HorizontalAlignment="Left"
+                              ColorMode="ColorCanvas"
+                              DockPanel.Dock="Bottom"
+                              SelectedColor="{Binding MeshColor,
+                                                      Mode=TwoWay}" />
 
-        <Separator Grid.Row="6"
-			Grid.Column="0"
-			Grid.ColumnSpan="2"
-			Height="2"
-			Background="Black" />
-        <!--  End Region  -->
 
-        <!--  Region Field  -->
-        <Label Grid.Row="7"
-			Grid.Column="0"
-			Content="Field:"
-			Style="{StaticResource HeaderLabelStyle}" />
+        </Grid>
+        <Separator Grid.Row="3"
+                   Grid.Column="0"
+                   Height="2"
+                   Background="Black" />
 
-        <DockPanel Grid.Row="8"
-			Grid.Column="0"
-			Grid.ColumnSpan="2">
-            <CheckBox Content="Normalize" IsChecked="{Binding NormalizeField}" DockPanel.Dock="Right" Margin="3"/>
-            <Button Click="LoadField"
-				DockPanel.Dock="Right" Content="Load . . ."/>
-            <TextBox IsReadOnly="True"
-				Text="{Binding FieldPath}" />
-        </DockPanel>
 
-        <StackPanel Grid.Row="9" Grid.ColumnSpan="2">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label
-			        Grid.Column="0"
-			        HorizontalAlignment="Left"
-			        Content="Head color:" />
-        
-                <xctk:ColorPicker Grid.Row="9"
-			        Grid.Column="1"
-			        Width="120"
-			        HorizontalAlignment="Left"
-			        ColorMode="ColorCanvas"
-			        DockPanel.Dock="Bottom"
-			        SelectedColor="{Binding FieldHeadColor, Mode=TwoWay}" />
-            </Grid>
+        <!--  Field  -->
+        <Grid Grid.Row="4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0"
+                   Grid.Column="0"
+                   Content="Field:"
+                   Style="{StaticResource HeaderLabelStyle}" />
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label
-			        Grid.Column="0"
-			        HorizontalAlignment="Left"
-			        Content="Tail color:" />
+            <DockPanel Grid.Row="1"
+                       Grid.Column="0"
+                       Grid.ColumnSpan="2">
+                <CheckBox Margin="3"
+                          Content="Normalize"
+                          DockPanel.Dock="Bottom"
+                          IsChecked="{Binding NormalizeField}" />
+                <Button Click="LoadField"
+                        Content="Load . . ."
+                        DockPanel.Dock="Right" />
+                <TextBox IsReadOnly="True"
+                         Text="{Binding FieldPath}" />
+            </DockPanel>
 
-                <xctk:ColorPicker Grid.Row="9"
-			        Grid.Column="1"
-			        Width="120"
-			        HorizontalAlignment="Left"
-			        ColorMode="ColorCanvas"
-			        DockPanel.Dock="Bottom"
-			        SelectedColor="{Binding FieldTailColor, Mode=TwoWay}" />
-            </Grid>
-        </StackPanel>
-            
-    <Separator Grid.Row="10"
-			Grid.Column="0"
-			Grid.ColumnSpan="2"
-			Height="2"
-			Background="Black" />
-        <!--  End Region  -->
+            <Label Grid.Row="2"
+                   Grid.Column="0"
+                   HorizontalAlignment="Left"
+                   Content="Head color:" />
+
+            <xctk:ColorPicker Grid.Row="2"
+                              Grid.Column="1"
+                              Width="120"
+                              HorizontalAlignment="Left"
+                              ColorMode="ColorCanvas"
+                              DockPanel.Dock="Bottom"
+                              SelectedColor="{Binding FieldHeadColor,
+                                                      Mode=TwoWay}" />
+
+            <Label Grid.Row="3"
+                   Grid.Column="0"
+                   HorizontalAlignment="Left"
+                   Content="Tail color:" />
+
+            <xctk:ColorPicker Grid.Row="3"
+                              Grid.Column="1"
+                              Width="120"
+                              HorizontalAlignment="Left"
+                              ColorMode="ColorCanvas"
+                              DockPanel.Dock="Bottom"
+                              SelectedColor="{Binding FieldTailColor,
+                                                      Mode=TwoWay}" />
+        </Grid>
+        <Separator Grid.Row="5"
+                   Grid.Column="0"
+                   Height="2"
+                   Background="Black" />
 
         <!--  Region Visualization  -->
-        <Label Grid.Row="11"
-			Grid.Column="0"
-			Content="Visualization:"
-			Style="{StaticResource HeaderLabelStyle}" />
+        <Grid Grid.Row="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0"
+                   Grid.Column="0"
+                   Content="Visualization:"
+                   Style="{StaticResource HeaderLabelStyle}" />
 
-        <Label Grid.Row="12"
-			Grid.Column="0"
-			HorizontalAlignment="Left"
-			Content="Evolution period(msec):" />
-        <xctk:IntegerUpDown Grid.Row="12"
-			Grid.Column="1"
-			Width="120"
-			HorizontalAlignment="Left"
-			Increment="5"
-			Maximum="5000"
-			Minimum="1"
-			TextAlignment="Left"
-			Value="{Binding Timeout}" />
+            <Label Grid.Row="1"
+                   Grid.Column="0"
+                   HorizontalAlignment="Left"
+                   Content="Evolution period(msec):" />
+            <xctk:IntegerUpDown Grid.Row="1"
+                                Grid.Column="1"
+                                Width="120"
+                                HorizontalAlignment="Left"
+                                Increment="5"
+                                Maximum="5000"
+                                Minimum="1"
+                                TextAlignment="Left"
+                                Value="{Binding Timeout}" />
 
-        <Label Grid.Row="13"
-			Grid.Column="0"
-			HorizontalAlignment="Left"
-			Content="Path time window:" />
-        <xctk:DoubleUpDown Grid.Row="13"
-			Grid.Column="1"
-			Width="120"
-			HorizontalAlignment="Left"
-			Increment="0.001"
-			Minimum="0.001"
-			TextAlignment="Left"
-			Value="{Binding PathWindow}" />
+            <Label Grid.Row="2"
+                   Grid.Column="0"
+                   HorizontalAlignment="Left"
+                   Content="Path time window:" />
+            <xctk:DoubleUpDown Grid.Row="2"
+                               Grid.Column="1"
+                               Width="120"
+                               HorizontalAlignment="Left"
+                               Increment="0.001"
+                               Minimum="0.001"
+                               TextAlignment="Left"
+                               Value="{Binding PathWindow}" />
 
-        <Label Grid.Row="14"
-			Grid.Column="0"
-			HorizontalAlignment="Left"
-			Content="Visualization step:" />
-        <xctk:DoubleUpDown Grid.Row="14"
-			Grid.Column="1"
-			Width="120"
-			HorizontalAlignment="Left"
-			Increment="0.001"
-			Minimum="0.0001"
-			TextAlignment="Left"
-			Value="{Binding VisualizationStep}" />
+            <Label Grid.Row="3"
+                   Grid.Column="0"
+                   HorizontalAlignment="Left"
+                   Content="Visualization step:" />
+            <xctk:DoubleUpDown Grid.Row="3"
+                               Grid.Column="1"
+                               Width="120"
+                               HorizontalAlignment="Left"
+                               Increment="0.001"
+                               Minimum="0.0001"
+                               TextAlignment="Left"
+                               Value="{Binding VisualizationStep}" />
 
-        <Label Grid.Row="15"
-			Grid.Column="0"
-			HorizontalAlignment="Left"
-			Content="Current time:" />
-        <StackPanel     Orientation="Horizontal" 
-			Grid.Row="15"
-			Grid.Column="1">
-            <TextBox Width="120"
-				HorizontalAlignment="Left"
-				IsReadOnly="True"
-				Text="{Binding CurrentTime}"
-				TextAlignment="Left" />
-            <Button Width="22" Margin="2" Click="StopClick">
-                <Rectangle Fill="Black" Height="10" Width="10"/>
-            </Button>
-            <Button Width="22" Margin="2" Click="PlayClick">
-                <Polygon Points="0,0 8,5 0,10" Stroke="Green" Fill="Green">
-                    <Polygon.RenderTransform>
-                        <TranslateTransform X="2"/>
-                    </Polygon.RenderTransform>
-                </Polygon>
-            </Button>
-        </StackPanel>
-        <Label Grid.Row="16"
-			Grid.Column="0"
-			Content="Number of screenshots:"
-        />
-        <StackPanel Orientation="Horizontal" Grid.Row="16" Grid.Column="1">
-            <xctk:DoubleUpDown
-				Width="120"
-				HorizontalAlignment="Left"
-				Increment="1"
-				Minimum="1"
-				Maximum="100"
-				TextAlignment="Left"
-				ParsingNumberStyle="Integer"
-				Value="{Binding NumberOfScrrenshots}"/>
-            <Button Content="Capture!" Margin="2,0,2,0" Click="CaptureScreenshotsClick"/>
-        </StackPanel>
-        <Separator Grid.Row="17"
-			Grid.Column="0"
-			Grid.ColumnSpan="2"
-			Height="2"
-			Background="Black" />
-        <!--  End Region  -->
+            <Label Grid.Row="4"
+                   Grid.Column="0"
+                   HorizontalAlignment="Left"
+                   Content="Current time:" />
+            <StackPanel Grid.Row="4"
+                        Grid.Column="1"
+                        Orientation="Horizontal">
+                <TextBox Width="120"
+                         HorizontalAlignment="Left"
+                         IsReadOnly="True"
+                         Text="{Binding CurrentTime}"
+                         TextAlignment="Left" />
+                <Button Width="22"
+                        Margin="2"
+                        Click="StopClick">
+                    <Rectangle Width="10"
+                               Height="10"
+                               Fill="Black" />
+                </Button>
+                <Button Width="22"
+                        Margin="2"
+                        Click="PlayClick">
+                    <Polygon Fill="Green"
+                             Points="0,0 8,5 0,10"
+                             Stroke="Green">
+                        <Polygon.RenderTransform>
+                            <TranslateTransform X="2" />
+                        </Polygon.RenderTransform>
+                    </Polygon>
+                </Button>
+            </StackPanel>
+            <Label Grid.Row="5"
+                   Grid.Column="0"
+                   Content="Number of screenshots:" />
+            <StackPanel Grid.Row="5"
+                        Grid.Column="1"
+                        Orientation="Horizontal">
+                <xctk:DoubleUpDown Width="120"
+                                   HorizontalAlignment="Left"
+                                   Increment="1"
+                                   Maximum="100"
+                                   Minimum="1"
+                                   ParsingNumberStyle="Integer"
+                                   TextAlignment="Left"
+                                   Value="{Binding NumberOfScreenshots}" />
+                <Button Margin="2,0,2,0"
+                        Click="CaptureScreenshotsClick"
+                        Content="Capture!" />
+            </StackPanel>
+        </Grid>
+        <Separator Grid.Row="7"
+                   Grid.Column="0"
+                   Height="2"
+                   Background="Black" />
 
         <!--  Region Simulation  -->
-        <Label Grid.Row="18"
-			Grid.Column="0"
-			Content="Simulation:"
-			Style="{StaticResource HeaderLabelStyle}" />
-        <Label Grid.Row="19"
-			Grid.Column="0"
-			HorizontalAlignment="Left"
-			Content="Simulation step:" />
-        <xctk:DoubleUpDown Grid.Row="19"
-			Grid.Column="1"
-			Width="120"
-			HorizontalAlignment="Left"
-			Increment="0.001"
-			Minimum="0.0001"
-			TextAlignment="Left"
-			Value="{Binding SimulationStep}" />
-        <StackPanel Grid.Row="20"
-			Grid.Column="0"
-			HorizontalAlignment="Stretch"
-			Orientation="Horizontal">
-            <Label Content="Minimal time:" />
-            <xctk:DoubleUpDown Width="100"
-				HorizontalAlignment="Stretch"
-				Increment="0.001"
-				TextAlignment="Left"
-				Value="{Binding MinTime}" />
-        </StackPanel>
-        <StackPanel Grid.Row="20"
-			Grid.Column="1"
-			HorizontalAlignment="Stretch"
-			Orientation="Horizontal">
-            <Label Content="Maximal time:" />
-            <xctk:DoubleUpDown Width="100"
-				HorizontalAlignment="Stretch"
-				Increment="0.001"
-				TextAlignment="Left"
-				Value="{Binding MaxTime}" />
-        </StackPanel>
-        <Button Grid.Row="21"
-			Grid.Column="1"
-			Margin="5 3"
-			HorizontalAlignment="Right"
-			BorderBrush="Black"
-			BorderThickness="2"
-			Click="RecomputeClick"
-			Content="Compute Paths"
-			Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" />
-        <!--  End Region  -->
+        <Grid Grid.Row="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0"
+                   Grid.Column="0"
+                   Content="Simulation:"
+                   Style="{StaticResource HeaderLabelStyle}" />
+            <Label Grid.Row="1"
+                   Grid.Column="0"
+                   HorizontalAlignment="Left"
+                   Content="Simulation step:" />
+            <xctk:DoubleUpDown Grid.Row="1"
+                               Grid.Column="1"
+                               Width="120"
+                               HorizontalAlignment="Left"
+                               Increment="0.001"
+                               Minimum="0.0001"
+                               TextAlignment="Left"
+                               Value="{Binding SimulationStep}" />
+            <StackPanel Grid.Row="2"
+                        Grid.Column="0"
+                        HorizontalAlignment="Stretch"
+                        Orientation="Horizontal">
+                <Label Content="Minimal time:" />
+                <xctk:DoubleUpDown Width="100"
+                                   HorizontalAlignment="Stretch"
+                                   Increment="0.001"
+                                   TextAlignment="Left"
+                                   Value="{Binding MinTime}" />
+            </StackPanel>
+            <StackPanel Grid.Row="2"
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        Orientation="Horizontal">
+                <Label Content="Maximal time:" />
+                <xctk:DoubleUpDown Width="100"
+                                   HorizontalAlignment="Stretch"
+                                   Increment="0.001"
+                                   TextAlignment="Left"
+                                   Value="{Binding MaxTime}" />
+            </StackPanel>
+            <Button Grid.Row="3"
+                    Grid.Column="1"
+                    Margin="5 3"
+                    HorizontalAlignment="Right"
+                    BorderBrush="Black"
+                    BorderThickness="2"
+                    Click="RecomputeClick"
+                    Content="Compute Paths"
+                    Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" />
+        </Grid>
 
     </Grid>
 </Window>

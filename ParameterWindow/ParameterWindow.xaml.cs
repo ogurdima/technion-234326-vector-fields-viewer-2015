@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using Microsoft.Win32;
+using WPFFolderBrowser;
 
 namespace Parameters
 {
@@ -58,9 +59,9 @@ namespace Parameters
                 (RecomputePathsCallback)
                     Marshal.GetDelegateForFunctionPointer((IntPtr)recomputePathsCallback, typeof(RecomputePathsCallback));
             Instance.TakeScreenshots +=
-                 (IntParameterCallback)
+                 (TakeScreenshotCallback)
                      Marshal.GetDelegateForFunctionPointer((IntPtr)takeScreenshotsCallback,
-                            typeof(IntParameterCallback));
+                            typeof(TakeScreenshotCallback));
 
 
             Instance.Show();
@@ -82,7 +83,7 @@ namespace Parameters
             InitializeComponent();
             IsVisualizationStopped = false;
             NormalizeField = false;
-        } 
+        }
         #endregion
 
         #region INotifyPropertyChanged
@@ -115,7 +116,7 @@ namespace Parameters
             }
         }
         public event RecomputePathsCallback RecomputePaths;
-        public event IntParameterCallback TakeScreenshots;
+        public event TakeScreenshotCallback TakeScreenshots;
         #endregion
 
         #region Properties
@@ -195,7 +196,7 @@ namespace Parameters
                 _fieldHeadColor = value;
                 if (FieldColorChanged != null)
                 {
-                    FieldColorChanged(colorToFloatArray(_fieldHeadColor), colorToFloatArray(_fieldTailColor));
+                    FieldColorChanged(ColorToFloatArray(_fieldHeadColor), ColorToFloatArray(_fieldTailColor));
                 }
                 OnPropertyChanged("FieldHeadColor");
             }
@@ -210,13 +211,13 @@ namespace Parameters
                 _fieldTailColor = value;
                 if (FieldColorChanged != null)
                 {
-                    FieldColorChanged(colorToFloatArray(_fieldHeadColor), colorToFloatArray(_fieldTailColor));    
+                    FieldColorChanged(ColorToFloatArray(_fieldHeadColor), ColorToFloatArray(_fieldTailColor));
                 }
                 OnPropertyChanged("FieldTailColor");
             }
         }
 
-        private float[] colorToFloatArray(Color c)
+        private static float[] ColorToFloatArray(Color c)
         {
             var f = new float[4];
             f[0] = c.ScR;
@@ -323,14 +324,14 @@ namespace Parameters
             }
         }
 
-        private int _numberOfScrrenshots;
-        public int NumberOfScrrenshots
+        private int _numberOfScreenshots = 1;
+        public int NumberOfScreenshots
         {
-            get { return _numberOfScrrenshots; }
+            get { return _numberOfScreenshots; }
             set
             {
-                _numberOfScrrenshots = value;
-                OnPropertyChanged("NumberOfScrrenshots");
+                _numberOfScreenshots = value;
+                OnPropertyChanged("NumberOfScreenshots");
             }
         }
 
@@ -424,20 +425,21 @@ namespace Parameters
         private void WindowClosing(object sender, CancelEventArgs e)
         {
             e.Cancel = true;
-        } 
-        #endregion
+        }
 
         private void CaptureScreenshotsClick(object sender, RoutedEventArgs e)
         {
-            if (TakeScreenshots != null)
+            if (TakeScreenshots == null)
             {
-                TakeScreenshots(NumberOfScrrenshots);
+                return;
             }
+            var fDialog = new WPFFolderBrowserDialog("Select folder");
+            if (fDialog.ShowDialog() != true)
+            {
+                return;
+            }
+            TakeScreenshots(new StringBuilder(fDialog.FileName), NumberOfScreenshots);
         }
-
-       
-
-        
-
+        #endregion
     }
 }

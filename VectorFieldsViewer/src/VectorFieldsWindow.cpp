@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <chrono>
+#include <algorithm>
 #include <math.h>
 #include "VectorFieldsWindow.h"
 #include "VectorFieldsViewer.h"
@@ -218,35 +219,14 @@ void VectorFieldsWindow::printScreenHandler(std::string filePath)
 		return;
 	}
 
-	for (int r = 0; r < w-r; r++)
+	for (int r = 0; r < h-r; ++r)
 	{
-		for (int c = 0; c < w; c++)
+		int top = 4*w*r, bottom = 4*w*(h-r-1);
+		for (int it = 0; it < 4*w; ++it)
 		{
-
-			tempRow[4*c + 0] = pixels[4*w*(w-r-1) + 4*c + 0];
-			tempRow[4*c + 1] = pixels[4*w*(w-r-1) + 4*c + 1];
-			tempRow[4*c + 2] = pixels[4*w*(w-r-1) + 4*c + 2];
-			tempRow[4*c + 3] = pixels[4*w*(w-r-1) + 4*c + 3];
-
-			pixels[4*w*(w-r-1) + 4*c + 0] = pixels[4*w*r + 4*c + 0];
-			pixels[4*w*(w-r-1) + 4*c + 1] = pixels[4*w*r + 4*c + 1];
-			pixels[4*w*(w-r-1) + 4*c + 2] = pixels[4*w*r + 4*c + 2];
-			pixels[4*w*(w-r-1) + 4*c + 3] = pixels[4*w*r + 4*c + 3];
-
-			pixels[4*w*r + 4*c + 0] = tempRow[4*c + 0];
-			pixels[4*w*r + 4*c + 1] = tempRow[4*c + 1];
-			pixels[4*w*r + 4*c + 2] = tempRow[4*c + 2];
-			pixels[4*w*r + 4*c + 3] = tempRow[4*c + 3];
+			std::swap(pixels[top + it], pixels[bottom + it]);
 		}
 	}
-
-	/*for (int i = 0; i < w * h; i++)
-	{
-		if (inverted[4*i + 0] == 0 && inverted[4*i + 1] == 0 && inverted[4*i + 2] == 0)
-		{
-			inverted[4*i + 3] = 255;
-		}
-	}*/
 
 	lodepng::encode(filePath, pixels, w, h, LCT_RGBA);
 	pixels.clear();

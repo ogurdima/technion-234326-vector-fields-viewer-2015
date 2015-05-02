@@ -34,7 +34,7 @@ private:
 	static void						changedFieldColorCallback(float head[4], float tail[4]);
 	static void						changedVisualizationCallback(int drawTimeout, double step, double window);
 	static void						recomputePathsCallback(char* path, bool isConst, bool normalize, double step, double min, double max);
-	static void						takeScreenshotsCallback(int howMany);
+	static void						takeScreenshotsCallback(char* path, int howMany);
 	// callback handlers
 	void							openField(char* path, bool isConst);
 	void							openMesh(char* path);
@@ -82,7 +82,7 @@ public:
 	void							onTimer(int val);
 	void							openParameterWindow();
 	DrawStateType					getDrawState();  
-	void							takeScreenshots(int howMany);
+	void							takeScreenshots(char* path, int howMany);
 #pragma endregion
 
 };

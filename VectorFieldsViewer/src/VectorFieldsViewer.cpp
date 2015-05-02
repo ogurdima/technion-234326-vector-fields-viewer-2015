@@ -139,9 +139,9 @@ void VectorFieldsViewer::recomputePathsCallback(char* path, bool isConst, bool n
 	}
 }
 
-void VectorFieldsViewer::takeScreenshotsCallback(int howMany)
+void VectorFieldsViewer::takeScreenshotsCallback(char* path,int howMany)
 {
-	getInstance().takeScreenshots(howMany);
+	getInstance().takeScreenshots(path, howMany);
 }
 
 void VectorFieldsViewer::onTimer(int val)
@@ -195,7 +195,7 @@ void VectorFieldsViewer::evolvePaths()
 	UpdateCurrentTimeGui(curTime);
 }
 
-void VectorFieldsViewer::takeScreenshots(int howMany)
+void VectorFieldsViewer::takeScreenshots(char* path, int howMany)
 {
 	if (printScreenEvent == NULL)
 	{
@@ -207,7 +207,7 @@ void VectorFieldsViewer::takeScreenshots(int howMany)
 	for (int i = 0; i < howMany; i++, t+=dt)
 	{
 		stringstream s;
-		s << "Snapshot " << i+1 << " at t " << t << ".png";
+		s << path << "\\" << "Snapshot " << i+1 << " at t " << t << ".png";
 		pathsMgr.SetTime(t);
 		printScreenEvent(s.str());
 	}

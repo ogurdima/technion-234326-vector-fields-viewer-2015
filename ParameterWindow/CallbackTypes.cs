@@ -21,4 +21,7 @@ namespace Parameters
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void MeshPathParameterCallback(StringBuilder s);
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void TakeScreenshotCallback(StringBuilder s, int i);
+
 }
