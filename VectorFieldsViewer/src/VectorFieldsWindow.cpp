@@ -27,11 +27,8 @@ void VectorFieldsWindow::resetTimer()
 
 void VectorFieldsWindow::timerCallback(int val)
 {
-	auto start_time = std::chrono::high_resolution_clock::now();
 	VectorFieldsViewer::getInstance().onTimer(val);
 	glutPostRedisplay();
-	auto end_time = std::chrono::high_resolution_clock::now();
-	auto time = end_time - start_time;
 	resetTimer();
 }
 
@@ -171,14 +168,30 @@ void VectorFieldsWindow::drawVectorField()
 	unsigned int primCount;
 
 	VectorFieldsViewer::getInstance().GetCurrentPaths(dataArray, starts, counts, primCount);
-	glVertexPointer(3, GL_FLOAT, 8 * sizeof(float), dataArray);
-	glColorPointer(4, GL_FLOAT, 8 * sizeof(float), dataArray + 4);
-
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
-	glMultiDrawArrays(GL_LINE_STRIP, (GLint*) starts, (GLint*) counts, primCount);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 8 * sizeof(float), dataArray);
+	glColorPointer(4, GL_FLOAT, 8 * sizeof(float), dataArray + 4);
+	int count = 0;
+	for (int i = 0; i < primCount; ++i)
+	{
+		float* start = dataArray + count;
+		//glDrawArrays(GL_LINE_STRIP, counts[i], GL_INT, (const void*)starts[i]);
+		glDrawArrays(GL_LINE_STRIP, starts[i], counts[i]);
+		count += counts[i];
+	}
 	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	/*glVertexPointer(3, GL_FLOAT, 8 * sizeof(float), dataArray);
+	glColorPointer(4, GL_FLOAT, 8 * sizeof(float), dataArray + 4);
+
+	primCount = 1;
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glMultiDrawArrays(GL_LINE_STRIP, (const GLint*)starts, (const GLsizei*)counts, (GLsizei)primCount);
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);*/
 }
 
 void VectorFieldsWindow::initInstance(const char* title, int w, int h)
