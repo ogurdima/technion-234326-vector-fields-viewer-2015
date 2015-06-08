@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>Vector Field Viewer</title>
+  <meta name="description" content="website description" />
+  <meta name="keywords" content="website keywords, website keywords" />
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet" type="text/css" href="style/style.css" title="style" />
+</head>
+
+<body>
+  <div id="main">
+    <div id="header">
+      <div id="logo">
+        <div id="logo_text">
+          <!-- class="logo_colour", allows you to change the colour of the text -->
+          <h1>Vector Field Viewer</h1>
+        </div>
+      </div>
+      <div id="menubar">
+        <ul id="menu">
+          <!-- put class="selected" in the li tag for the selected page - to highlight which page you're on -->
+          <li class="selected"><a href="index.html">Home</a></li>
+          <li><a href="downloads.html">Downloads</a></li>
+		  <li><a href="examples.html">Examples</a></li>
+		  <li><a href="references.html">References</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="site_content">
+      <div id="content">
+        <!-- insert the page content here -->
+        <h1>Project Description</h1>
+        <p>VectorFieldsViewer is a program for visualizing of vector field on surface of mesh.</p>
+        <p>The program is able to load a mesh in OBJ format and a field in field-per-face format.</p>
+        <p>Time-variable vector fields are also supported.</p>
+        <p></p>
+        <p>To visualize the field, the program performs piecewise-linear particle movement simulation.</p>
+        <p>Initially particles are spawned in the middle of each face. At each point of time particle location</p>
+        <p>is being calculated using vector field direction/strength in the neighbourhood.</p>
+        <p>This way when the simulation is finished we have a bunch of particle paths that we are able to display.</p>
+        
+		<h2>Video Demonstration</h2>
+        <p>Make sure you view it in full screen mode and in HD.</p>
+        <iframe src="http://www.youtube.com/embed/vOkemjh6svY?autoplay=0"></iframe>
+      </div>
+    </div>
+    <div id="footer">
+      <a href="http://cs.technion.ac.il/" target="_blank">Technion computer science faculty site</a> | 
+	  <a href="http://www.cs.technion.ac.il/~cggc" target="_blank">Center for Graphic and Geometric Computing</a>
+    </div>
+  </div>
+</body>
+</html>

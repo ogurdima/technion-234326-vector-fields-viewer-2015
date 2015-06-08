@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>Vector Field Viewer</title>
+  <meta name="description" content="website description" />
+  <meta name="keywords" content="website keywords, website keywords" />
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet" type="text/css" href="style/style.css" title="style" />
+</head>
+
+<body>
+  <div id="main">
+   <div id="header">
+      <div id="logo">
+        <div id="logo_text">
+          <!-- class="logo_colour", allows you to change the colour of the text -->
+          <h1>Vector Field Viewer</h1>
+        </div>
+      </div>
+      <div id="menubar">
+        <ul id="menu">
+          <!-- put class="selected" in the li tag for the selected page - to highlight which page you're on -->
+          <li><a href="index.html">Home</a></li>
+          <li><a href="downloads.html">Downloads</a></li>
+		  <li class="selected"><a href="examples.html">Examples</a></li>
+		  <li><a href="references.html">References</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="site_content">
+      <div id="content">
+        <!-- insert the page content here -->
+		<h2>Examples</h2>
+		<p>These are some pretty looking results you can achieve with <a href="downloads.html">supplied mesh and data files</a> </p>
+		<table style="width:100%; border-spacing:0;">
+			<tr> <th>Name</th> 								<th>Mesh</th> 			<th>Field</th> 				<th>Normalized</th> 	<th>Simulation step</th> 	</tr>
+			<tr> <td><a href="#cat">Cat</a></td>  			<td>cat.off</td> 		<td>cat.vf</td> 			<td>true</td> 			<td>0.01</td> 				</tr>
+			<tr> <td><a href="#teddy">Teddy</a></td> 		<td>teddy.off</td> 		<td>teddy.vf</td> 			<td>true</td> 			<td>0.01</td> 				</tr>
+			<tr> <td><a href="#frog">Frog</a></td> 			<td>frog_s5.off</td> 	<td>frog_s5_times.txt</td> 	<td>false</td> 			<td>0.01</td> 				</tr>
+        </table>
+		
+		<span class="center" id="cat"><img src="img/cat.gif" alt="Example cat" /></span>
+		<span class="center" id="teddy"><img src="img/teddy.gif" alt="Example teddy" /></span>
+		<span class="center" id="frog"><img src="img/frog.gif" alt="Example frog" /></span>
+		
+	  </div>
+    </div>
+    <div id="footer">
+      <a href="http://cs.technion.ac.il/" target="_blank">Technion computer science faculty site</a> | 
+	  <a href="http://www.cs.technion.ac.il/~cggc" target="_blank">Center for Graphic and Geometric Computing</a>
+    </div>
+  </div>
+</body>
+</html>
